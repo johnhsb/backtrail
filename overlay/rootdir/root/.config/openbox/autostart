@@ -23,7 +23,7 @@ compton &
 tint2 &
 
 # Start notification daemon
-( sleep 1 && /usr/lib/i386-linux-gnu/xfce4/notifyd/xfce4-notifyd ) &
+( sleep 1 && /usr/lib/*/xfce4/notifyd/xfce4-notifyd ) &
 
 # Give user 'redo' access to the running X server
 xhost si:localuser:redo &

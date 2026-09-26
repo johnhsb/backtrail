@@ -45,10 +45,9 @@ function get_fs_tool($fs) {
 	if (preg_match('/fat/i', $fs)) return 'fat';
 	if (preg_match('/hfs/i', $fs)) return 'hfsp';
 	if (preg_match('/minix/i', $fs)) return 'minix';
-	if (preg_match('/nilfs/i', $fs)) return 'nilfs2';
 	if (preg_match('/ntfs/i', $fs)) return 'ntfs';
-	if (preg_match('/reiser/i', $fs)) return 'reiser4';
 	if (preg_match('/xfs/i', $fs)) return 'xfs';
+	// Debian's partclone has no nilfs2/reiserfs tools (reiser4 dropped in trixie)
 	return 'dd';
 }
 
@@ -298,14 +297,23 @@ function mount_drive($vars) {
 // Get size of block device in bytes
 //
 function get_dev_bytes($drive) {
-	return intval(shell_exec('blockdev --getsize64 /dev/'.sane_dev($drive)));
+	return to_bytes(shell_exec('blockdev --getsize64 /dev/'.sane_dev($drive)));
+}
+
+//
+// Convert a byte count to a number; it becomes a float when it exceeds
+// PHP_INT_MAX (sizes over 2 GiB on 32-bit systems), where intval() clamps
+//
+function to_bytes($str) {
+	$str = trim((string) $str);
+	return is_numeric($str) ? $str + 0 : 0;
 }
 
 //
 // Get usage summary of mounted filesystem
 //
 function get_usage() {
-	$free_bytes = intval(trim(shell_exec('df --block-size=1 --output=avail '.MOUNTPOINT.' | sed 1d')));
+	$free_bytes = to_bytes(shell_exec('df --block-size=1 --output=avail '.MOUNTPOINT.' | sed 1d'));
 	$df = trim(shell_exec('df -HT '.MOUNTPOINT.' | grep '.MOUNTPOINT));
 	$df = preg_replace('/ +/', ' ', $df);
 	$list = explode(' ', $df);
@@ -712,7 +720,7 @@ function get_legacy_image_info() {
 	global $status;
 	$prefix_path = sane_path(preg_replace('/\.backup$/', '', $status->file));
 	$drive_size = file_get_contents($prefix_path.'.size');
-	if (intval(trim($drive_size)==0))
+	if (to_bytes($drive_size)==0)
 		return 'Unable to get original drive size of legacy image';
 	$mbr_data = file_get_contents($prefix_path.'.mbr');
 	if (strlen($mbr_data)<32768)
@@ -761,7 +769,7 @@ function get_legacy_image_info() {
 		'version'	=> '1.0.x',
 		'timestamp'	=> $timestamp,
 		'notes'		=> 'Legacy backup image',
-		'drive_bytes'	=> intval(trim($drive_size)),
+		'drive_bytes'	=> to_bytes($drive_size),
 		'parts'		=> $parts,
 		'mbr_bin'	=> base64_encode($mbr_data),
 		'sfd_bin'	=> base64_encode($sfd_data),

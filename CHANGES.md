@@ -1,7 +1,17 @@
 # Changes to Redo Rescue
 
 ## Version 5.0.0 (pending)
-  * Update base to Debian 12 (bookworm) for improved hardware support
+  * Update base to Debian 13 (trixie) with PHP 8.4 for improved hardware support
+  * Add 32-bit system based on Debian 12 (bookworm) to the same ISO; the boot
+    menu selects 64-bit or 32-bit automatically based on the CPU
+  * Fix partition sizes over 2 GiB being truncated by 32-bit PHP
+  * Build from `-updates` and `-security` repositories so the image includes security fixes
+  * Unmount chroot filesystems when a build is interrupted or cleaned
+  * Install `rsync` and `dosfstools` build dependencies on the host
+  * Remove legacy isolinux ISO build path (Debian 9 only)
+  * Drop `hfsutils` and `reiser4progs` on trixie (removed from Debian 13)
+  * Image ReiserFS and NILFS2 partitions in raw mode (no partclone tool in Debian)
+  * Fix xfce4-notifyd autostart path on amd64
   * Remove wireless non-free firmware packages
   * Fix bug that prevented selecting a new disk once one is chosen
   * Add support for mounting and imaging BTRFS filesystems

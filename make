@@ -18,9 +18,9 @@
 #
 
 VER=5.0.0
-BASE=bookworm
-ARCH=amd64
-ROOT=rootdir
+# Each target (ARCH:BASE) becomes a separate live system in the same ISO;
+# the boot menu picks the one matching the CPU. Debian 13 has no i386 kernel.
+TARGETS="amd64:trixie i386:bookworm"
 FILE=setup.sh
 USER=redo
 NONFREE=true
@@ -52,11 +52,36 @@ fi
 # Get requested action
 ACTION=$1
 
+unmount_chroot() {
+	#
+	# Release chroot mounts (proc, sys, dev/pts) left by an interrupted build
+	#
+	grep -oE " $(pwd)/rootdir[^ ]*" /proc/mounts | sort -r | xargs -r umount -lf
+}
+
+# Never leave host filesystems mounted inside a build root
+trap unmount_chroot EXIT
+
+set_target() {
+	#
+	# Select build target, given as ARCH:BASE (e.g. i386:bookworm)
+	#
+	ARCH=${1%%:*}
+	BASE=${1#*:}
+	ROOT=rootdir-$ARCH
+	LIVE=image/live-$ARCH
+	# Run 32-bit chroots with a 32-bit personality so `uname -m` is i686
+	PERS=""
+	if [ "$ARCH" == "i386" ]; then PERS="setarch i686"; fi
+	echo -e "$yel* Target: $ARCH ($BASE)$off"
+}
+
 clean() {
 	#
 	# Remove all build files
 	#
-	rm -rf {image,scratch,$ROOT,*.iso}
+	unmount_chroot
+	rm -rf --one-file-system image scratch rootdir rootdir-* *.iso
 	echo -e "$yel* All clean!$off\n"
 	exit
 }
@@ -65,26 +90,30 @@ prepare() {
 	#
 	# Prepare host environment
 	#
-	echo -e "$yel* Building from scratch.$off"
-	rm -rf {image,scratch,$ROOT,*.iso}
+	echo -e "$yel* Building $ROOT from scratch.$off"
+	unmount_chroot
+	rm -rf --one-file-system $ROOT
 	CACHE=debootstrap-$BASE-$ARCH.tar.gz
 	if [ -f "$CACHE" ]; then
 		echo -e "$yel* $CACHE exists, extracting existing archive...$off"
 		sleep 2
 		tar zxvf $CACHE
-	else 
+	else
 		echo -e "$yel* $CACHE does not exist, running debootstrap...$off"
 		sleep 2
-		# Legacy needs: syslinux, syslinux-common, isolinux, memtest86+
 		apt-get install debootstrap squashfs-tools grub-pc-bin \
 			grub-efi-amd64-signed shim-signed mtools xorriso \
-			syslinux syslinux-common isolinux memtest86+
-		rm -rf $ROOT; mkdir -p $ROOT
-		debootstrap \
+			rsync dosfstools
+		mkdir -p $ROOT
+		if ! debootstrap \
 			--arch=$ARCH \
 			--variant=minbase \
-			$BASE $ROOT
-		tar zcvf $CACHE ./$ROOT	
+			$BASE $ROOT; then
+			echo -e "$red* ERROR: debootstrap failed for $ARCH ($BASE).$off\n"
+			exit 1
+		fi
+		# Write to a temporary name so an interrupted run leaves no bad cache
+		tar zcvf $CACHE.tmp ./$ROOT && mv $CACHE.tmp $CACHE
 	fi
 
 }
@@ -135,26 +164,47 @@ script_build() {
 	else
 		KERN="amd64"
 	fi
-	if [ "$BASE" == "bookworm" ]; then
+	if [ "$BASE" == "trixie" ]; then
+		# Trixie-specific PHP version and packages
+		# (hfsutils and reiser4progs were removed from Debian 13)
+		PHPV="8.4"
+		PKGS="chromium-common chromium-sandbox volumeicon-alsa exfatprogs"
+	elif [ "$BASE" == "bookworm" ]; then
 		# Bookworm-specific PHP version and packages
 		PHPV="8.2"
-		PKGS="chromium-common chromium-sandbox volumeicon-alsa exfatprogs"
+		PKGS="chromium-common chromium-sandbox volumeicon-alsa exfatprogs hfsutils reiser4progs"
 	elif [ "$BASE" == "bullseye" ]; then
 		# Bullseye-specific PHP version and packages
 		PHPV="7.4"
-		PKGS="chromium-common chromium-sandbox volumeicon-alsa curlftpfs exfat-utils"
+		PKGS="chromium-common chromium-sandbox volumeicon-alsa curlftpfs exfat-utils hfsutils reiser4progs"
 	elif [ "$BASE" == "buster" ]; then
 		# Buster uses PHP 7.3
 		PHPV="7.3"
-		PKGS="chromium-common chromium-sandbox volti obmenu curlftpfs exfat-utils"
+		PKGS="chromium-common chromium-sandbox volti obmenu curlftpfs exfat-utils hfsutils reiser4progs"
 	else
 		# Stretch uses PHP 7.0
 		PHPV="7.0"
-		PKGS="volti obmenu curlftpfs exfat-utils"
+		PKGS="volti obmenu curlftpfs exfat-utils hfsutils reiser4progs"
+	fi
+	if [ "$BASE" == "buster" ] || [ "$BASE" == "stretch" ]; then
+		SECSUITE="$BASE/updates"
+	else
+		SECSUITE="$BASE-security"
 	fi
 	cat >> $ROOT/$FILE <<EOL
-# Install packages
+# Enable stable updates and security repositories
+cat > /etc/apt/sources.list <<END
+deb http://deb.debian.org/debian $BASE main
+deb http://deb.debian.org/debian $BASE-updates main
+deb http://security.debian.org/debian-security $SECSUITE main
+END
+
+# Apply updates to the base system
 export DEBIAN_FRONTEND=noninteractive
+apt update --yes
+apt upgrade --yes
+
+# Install packages
 apt install --no-install-recommends --yes \
 	\
 	linux-image-$KERN live-boot systemd-sysv firmware-linux-free sudo \
@@ -171,7 +221,7 @@ apt install --no-install-recommends --yes \
 	\
 	beep laptop-detect os-prober discover lshw-gtk hdparm smartmontools \
 	nmap time lvm2 gparted gnome-disk-utility baobab gddrescue testdisk \
-	dosfstools ntfs-3g reiserfsprogs reiser4progs hfsutils jfsutils \
+	dosfstools ntfs-3g reiserfsprogs jfsutils \
 	smbclient cifs-utils nfs-common sshfs partclone pigz yad f2fs-tools \
 	exfat-fuse btrfs-progs \
 	\
@@ -312,7 +362,7 @@ chroot_exec() {
 	echo -e "$yel* Copying assets to root directory...$off"
 	# Copy assets before configuring plymouth theme
 	rsync -h --info=progress2 --archive \
-		./overlay/$ROOT/usr/share/* \
+		./overlay/rootdir/usr/share/* \
 		./$ROOT/usr/share/
 
 	# Copy /etc/resolv.conf before running setup script
@@ -321,10 +371,10 @@ chroot_exec() {
 	# Run setup script inside chroot
 	chmod +x $ROOT/$FILE
 	echo
-	echo -e "$red>>> ENTERING CHROOT SYSTEM$off"
+	echo -e "$red>>> ENTERING CHROOT SYSTEM ($ARCH)$off"
 	echo
 	sleep 2
-	chroot $ROOT/ /bin/bash -c "./$FILE"
+	$PERS chroot $ROOT/ /bin/bash -c "./$FILE"
 	echo
 	echo -e "$red>>> EXITED CHROOT SYSTEM$off"
 	echo
@@ -336,114 +386,47 @@ create_livefs() {
 	#
 	# Prepare to create new image
 	#
-	echo -e "$yel* Preparing image...$off"
+	echo -e "$yel* Preparing $ARCH image...$off"
 	rm -f $ROOT/root/.bash_history
-	rm -rf image redorescue-$VER.iso
-	mkdir -p image/live
+	rm -rf $LIVE
+	mkdir -p $LIVE
 
 	# Apply changes from overlay
 	echo -e "$yel* Applying changes from overlay...$off"
 	rsync -h --info=progress2 --archive \
-		./overlay/* \
-		.
+		./overlay/rootdir/ \
+		./$ROOT/
 
 	# Fix permissions
-	chroot $ROOT/ /bin/bash -c "chown -R root: /etc /root"
-	chroot $ROOT/ /bin/bash -c "chown -R www-data: /var/www/html"
+	$PERS chroot $ROOT/ /bin/bash -c "chown -R root: /etc /root"
+	$PERS chroot $ROOT/ /bin/bash -c "chown -R www-data: /var/www/html"
 
 	# Enable startup of Redo monitor service
-	chroot $ROOT/ /bin/bash -c "chmod 644 /etc/systemd/system/redo.service"
-	chroot $ROOT/ /bin/bash -c "systemctl enable redo"
+	$PERS chroot $ROOT/ /bin/bash -c "chmod 644 /etc/systemd/system/redo.service"
+	$PERS chroot $ROOT/ /bin/bash -c "systemctl enable redo"
 
 	# Update version number
 	echo $VER > $ROOT/var/www/html/VERSION
 
+	# Copy kernel and initial ramdisk
+	cp $ROOT/boot/vmlinuz* $LIVE/vmlinuz
+	cp $ROOT/boot/initrd* $LIVE/initrd
+
 	# Compress live filesystem
 	echo -e "$yel* Compressing live filesystem...$off"
-	mksquashfs $ROOT/ image/live/filesystem.squashfs -e boot
+	mksquashfs $ROOT/ $LIVE/filesystem.squashfs -e boot
 }
 
 create_iso() {
 	#
-	# Create ISO image from existing live filesystem
+	# Create hybrid BIOS/UEFI ISO image containing every target's live system
 	#
-	if [ "$BASE" == "stretch" ]; then
-		# Debian 9 supports legacy BIOS booting
-		create_legacy_iso
-	else
-		# Debian 10+ supports UEFI and secure boot
-		create_uefi_iso
-	fi
-}
-
-create_legacy_iso() {
-	#
-	# Create legacy ISO image for Debian 9 (version 2.0 releases)
-	#
-	if [ ! -s "image/live/filesystem.squashfs" ]; then
-		echo -e "$red* ERROR: The squashfs live filesystem is missing.$off\n"
-		exit
-	fi
-
-	# Apply image changes from overlay
-	echo -e "$yel* Applying image changes from overlay...$off"
-	rsync -h --info=progress2 --archive \
-		./overlay/image/* \
-		./image/
-
-	# Remove EFI-related boot assets
-	rm -rf image/boot
-
-	# Update version number
-	perl -p -i -e "s/\\\$VERSION/$VER/g" image/isolinux/isolinux.cfg
-	
-	# Prepare image
-	echo -e "$yel* Preparing legacy image...$off"
-	mkdir image/isolinux
-	cp $ROOT/boot/vmlinuz* image/live/vmlinuz
-	cp $ROOT/boot/initrd* image/live/initrd
-	cp /boot/memtest86+.bin image/live/memtest
-	cp /usr/lib/ISOLINUX/isolinux.bin image/isolinux/
-	cp /usr/lib/syslinux/modules/bios/menu.c32 image/isolinux/
-	cp /usr/lib/syslinux/modules/bios/vesamenu.c32 image/isolinux/
-	cp /usr/lib/syslinux/modules/bios/hdt.c32 image/isolinux/
-	cp /usr/lib/syslinux/modules/bios/ldlinux.c32 image/isolinux/
-	cp /usr/lib/syslinux/modules/bios/libutil.c32 image/isolinux/
-	cp /usr/lib/syslinux/modules/bios/libmenu.c32 image/isolinux/
-	cp /usr/lib/syslinux/modules/bios/libcom32.c32 image/isolinux/
-	cp /usr/lib/syslinux/modules/bios/libgpl.c32 image/isolinux/
-	cp /usr/share/misc/pci.ids image/isolinux/
-
-	# Create ISO image
-	echo -e "$yel* Creating legacy ISO image...$off"
-	xorriso -as mkisofs -r \
-		-J -joliet-long \
-		-isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin \
-		-partition_offset 16 \
-		-A "Redo $VER" -volid "Redo Rescue $VER" \
-		-b isolinux/isolinux.bin \
-		-c isolinux/boot.cat \
-		-no-emul-boot -boot-load-size 4 -boot-info-table \
-		-o redorescue-$VER.iso \
-		image
-
-	# Report final ISO size
-	echo -e "$yel\nISO image saved:"
-	du -sh redorescue-$VER.iso
-	echo -e "$off"
-	echo
-	echo "Done."
-	echo
-}
-
-create_uefi_iso() {
-	#
-	# Create ISO image for Debian 10 (version 3.0 releases)
-	#
-	if [ ! -s "image/live/filesystem.squashfs" ]; then
-		echo -e "$red* ERROR: The squashfs live filesystem is missing.$off\n"
-		exit
-	fi
+	for T in $TARGETS; do
+		if [ ! -s "image/live-${T%%:*}/filesystem.squashfs" ]; then
+			echo -e "$red* ERROR: The ${T%%:*} squashfs live filesystem is missing.$off\n"
+			exit 1
+		fi
+	done
 
 	# Apply image changes from overlay
 	echo -e "$yel* Applying image changes from overlay...$off"
@@ -459,8 +442,6 @@ create_uefi_iso() {
 
 	# Prepare boot image
 	touch image/REDO
-        cp $ROOT/boot/vmlinuz* image/vmlinuz
-        cp $ROOT/boot/initrd* image/initrd
 	mkdir -p {image/EFI/{boot,debian},image/boot/grub/{fonts,theme},scratch}
 	cp /usr/share/grub/ascii.pf2 image/boot/grub/fonts/
 	cp /usr/lib/shim/shimx64.efi.signed image/EFI/boot/bootx64.efi
@@ -473,12 +454,12 @@ create_uefi_iso() {
 	mkfs.vfat $UFAT
 	mcopy -s -i $UFAT image/EFI ::
 
-	# Create image for BIOS and CD-ROM
+	# Create image for BIOS and CD-ROM ("cpuid" detects 64-bit CPUs)
 	grub-mkstandalone \
 		--format=i386-pc \
 		--output=scratch/core.img \
-		--install-modules="linux normal iso9660 biosdisk memdisk search help tar ls all_video font gfxmenu png" \
-		--modules="linux normal iso9660 biosdisk search help all_video font gfxmenu png" \
+		--install-modules="linux normal iso9660 biosdisk memdisk search help tar ls all_video font gfxmenu png cpuid test" \
+		--modules="linux normal iso9660 biosdisk search help all_video font gfxmenu png cpuid test" \
 		--locales="" \
 		--fonts="" \
 		"boot/grub/grub.cfg=image/boot/grub/grub.cfg"
@@ -534,30 +515,47 @@ if [ "$ACTION" == "clean" ]; then
 fi
 
 if [ "$ACTION" == "" ]; then
-	# Build new ISO image
-	prepare
-	script_init
-	script_build
-	if [ "$NONFREE" = true ]; then
-		echo -e "$yel* Including non-free packages...$off"
-		script_add_nonfree
-	else
-		echo -e "$yel* Excluding non-free packages.$off"
-	fi
-	script_exit
-	chroot_exec
-	create_livefs
+	# Build new ISO image with a live system for every target
+	rm -rf image scratch redorescue-$VER.iso
+	for T in $TARGETS; do
+		set_target $T
+		prepare
+		script_init
+		script_build
+		if [ "$NONFREE" = true ]; then
+			echo -e "$yel* Including non-free packages...$off"
+			script_add_nonfree
+		else
+			echo -e "$yel* Excluding non-free packages.$off"
+		fi
+		script_exit
+		chroot_exec
+		create_livefs
+	done
 	create_iso
 fi
 
 if [ "$ACTION" == "changes" ]; then
-	# Enter existing system to make changes
+	# Enter existing system(s) to make changes; optionally name one
+	# architecture, e.g. "./make changes i386"
+	if [ -n "$2" ] && [[ " $TARGETS" != *" $2:"* ]]; then
+		echo -e "$red* ERROR: Unknown architecture '$2' (targets: $TARGETS).$off\n"
+		exit 1
+	fi
 	echo -e "$yel* Updating existing image.$off"
-	script_init
-	script_shell
-	script_exit
-	chroot_exec
-	create_livefs
+	for T in $TARGETS; do
+		if [ -n "$2" ] && [ "${T%%:*}" != "$2" ]; then continue; fi
+		set_target $T
+		if [ ! -d "$ROOT" ]; then
+			echo -e "$red* ERROR: $ROOT does not exist; run a full build first.$off\n"
+			exit 1
+		fi
+		script_init
+		script_shell
+		script_exit
+		chroot_exec
+		create_livefs
+	done
 	create_iso
 fi
 

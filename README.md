@@ -40,7 +40,7 @@
   * Selectively restore certain parts
   * Optionally re-map original partitions to different places
   * UEFI Secure Boot support
-  * Based on 64-bit Debian Linux
+  * Boots on 64-bit (Debian 13) and 32-bit (Debian 12) PCs from a single ISO
   * ISO can be written to CD or USB
   * Error handling and low space warnings
   * Detailed logs can be copied to clipboard
@@ -94,11 +94,15 @@ To build an ISO image from within Debian Linux:
   2. `cd redorescue`
   3. `sudo ./make`
 
+The ISO contains a 64-bit (Debian 13) and a 32-bit (Debian 12) live system; the boot menu picks one based on the CPU. Build targets are set by `TARGETS` in the `make` script.
+
 After building, it's easy to modify a file or install a package without rebuilding and downloading all the packages again:
 
-  1. `sudo ./make changes`
+  1. `sudo ./make changes` (or `sudo ./make changes amd64` / `i386` for one system)
   1. Make your changes to the live system image
   1. `exit` and the ISO will be updated automatically
+
+To remove all build files (downloaded base system caches are kept), run `sudo ./make clean`.
 
 Source code for previous releases can be found on [SourceForge](https://sourceforge.net/projects/redobackup/files/src/).
 
