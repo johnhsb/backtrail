@@ -174,10 +174,9 @@ script_build() {
 	fi
 	if [ "$BASE" == "trixie" ]; then
 		# Trixie-specific PHP version and packages
-		# (hfsutils and reiser4progs were removed from Debian 13; Adwaita's
-		# full-color icons moved to adwaita-icon-theme-legacy)
+		# (hfsutils and reiser4progs were removed from Debian 13)
 		PHPV="8.4"
-		PKGS="chromium-common chromium-sandbox volumeicon-alsa exfatprogs adwaita-icon-theme-legacy fonts-pretendard"
+		PKGS="chromium-common chromium-sandbox volumeicon-alsa exfatprogs fonts-pretendard"
 	elif [ "$BASE" == "bookworm" ]; then
 		# Bookworm-specific PHP version and packages
 		PHPV="8.2"
@@ -227,6 +226,7 @@ apt install --no-install-recommends --yes \
 	network-manager-gnome gtk2-engines gnome-themes-extra gtk-theme-switch \
 	fonts-noto-cjk pcmanfm libfm-modules gpicview mousepad x11vnc pwgen \
 	xvkbd librsvg2-common zstd \
+	papirus-icon-theme adwaita-icon-theme gtk-update-icon-cache \
 	\
 	beep laptop-detect os-prober discover lshw-gtk hdparm smartmontools \
 	nmap time lvm2 gparted gnome-disk-utility baobab gddrescue testdisk \
@@ -294,6 +294,10 @@ echo "Setting default plymouth theme..."
 plymouth-set-default-theme -R backtrail
 update-initramfs -u
 ln -s /usr/bin/pcmanfm /usr/bin/nautilus
+
+# Icon theme caches (built by gtk-update-icon-cache) are kept: Papirus has
+# over 40,000 icons, and without a cache every app scans them at startup.
+# Cursors still come from Adwaita, which Papirus does not replace.
 
 # Restore legacy X11 cursor names that Debian 13's Adwaita dropped, e.g.
 # openbox's app-launch pointer and GTK3 drag-and-drop (older themes have them)
@@ -382,7 +386,6 @@ script_exit() {
 	cat >> $ROOT/$FILE <<EOL
 # Save space
 rm -f /usr/bin/{rpcclient,smbcacls,smbclient,smbcquotas,smbget,smbspool,smbtar}
-rm -f /usr/share/icons/*/icon-theme.cache
 rm -rf /usr/share/doc
 rm -rf /usr/share/man
 
