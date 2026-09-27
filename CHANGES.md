@@ -14,6 +14,7 @@
   * Fix xfce4-notifyd autostart path on amd64
   * Install SVG icon loader and Adwaita legacy icons (missing icons on trixie)
   * Add Noto CJK fonts to display Chinese, Japanese and Korean text
+  * Compress live filesystem and initrd with zstd (smaller ISO, faster reads)
   * Use the C.UTF-8 locale so non-ASCII partition labels and names are not
     escaped (e.g. `\xed\x95\x9c`); program messages remain in English
   * Remove wireless non-free firmware packages

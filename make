@@ -219,7 +219,7 @@ apt install --no-install-recommends --yes \
 	gsettings-desktop-schemas lxrandr lxmenu-data lxterminal lxappearance \
 	network-manager-gnome gtk2-engines numix-gtk-theme gtk-theme-switch \
 	fonts-lato fonts-noto-cjk pcmanfm libfm-modules gpicview mousepad x11vnc pwgen \
-	xvkbd librsvg2-common \
+	xvkbd librsvg2-common zstd \
 	\
 	beep laptop-detect os-prober discover lshw-gtk hdparm smartmontools \
 	nmap time lvm2 gparted gnome-disk-utility baobab gddrescue testdisk \
@@ -418,7 +418,8 @@ create_livefs() {
 
 	# Compress live filesystem
 	echo -e "$yel* Compressing live filesystem...$off"
-	mksquashfs $ROOT/ $LIVE/filesystem.squashfs -e boot
+	# zstd: smaller than gzip and twice as fast to decompress (-e must be last)
+	mksquashfs $ROOT/ $LIVE/filesystem.squashfs -comp zstd -e boot
 }
 
 create_iso() {
