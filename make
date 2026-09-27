@@ -71,6 +71,8 @@ set_target() {
 	BASE=${1#*:}
 	ROOT=rootdir-$ARCH
 	LIVE=image/live-$ARCH
+	# Downloaded packages are kept here between builds (see chroot_exec)
+	PKGCACHE=cache/apt-$BASE-$ARCH
 	# Run 32-bit chroots with a 32-bit personality so `uname -m` is i686
 	PERS=""
 	if [ "$ARCH" == "i386" ]; then PERS="setarch i686"; fi
@@ -153,6 +155,10 @@ END
 
 # Export environment
 export HOME=/root; export LANG=C; export LC_ALL=C;
+
+# Keep downloaded packages in the package cache (the host's cache folder is
+# mounted there); "apt" deletes them after installing by default
+echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/90build-cache
 
 EOL
 }
@@ -381,7 +387,13 @@ rm -rf /usr/share/doc
 rm -rf /usr/share/man
 
 # Clean up and exit
-apt-get autoremove && apt-get clean
+apt-get autoremove
+# Drop cached versions that can no longer be downloaded, then detach the
+# host's package cache before emptying the image's own cache
+apt-get autoclean
+rm -f /etc/apt/apt.conf.d/90build-cache
+if mountpoint -q /var/cache/apt/archives; then umount /var/cache/apt/archives; fi
+if ! mountpoint -q /var/cache/apt/archives; then apt-get clean; fi
 rm -rf /var/lib/dbus/machine-id
 rm -rf /tmp/*
 rm -f /etc/resolv.conf
@@ -407,6 +419,13 @@ chroot_exec() {
 	# Copy /etc/resolv.conf before running setup script
 	cp /etc/resolv.conf ./$ROOT/etc/
 
+	# Reuse packages downloaded by earlier builds: mount the host's cache
+	# folder over the chroot's package cache (unmounted by the setup script
+	# before it cleans up, or by unmount_chroot if the build stops)
+	mkdir -p $PKGCACHE $ROOT/var/cache/apt/archives
+	mount --bind $PKGCACHE $ROOT/var/cache/apt/archives
+	echo -e "$yel* Package cache: $PKGCACHE ($(du -sh $PKGCACHE | cut -f1))$off"
+
 	# Run setup script inside chroot
 	chmod +x $ROOT/$FILE
 	echo
@@ -414,6 +433,7 @@ chroot_exec() {
 	echo
 	sleep 2
 	$PERS chroot $ROOT/ /bin/bash -c "./$FILE"
+	if mountpoint -q $ROOT/var/cache/apt/archives; then umount $ROOT/var/cache/apt/archives; fi
 	echo
 	echo -e "$red>>> EXITED CHROOT SYSTEM$off"
 	echo
