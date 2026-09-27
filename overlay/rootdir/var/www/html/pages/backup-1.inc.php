@@ -3,7 +3,7 @@
 $status = get_status();
 
 // Set operation type
-$status->op = 'backup';
+$status = reset_operation($status, 'backup');
 
 // Clear drive selection
 unset($status->drive);

@@ -5,6 +5,7 @@ require_once('../functions.inc.php');
 $status = get_status();
 
 // Load image details
+$error = '';
 $image = get_image_info();
 if (is_string($image)) $error = $image;
 $status->image = $image;
@@ -12,8 +13,11 @@ $status->image = $image;
 // Parse request to build src->target map
 $status->type = preg_replace('/[^a-z]/', '', $_REQUEST['type']);
 $status->parts = array();
-$error = '';
+if (!empty($error)) $status->type = 'invalid';
 switch ($status->type) {
+case 'invalid':
+	// Report the image error below
+	break;
 case 'verify':
 	foreach ($_REQUEST['verify_parts'] as $part) {
 		$part = sane_dev($part);

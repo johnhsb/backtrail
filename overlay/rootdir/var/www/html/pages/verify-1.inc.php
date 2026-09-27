@@ -3,7 +3,7 @@
 $status = get_status();
 
 // Set operation type
-$status->op = 'verify';
+$status = reset_operation($status, 'verify');
 
 // Save status
 unset($status->file);

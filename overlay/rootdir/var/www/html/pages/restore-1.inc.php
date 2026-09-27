@@ -3,7 +3,7 @@
 $status = get_status();
 
 // Set operation type
-$status->op = 'restore';
+$status = reset_operation($status, 'restore');
 
 // Save status
 unset($status->file);

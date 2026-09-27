@@ -630,6 +630,17 @@ function beep($type='error') {
 }
 
 //
+// Forget the selections and progress of an earlier operation, so starting
+// another one without reloading the app does not resume the old one
+//
+function reset_operation($status, $op) {
+	foreach (array('progress', 'start_time', 'bytes_total', 'bytes_done', 'logline', 'details',
+		'parts', 'type', 'image', 'id', 'notes') as $key) unset($status->$key);
+	$status->op = $op;
+	return $status;
+}
+
+//
 // Initialize a new backup, return any errors
 //
 function backup_init() {

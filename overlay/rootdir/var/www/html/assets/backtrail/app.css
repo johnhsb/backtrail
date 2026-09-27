@@ -221,7 +221,13 @@ html:lang(zh-CN) .bt-op, html:lang(zh-CN) .bt-label { letter-spacing: 0; }
 .bt-card { background: var(--bt-surface); border: 1px solid var(--bt-line); border-radius: .75rem; padding: 1.25rem; }
 .bt-card + .bt-card { margin-top: 1rem; }
 .bt-split > .bt-card { margin-top: 0; }
-.bt-actions { display: flex; justify-content: flex-end; gap: .6rem; margin-top: 1.5rem; }
+/* Step buttons stay at the bottom of the window when the page is taller
+   than the screen (netbooks, 1024x600); the fade covers scrolled content */
+.bt-actions {
+  display: flex; justify-content: flex-end; gap: .6rem; margin-top: .5rem;
+  position: sticky; bottom: 0; z-index: 5; padding: 1rem 0 .9rem;
+  background: linear-gradient(to bottom, transparent, var(--bt-bg) .9rem);
+}
 .bt-field-help { color: var(--bt-accent); margin-left: .3rem; cursor: help; }
 
 /* Welcome */
@@ -288,6 +294,22 @@ html:lang(zh-CN) .bt-op, html:lang(zh-CN) .bt-label { letter-spacing: 0; }
   .bt-steps li + li::before { width: 1rem; }
   .bt-bar .bt-remote { display: none; }
   .bt-bar .bt-lang-btn span { display: none; }
+}
+/* Short screens such as 1024x600: tighter spacing so more fits above the fold */
+@media (max-height: 700px) {
+  .bt-bar { height: 48px; }
+  .bt-bar .bt-logo { height: 26px; }
+  .bt-main { padding-top: 1rem; padding-bottom: 1rem; }
+  .bt-steps { margin-bottom: .9rem; }
+  .bt-title { font-size: 1.4rem; }
+  .bt-lead { margin-bottom: .9rem; }
+  .bt-ops { margin: .9rem 0 1.25rem; }
+  .bt-op-card { padding: 1rem 1.1rem; gap: .45rem; }
+  .bt-op-card .bt-ico { width: 2.3rem; height: 2.3rem; font-size: 1.05rem; }
+  .bt-card { padding: 1rem 1.1rem; }
+  .bt-pct { font-size: 2.6rem; }
+  .bt-stats { margin: .9rem 0; }
+  .bt-footer { padding-block: .4rem; }
 }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
