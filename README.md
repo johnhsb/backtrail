@@ -34,6 +34,8 @@ format, so backups made with Redo Rescue can be restored with Backtrail. See
   * Browser-based application with PHP backend
   * Displays Chinese, Japanese and Korean partition labels and file names
   * Browser-based interface with light and dark modes
+  * Interface in English, Korean, Japanese, Simplified Chinese, Spanish,
+    German, French and Brazilian Portuguese
   * System tools and diagnostic programs included in image
   * Unified backup file format with ability to add notes
   * Shared network drive search and detection
@@ -89,7 +91,10 @@ After building, it's easy to modify a file or install a package without rebuildi
   1. Make your changes to the live system image
   1. `exit` and the ISO will be updated automatically
 
-To remove all build files (downloaded base system caches are kept), run `sudo ./make clean`.
+Downloaded packages are kept in `cache/` (one folder per system), so later
+builds only download packages that changed. To remove all build files
+(the base system archives and `cache/` are kept), run `sudo ./make clean`;
+delete `cache/` to free its space.
 
 The logo, boot menu, splash screen and wallpaper images are generated from
 `branding/src`; see [branding/README.md](branding/README.md).

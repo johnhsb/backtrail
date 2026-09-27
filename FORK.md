@@ -58,6 +58,8 @@ Debian 12. The ISO contains two independent live systems (`/live-amd64` and
 | 32-bit PHP integer limit | Sizes above 2 GiB were clamped to 2147483647: restores were refused as "will not fit" and progress went negative (-35.9% at 50% in testing) | `to_bytes()` keeps large values as floats; 64-bit behavior is unchanged |
 | ReiserFS and NILFS2 | Called `partclone.reiser4` / `partclone.nilfs2`, which do not match ReiserFS or do not exist in Debian (`partclone.reiser4` was also removed in trixie) | Imaged in raw mode, which the application already supports |
 | Non-ASCII names | Under the `C` locale, tools such as `lsblk` escape non-ASCII text, so CJK partition labels appeared as `\xed\x95\x9c...` | **`C.UTF-8` locale**: names are shown as-is |
+| Starting a backup on PHP 8 | `backup_init()` counted the selected partitions with `get_object_vars()`, but a backup's partition list is an array, so PHP 8 stopped with a `TypeError` before the backup began | Counted as an array for backups, restores and verifications |
+| Changing the drive | After going back from the partition or restore-options step, the drive chosen first was kept even when another was selected | A newly chosen drive replaces the saved one |
 
 The locale is set for every path that runs commands:
 
@@ -83,6 +85,7 @@ and break that parsing.
 | Build targets | One system | `TARGETS="amd64:trixie i386:bookworm"`; `./make changes amd64` or `i386` updates a single system |
 | 32-bit chroot | — | Runs under `setarch i686`, so `uname -m` reports a 32-bit machine |
 | Legacy code | Unused Debian 9 isolinux path | Removed |
+| Repeated downloads | Every full build downloaded all packages again (about 700 per system); only the debootstrap base was cached | `cache/apt-BASE-ARCH` is mounted over the chroot's package cache, so rebuilds only fetch changed packages; the image itself still ships without `.deb` files |
 
 ### Desktop
 
@@ -130,6 +133,21 @@ tagged `ja` or `zh` the matching regional Noto Sans CJK face.
   selection.
 * The vendor name was repeated in drive descriptions ("WD WD Elements"),
   because lsblk pads it with spaces.
+* The "will not fit" restore error printed PHP code instead of the sizes.
+
+**Languages.** The web app can be used in English, Korean, Japanese,
+Simplified Chinese, Spanish, German, French and Brazilian Portuguese, chosen
+from a menu in the app bar that shows each language's flag and name. Text in
+the code stays in English and passes through `t()` (PHP) or `BT.t()`
+(JavaScript); each language has one file, `lang/<tag>.php`, that maps the
+English text to its translation, and anything missing falls back to English.
+The choice is kept in a cookie, so server messages (errors, progress
+details) follow it too, and the current step is shown again in the new
+language without losing the selections made so far. Adding a language takes
+an entry in `lang/languages.php`, a translation file and a flag;
+`tools/i18n-check.py` reports missing strings and broken placeholders. The
+language cannot be changed while an operation is running, and output from
+partclone in the detailed log stays in English.
 
 ### Size and speed
 
@@ -178,6 +196,10 @@ microcode, which the kernel requires uncompressed.
   checked in headless Chromium in light and dark modes, with stub disk tools
   and a sample image, and pages were linted with PHP 8.4 and 32-bit PHP 8.2.
   Font selection was checked with fontconfig for each CJK language.
+* **Languages**: the main pages were checked for layout and wrapping across
+  the eight languages, the language menu was used to switch languages mid-flow,
+  and backup and verification runs were simulated with stub tools to check
+  the translated progress and error messages.
 
 
 ## Limitations and trade-offs
@@ -192,7 +214,9 @@ microcode, which the kernel requires uncompressed.
   the system may boot but the Backtrail interface is unlikely to start.
 * **32-bit UEFI**: machines with 32-bit-only UEFI firmware are not
   supported (same as upstream).
-* **Language**: the interface remains in English, and no input method
-  is included for typing CJK text.
+* **Language**: the web app is translated, but the desktop, system tools
+  and boot menu remain in English, and no input method is included for
+  typing CJK text. The translations were written for this release and
+  still need review by native speakers.
 * **Debian 9**: the legacy isolinux build path was removed, so Debian 9
   images can no longer be built.

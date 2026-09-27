@@ -19,6 +19,15 @@
     system installs `fonts-pretendard` from trixie because bookworm lacks it
   * Replace Lato and the Numix GTK theme with Pretendard and Adwaita
   * Set the hostname to `backtrail` and name the ISO `backtrail-VERSION.iso`
+  * Keep downloaded packages in `cache/` between builds, so a rebuild only
+    downloads packages that changed
+  * Translate the web app into Korean, Japanese, Simplified Chinese, Spanish,
+    German, French and Brazilian Portuguese, chosen from a language menu with
+    flags; `tools/i18n-check.py` checks the translation files
+  * Fix backups failing to start on PHP 8 (`get_object_vars()` on an array)
+  * Fix choosing a different drive after going back from the partition or
+    restore options step
+  * Fix the "will not fit" restore error showing code instead of sizes
   * Update base to Debian 13 (trixie) with PHP 8.4 for improved hardware support
   * Add 32-bit system based on Debian 12 (bookworm) to the same ISO; the boot
     menu selects 64-bit or 32-bit automatically based on the CPU
