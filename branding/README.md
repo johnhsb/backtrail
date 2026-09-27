@@ -68,8 +68,10 @@ Sora is licensed under the SIL Open Font License 1.1.
 
 `src/render.py` renders the PNG files used outside the web app from the same
 geometry: the GRUB theme (background, logo, selection boxes, countdown ring
-and menu icons), the Plymouth `backtrail` splash, the desktop wallpaper and
-app icon, and the web app favicon. It needs `cairosvg`:
+and menu icons), the Plymouth `backtrail` splash, the desktop wallpapers and
+app icon, and the web app favicon. There is one wallpaper per screen shape
+(`background-16x9.png`, `-16x10`, `-4x3`, `-5x4`, `-21x9`); the Openbox
+autostart picks the closest one, and `background.png` is the fallback. It needs `cairosvg`:
 
     python3 branding/src/render.py
 

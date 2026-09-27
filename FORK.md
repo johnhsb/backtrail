@@ -60,6 +60,8 @@ Debian 12. The ISO contains two independent live systems (`/live-amd64` and
 | Non-ASCII names | Under the `C` locale, tools such as `lsblk` escape non-ASCII text, so CJK partition labels appeared as `\xed\x95\x9c...` | **`C.UTF-8` locale**: names are shown as-is |
 | Starting a backup on PHP 8 | `backup_init()` counted the selected partitions with `get_object_vars()`, but a backup's partition list is an array, so PHP 8 stopped with a `TypeError` before the backup began | Counted as an array for backups, restores and verifications |
 | Changing the drive | After going back from the partition or restore-options step, the drive chosen first was kept even when another was selected | A newly chosen drive replaces the saved one |
+| Partition table tools on trixie | `sfdisk` and `fdisk` moved to the separate `fdisk` package, which Debian 13 no longer installs as a dependency; 64-bit backups saved no partition table dump, so a restored GPT disk had no backup GPT header, and partition types were blank | `fdisk` is installed explicitly |
+| Leftover progress | Starting a second operation without reloading the app resumed the first one's progress and waited forever | The first step of each operation clears the previous selections and progress |
 
 The locale is set for every path that runs commands:
 
@@ -135,6 +137,14 @@ tagged `ja` or `zh` the matching regional Noto Sans CJK face.
 * The vendor name was repeated in drive descriptions ("WD WD Elements"),
   because lsblk pads it with spaces.
 * The "will not fit" restore error printed PHP code instead of the sizes.
+* Starting a verification or restore with an invalid backup file reached the
+  progress page and failed with a server error; the error is now shown.
+
+**Small screens.** On 1024x600 netbook screens the app has about 536 pixels
+of height, so the step buttons stay pinned to the bottom of the window when a
+page is taller than that, and spacing tightens below 700 pixels. The desktop
+wallpaper is drawn for five screen shapes and the session picks the closest
+one, so the logo keeps its place and proportions on any resolution.
 
 **Languages.** The web app can be used in English, Korean, Japanese,
 Simplified Chinese, Spanish, German, French and Brazilian Portuguese, chosen
@@ -197,6 +207,19 @@ microcode, which the kernel requires uncompressed.
   checked in headless Chromium in light and dark modes, with stub disk tools
   and a sample image, and pages were linted with PHP 8.4 and 32-bit PHP 8.2.
   Font selection was checked with fontconfig for each CJK language.
+* **End-to-end runs**: the built ISO was booted in QEMU with a GPT test disk
+  (FAT32, ext4 with a Korean label and file names, a raw partition), a
+  backup disk and a blank target disk. On both the 64-bit and the 32-bit
+  system, a backup, a verification and a full system recovery were run
+  through the web app's own requests; the restored disk matched the source
+  (partition table with UUIDs, fsck clean, every file checksum, the raw
+  partition byte for byte). A 64-bit backup verified on the 32-bit system.
+  Booting with UEFI Secure Boot enabled (Microsoft keys) reached the app
+  with the kernel in lockdown mode, and the VNC server answered. The same
+  runs were repeated on the rebuilt ISO after fixing the missing `fdisk`
+  package, and the restored GPT disk then had its backup header.
+* **Screens**: the wallpaper was checked in the VM at 1920x1080, 1280x800,
+  1024x768, 1280x1024 and 1024x600, and the app at 1024x600.
 * **Languages**: the main pages were checked for layout and wrapping across
   the eight languages, the language menu was used to switch languages mid-flow,
   and backup and verification runs were simulated with stub tools to check

@@ -27,6 +27,17 @@
     appeared as a black "Unnamed Window"
   * Use the Papirus icon theme instead of Adwaita (cursors stay Adwaita), and
     keep icon theme caches so apps do not scan Papirus's 40,000 icons at start
+  * Install `fdisk` (which provides `sfdisk`) explicitly: Debian 13 no longer
+    pulls it in, so 64-bit backups stored no partition table dump and
+    restored GPT disks lacked the backup GPT header and partition types
+  * Starting a backup, restore or verification clears the progress of an
+    earlier one, so it cannot be resumed by mistake
+  * Draw the wallpaper for each screen shape (16:9, 16:10, 4:3, 5:4, 21:9) and
+    pick the closest at login, so the logo is never cropped or stretched
+  * Keep the step buttons in view on short screens such as 1024x600, and use
+    tighter spacing when the window is less than 700 pixels high
+  * Report an invalid backup file when starting a verification or restore,
+    instead of failing with a server error on the progress page
   * Translate the web app into Korean, Japanese, Simplified Chinese, Spanish,
     German, French and Brazilian Portuguese, chosen from a language menu with
     flags; `tools/i18n-check.py` checks the translation files
