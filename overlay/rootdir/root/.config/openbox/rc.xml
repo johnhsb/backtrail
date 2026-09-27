@@ -800,6 +800,14 @@
       <y>-1</y>
     </position>
   </application>
+  <!-- SLiM 1.4 (trixie) leaves a full-screen window with no name or class
+       mapped after auto-login; without this rule Openbox shows it as a
+       black "Unnamed Window" over the wallpaper and in the taskbar -->
+  <application name="" class="" type="normal">
+    <iconic>yes</iconic>
+    <skip_taskbar>yes</skip_taskbar>
+    <skip_pager>yes</skip_pager>
+  </application>
   </applications>
 
 </openbox_config>
