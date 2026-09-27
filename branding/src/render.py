@@ -71,7 +71,14 @@ def contours(cx, cy, rings, step, start=70):
     return "".join(out)
 
 
-def background(w, h, with_logo):
+# Desktop wallpapers, one per screen shape; the session picks the closest
+# (overlay/rootdir/root/.config/openbox/autostart). background.png is the
+# fallback, with the logo inside the part that stays visible on any shape.
+WALLPAPERS = {"16x9": (1920, 1080), "16x10": (1920, 1200), "4x3": (1600, 1200),
+              "5x4": (1280, 1024), "21x9": (2560, 1080)}
+
+
+def background(w, h, with_logo, safe=False):
     body = (
         '<defs><radialGradient id="g" cx="0.2" cy="0" r="1.1">'
         f'<stop offset="0" stop-color="{NAVY_LIGHT}"/><stop offset="0.6" stop-color="{NAVY}"/>'
@@ -81,12 +88,18 @@ def background(w, h, with_logo):
         + f'<circle cx="{w * 0.77:.1f}" cy="{h * 0.39:.1f}" r="{h * 0.012:.1f}" fill="{CONTOUR}" opacity=".5"/>'
     )
     if with_logo:
-        # small lockup above the bottom panel, bottom right
+        # small lockup above the bottom panel, bottom right; sizes are for a
+        # 1080-pixel-high image and scale with the height
+        k = h / 1080
         lock = build.lockup("dark", 56)
         lw = float(lock.split('viewBox="0 0 ')[1].split(" ")[0])
         inner = lock.split(">", 1)[1].rsplit("</svg>", 1)[0].split("</title>", 1)[1]
-        body += (f'<svg x="{w - lw - 64:.1f}" y="{h - 40 - 64 - 56}" width="{lw:.1f}" height="56" '
-                 f'viewBox="0 0 {lw:.2f} 64" opacity=".92">{inner}</svg>')
+        # The fallback image is filled onto screens of any shape, which crops
+        # its sides; on 5:4, the narrowest common shape, only x = 15%..85%
+        # stays visible, so there the lockup ends at 82% of the width
+        right = w * 0.82 if safe else w - 64 * k
+        body += (f'<svg x="{right - lw * k:.1f}" y="{h - (104 + 56) * k:.1f}" width="{lw * k:.1f}" '
+                 f'height="{56 * k:.1f}" viewBox="0 0 {lw:.2f} 64" opacity=".92">{inner}</svg>')
     return doc(w, h, body)
 
 
@@ -146,7 +159,9 @@ def plymouth_theme():
 
 
 def desktop():
-    png(background(1920, 1080, with_logo=True), os.path.join(HOME, "backgrounds/background.png"))
+    png(background(1920, 1080, with_logo=True, safe=True), os.path.join(HOME, "backgrounds/background.png"))
+    for name, (w, h) in WALLPAPERS.items():
+        png(background(w, h, with_logo=True), os.path.join(HOME, f"backgrounds/background-{name}.png"))
     icon = build.app_icon()
     os.makedirs(os.path.join(HOME, "icons"), exist_ok=True)
     with open(os.path.join(HOME, "icons/backtrail.svg"), "w") as f:

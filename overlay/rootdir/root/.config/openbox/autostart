@@ -13,8 +13,26 @@ xfce4-power-manager &
 # Launch X11 VNC server with random password
 ( pwgen -A 4 > /tmp/vncpasswd && x11vnc -bg -forever -quiet -display :0 -passwdfile /tmp/vncpasswd ) &
 
-# Set background image
-nitrogen --restore &
+# Set the wallpaper drawn for this screen's shape, so the logo is neither
+# cropped nor stretched (background.png, the saved nitrogen setting, is the
+# fallback and keeps its logo inside the area every shape shows)
+(
+	set -- $(xrandr --current 2>/dev/null | sed -n 's/.*current \([0-9]*\) x \([0-9]*\).*/\1 \2/p')
+	DIR=/root/.local/share/backgrounds
+	FILE=$DIR/background.png
+	if [ -n "$2" ] && [ "$2" -gt 0 ]; then
+		# Width / height x 100: 21:9 = 233, 16:9 = 177, 16:10 = 160,
+		# 4:3 = 133, 5:4 = 125; pick the nearest
+		R=$(( $1 * 100 / $2 ))
+		if   [ $R -ge 205 ]; then FILE=$DIR/background-21x9.png
+		elif [ $R -ge 168 ]; then FILE=$DIR/background-16x9.png
+		elif [ $R -ge 146 ]; then FILE=$DIR/background-16x10.png
+		elif [ $R -ge 129 ]; then FILE=$DIR/background-4x3.png
+		else FILE=$DIR/background-5x4.png
+		fi
+	fi
+	if [ -f "$FILE" ]; then nitrogen --set-zoom-fill "$FILE"; else nitrogen --restore; fi
+) &
 
 # Start X11 compositor
 compton &

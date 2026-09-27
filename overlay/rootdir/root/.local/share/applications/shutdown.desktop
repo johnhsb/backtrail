@@ -4,5 +4,5 @@ Exec=/sbin/poweroff
 Name=Shutdown
 Comment=Power off system
 Categories=Utility;
-Icon=system-shutdown
+Icon=xfsm-shutdown
 Keywords=system;shutdown;power;
