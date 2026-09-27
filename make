@@ -1,6 +1,7 @@
 #!/bin/bash
 #
-# Redo Rescue: Backup and Recovery Made Easy <redorescue.com>
+# Backtrail: Backup and recovery live system
+# Based on Redo Rescue <redorescue.com>
 # Copyright (C) 2010-2023 Zebradots Software
 #
 # This program is free software: you can redistribute it and/or modify
@@ -33,7 +34,7 @@ off='\e[0m'
 
 # Show title
 echo -e "\n$off---------------------------"
-echo -e "$wht  REDO RESCUE ISO CREATOR$off"
+echo -e "$wht   BACKTRAIL ISO CREATOR$off"
 echo -e "       Version $VER"
 echo -e "---------------------------\n"
 
@@ -131,13 +132,13 @@ mount none -t sysfs /sys;
 mount none -t devpts /dev/pts
 
 # Set hostname
-echo 'redorescue' > /etc/hostname
-echo 'redorescue' > /etc/debian_chroot
+echo 'backtrail' > /etc/hostname
+echo 'backtrail' > /etc/debian_chroot
 
 # Set hosts
 cat > /etc/hosts <<END
 127.0.0.1	localhost
-127.0.1.1	redorescue
+127.0.1.1	backtrail
 ::1		localhost ip6-localhost ip6-loopback
 ff02::1		ip6-allnodes
 ff02::2		ip6-allrouters
@@ -170,7 +171,7 @@ script_build() {
 		# (hfsutils and reiser4progs were removed from Debian 13; Adwaita's
 		# full-color icons moved to adwaita-icon-theme-legacy)
 		PHPV="8.4"
-		PKGS="chromium-common chromium-sandbox volumeicon-alsa exfatprogs adwaita-icon-theme-legacy"
+		PKGS="chromium-common chromium-sandbox volumeicon-alsa exfatprogs adwaita-icon-theme-legacy fonts-pretendard"
 	elif [ "$BASE" == "bookworm" ]; then
 		# Bookworm-specific PHP version and packages
 		PHPV="8.2"
@@ -217,8 +218,8 @@ apt install --no-install-recommends --yes \
 	plymouth plymouth-themes compton dbus-x11 libnotify-bin xfce4-notifyd \
 	gir1.2-notify-0.7 tint2 nitrogen xfce4-appfinder xfce4-power-manager \
 	gsettings-desktop-schemas lxrandr lxmenu-data lxterminal lxappearance \
-	network-manager-gnome gtk2-engines numix-gtk-theme gtk-theme-switch \
-	fonts-lato fonts-noto-cjk pcmanfm libfm-modules gpicview mousepad x11vnc pwgen \
+	network-manager-gnome gtk2-engines gnome-themes-extra gtk-theme-switch \
+	fonts-noto-cjk pcmanfm libfm-modules gpicview mousepad x11vnc pwgen \
 	xvkbd librsvg2-common zstd \
 	\
 	beep laptop-detect os-prober discover lshw-gtk hdparm smartmontools \
@@ -228,15 +229,38 @@ apt install --no-install-recommends --yes \
 	exfat-fuse btrfs-progs \
 	\
 	nginx php-fpm php-cli chromium $PKGS
+EOL
+	if [ "$BASE" != "trixie" ]; then
+		cat >> $ROOT/$FILE <<'EOL'
+
+# Pretendard (UI font) is packaged from Debian 13 on. It has no dependencies,
+# so take only that package from trixie; the low pin keeps everything else
+# on the base release.
+echo 'deb http://deb.debian.org/debian trixie main' > /etc/apt/sources.list.d/trixie.list
+cat > /etc/apt/preferences.d/trixie <<END
+Package: *
+Pin: release n=trixie
+Pin-Priority: 100
+END
+apt update --yes
+apt install --no-install-recommends --yes fonts-pretendard/trixie
+rm -f /etc/apt/sources.list.d/trixie.list /etc/apt/preferences.d/trixie
+apt update --yes
+EOL
+	fi
+	cat >> $ROOT/$FILE <<EOL
 
 # Modify /etc/issue banner
-perl -p -i -e 's/^D/Redo Rescue $VER\nBased on D/' /etc/issue
+perl -p -i -e 's/^D/Backtrail $VER\nBased on D/' /etc/issue
 
 # Set vi editor preferences
 perl -p -i -e 's/^set compatible$/set nocompatible/g' /etc/vim/vimrc.tiny
 
 # Use local RTC in Linux (via /etc/adjtime) and disable network time updates
-systemctl disable systemd-timesyncd.service
+# (systemd-timesyncd is only a recommended package, so it is usually absent)
+if [ -e /lib/systemd/system/systemd-timesyncd.service ]; then
+	systemctl disable systemd-timesyncd.service
+fi
 
 # Disable SSH server and delete keys
 systemctl disable ssh
@@ -261,7 +285,7 @@ echo 'root:$USER' | chpasswd
 echo 'default_user root' >> /etc/slim.conf
 echo 'auto_login yes' >> /etc/slim.conf
 echo "Setting default plymouth theme..."
-plymouth-set-default-theme -R redo
+plymouth-set-default-theme -R backtrail
 update-initramfs -u
 ln -s /usr/bin/pcmanfm /usr/bin/nautilus
 
@@ -444,14 +468,12 @@ create_iso() {
 		fi
 	done
 
-	# Apply image changes from overlay
+	# Apply image changes from overlay (drop boot assets left by older builds)
 	echo -e "$yel* Applying image changes from overlay...$off"
+	rm -rf image/isolinux image/boot/grub/theme image/boot/grub/fonts
 	rsync -h --info=progress2 --archive \
 		./overlay/image/* \
 		./image/
-
-	# Remove legacy boot assets
-	rm -rf image/isolinux
 
 	# Update version number
 	perl -p -i -e "s/\\\$VERSION/$VER/g" image/boot/grub/grub.cfg
@@ -489,7 +511,7 @@ create_iso() {
 		-iso-level 3 \
 		-full-iso9660-filenames \
 		-joliet-long \
-		-volid "Redo Rescue $VER" \
+		-volid "Backtrail $VER" \
 		-eltorito-boot \
 			boot/grub/bios.img \
 			-no-emul-boot \
@@ -502,7 +524,7 @@ create_iso() {
 			-e EFI/efiboot.img \
 			-no-emul-boot \
 		-append_partition 2 0xef scratch/efiboot.img \
-		-output redorescue-$VER.iso \
+		-output backtrail-$VER.iso \
 		-graft-points \
 			image \
 			/boot/grub/bios.img=scratch/bios.img \
@@ -513,7 +535,7 @@ create_iso() {
 
 	# Report final ISO size
 	echo -e "$yel\nISO image saved:"
-	du -sh redorescue-$VER.iso
+	du -sh backtrail-$VER.iso
 	echo -e "$off"
 	echo
 	echo "Done."
@@ -532,7 +554,7 @@ fi
 
 if [ "$ACTION" == "" ]; then
 	# Build new ISO image with a live system for every target
-	rm -rf image scratch redorescue-$VER.iso
+	rm -rf image scratch backtrail-$VER.iso
 	for T in $TARGETS; do
 		set_target $T
 		prepare

@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=Backtrail
+Description=Backtrail boot splash
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/backtrail
+ScriptFile=/usr/share/plymouth/themes/backtrail/backtrail.script

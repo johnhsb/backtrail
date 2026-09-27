@@ -1,77 +1,75 @@
 #
-# Redo Rescue themed graphics are not licensed under GNU GPLv3.
-# Copyright (C) 2010-2023 Zebradots Software. All rights reserved.
+# Backtrail GRUB theme (images are rendered by branding/src/render.py)
 #
 
 title-text: ""
-desktop-color: "black"
+desktop-color: "#0E2A47"
 desktop-image: "background.png"
-desktop-image-scale-method: "fitheight"
+desktop-image-scale-method: "crop"
+desktop-image-h-align: "center"
+desktop-image-v-align: "center"
 terminal-box: "terminal_*.png"
 terminal-font: "Unifont Regular 16"
 terminal-border: "4"
 
-+ boot_menu {
-  left = 25%
-  top = 55%
-  width = 50%
-  height = 144
-  item_font = "Helvetica Bold 18"
-  item_color = "#ffffff"
-  selected_item_color = "#ffffff"
-  icon_width = 32
-  icon_height = 32
-  item_icon_space = 12
-  item_height = 48
-  item_spacing = 0
-  item_padding = 0
-  item_pixmap_style = "box_*.png"
-  selected_item_pixmap_style = "box_selected_*.png"
-  menu_pixmap_style = "x_*.png"
-  scrollbar = true
-  scrollbar_width = 20
-  scrollbar_frame = "sliderbg_*.png"
-  scrollbar_thumb = "slider_*.png"
-}
-
 + image {
-  id = "redo_logo"
-  left = 27%-180
-  top = 21%-89
+  id = "backtrail_logo"
+  left = 8%
+  top = 12%
   file = "logo.png"
 }
 
-+ label {
-  id = "bottom_help"
-  left = 0
-  top = 100%-40
-  width = 100%
-  align = "center"
-  color = "gray"
-  font = "Helvetica Regular 12"
-  text = @KEYMAP_MIDDLE@
++ boot_menu {
+  left = 8%
+  top = 34%
+  width = 46%
+  height = 300
+  item_font = "Pretendard SemiBold Regular 22"
+  item_color = "#C3D4E0"
+  selected_item_color = "#0E2A47"
+  icon_width = 32
+  icon_height = 32
+  item_icon_space = 16
+  item_height = 56
+  item_padding = 12
+  item_spacing = 6
+  selected_item_pixmap_style = "select_*.png"
+  scrollbar = false
 }
 
 + circular_progress {
   id = "__timeout__"
-  center_bitmap = "circle.png"
-  tick_bitmap = "tick.png"
+  left = 8%
+  top = 100%-136
+  width = 56
+  height = 56
+  center_bitmap = "timeout_ring.png"
+  tick_bitmap = "timeout_tick.png"
   num_ticks = 24
   ticks_disappear = true
-  start_angle = 64
-  left = 85%-68
-  top = 20%-68
-  width = 136
-  height = 136
+  start_angle = -64
 }
 
-#+ label {
-#  id = "__timeout__"
-#  left = 85%-68
-#  top = 20%-12
-#  width = 136
-#  height = 16
-#  align = "center"
-#  color = "#627d9f"
-#  font = "Helvetica Bold 18"
-#}
+# Remaining seconds (a label without "text" shows the number; the
+# @TIMEOUT_NOTIFICATION_*@ templates are not substituted by GRUB 2.12)
++ label {
+  id = "__timeout__"
+  left = 8%
+  top = 100%-120
+  width = 56
+  height = 24
+  align = "center"
+  color = "#E4EEF4"
+  font = "Pretendard Regular 16"
+}
+
++ label {
+  id = "bottom_help"
+  left = 8%
+  top = 100%-56
+  width = 84%
+  height = 24
+  color = "#8FA7BB"
+  font = "Pretendard Regular 16"
+  text = @KEYMAP_SHORT@
+}

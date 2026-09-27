@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Exec=sudo -u redo chromium --start-maximized --app=http://localhost
+Name=Backtrail
+Comment=Backup and recovery
+Categories=Utility;
+Icon=backtrail
+Keywords=system;backup;restore;
+StartupNotify=false

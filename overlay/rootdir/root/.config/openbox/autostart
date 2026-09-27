@@ -28,5 +28,5 @@ tint2 &
 # Give user 'redo' access to the running X server
 xhost si:localuser:redo &
 
-# Launch the Redo application in Chromium
+# Launch the Backtrail app in Chromium
 ( sleep 1 && sudo -u redo chromium --start-maximized --app=http://localhost ) &

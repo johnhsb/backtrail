@@ -5,4 +5,8 @@
 /rootdir/
 /rootdir-*/
 /scratch/
+/backtrail-*.iso
 /redorescue-*.iso
+
+# Python bytecode from branding/src
+__pycache__/
