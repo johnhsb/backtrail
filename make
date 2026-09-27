@@ -228,7 +228,7 @@ apt install --no-install-recommends --yes \
 	xvkbd librsvg2-common zstd \
 	papirus-icon-theme adwaita-icon-theme gtk-update-icon-cache \
 	\
-	beep laptop-detect os-prober discover lshw-gtk hdparm smartmontools \
+	beep laptop-detect os-prober discover lshw-gtk hdparm smartmontools fdisk \
 	nmap time lvm2 gparted gnome-disk-utility baobab gddrescue testdisk \
 	dosfstools ntfs-3g reiserfsprogs jfsutils \
 	smbclient cifs-utils nfs-common sshfs partclone pigz yad f2fs-tools \
