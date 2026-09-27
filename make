@@ -265,6 +265,17 @@ plymouth-set-default-theme -R redo
 update-initramfs -u
 ln -s /usr/bin/pcmanfm /usr/bin/nautilus
 
+# Restore legacy X11 cursor names that Debian 13's Adwaita dropped, e.g.
+# openbox's app-launch pointer and GTK3 drag-and-drop (older themes have them)
+cd /usr/share/icons/Adwaita/cursors
+for PAIR in left_ptr_watch:progress left_ptr_help:help hand:hand2 \
+	dnd-copy:copy dnd-link:alias dnd-none:no-drop dnd-no-drop:no-drop \
+	dnd-ask:context-menu h_double_arrow:sb_h_double_arrow \
+	v_double_arrow:sb_v_double_arrow circle:not-allowed crossed_circle:not-allowed; do
+	[ -e "\${PAIR%%:*}" ] || ln -s "\${PAIR#*:}" "\${PAIR%%:*}"
+done
+cd /
+
 # Configure nginx/php-fpm application server
 perl -p -i -e 's/^user = .*$/user = root/g' /etc/php/$PHPV/fpm/pool.d/www.conf
 perl -p -i -e 's/^group = .*$/group = root/g' /etc/php/$PHPV/fpm/pool.d/www.conf
