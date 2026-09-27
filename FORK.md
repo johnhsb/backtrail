@@ -94,6 +94,7 @@ and break that parsing.
 | Icons | Most icons blank on trixie: Adwaita became almost all SVG, and the SVG loader and full-color icons were skipped by `--no-install-recommends` | `librsvg2-common` (both systems) and `adwaita-icon-theme-legacy` (trixie) |
 | Cursors | Trixie's Adwaita dropped legacy X11 names, so openbox's app-launch pointer fell back to the old X11 cursor | 12 missing names linked to their Adwaita equivalents (trixie only) |
 | Notification daemon | Autostart path hard-coded to `i386-linux-gnu`, so it did not start on 64-bit | Architecture-independent path |
+| "Unnamed Window" | SLiM 1.4.1 (trixie) leaves a full-screen window with no name or class after auto-login; Openbox showed it as a black window over the wallpaper and in the taskbar | An Openbox rule keeps windows with no name and no class minimized and out of the taskbar |
 | CJK text | No CJK font installed; CJK characters showed as boxes | **`fonts-noto-cjk`** (Chinese, Japanese, Korean) |
 
 ### Name, artwork and interface
@@ -106,7 +107,7 @@ are unchanged, so existing backups and scripts keep working.
 | Area | Upstream | This fork |
 |---|---|---|
 | Logo | Redo Rescue logo | Contour-line mark generated from source (`branding/src`); see [branding/README.md](branding/README.md) |
-| Boot menu | GRUB theme with Redo artwork and Helvetica bitmap fonts | Navy contour background, Backtrail logo, Pretendard fonts, countdown ring |
+| Boot menu | GRUB theme with Redo artwork and Helvetica bitmap fonts, and a "Choose language" submenu that only offered English | Navy contour background, Backtrail logo, Pretendard fonts, countdown ring; the language submenu is removed because the web app has its own language menu |
 | Boot splash | Plymouth `redo` theme | Plymouth `backtrail` theme in the same colors |
 | Desktop | Numix GTK and Openbox theme, Lato font | `Backtrail` Openbox theme, matching tint2 panel, GTK Adwaita, Pretendard, new wallpaper and app icon |
 | Web framework | Bootstrap 3.4, jQuery 1.12, Bootbox 5, plus bootstrap-notify, jquery-validation and animate.css | **Bootstrap 5.3, jQuery 3.7, Bootbox 6**; unused libraries removed |

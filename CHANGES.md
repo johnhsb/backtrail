@@ -21,6 +21,10 @@
   * Set the hostname to `backtrail` and name the ISO `backtrail-VERSION.iso`
   * Keep downloaded packages in `cache/` between builds, so a rebuild only
     downloads packages that changed
+  * Remove the boot menu's "Choose language" submenu, which only offered
+    English; the web app has its own language menu
+  * Hide the full-screen window that SLiM 1.4 leaves after auto-login, which
+    appeared as a black "Unnamed Window"
   * Translate the web app into Korean, Japanese, Simplified Chinese, Spanish,
     German, French and Brazilian Portuguese, chosen from a language menu with
     flags; `tools/i18n-check.py` checks the translation files
