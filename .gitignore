@@ -1,0 +1,8 @@
+# Build output from ./make
+/build.log
+/debootstrap-*.tar.gz*
+/image/
+/rootdir/
+/rootdir-*/
+/scratch/
+/redorescue-*.iso
