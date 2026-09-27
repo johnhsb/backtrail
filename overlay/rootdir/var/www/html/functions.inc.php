@@ -26,6 +26,46 @@ define('STATUS_FILE', TMP_DIR.'status.json');
 define('VNCPASS_FILE', TMP_DIR.'vncpasswd');
 define('MOUNTPOINT', '/mnt/remote');
 define('FILE_EXTENSION', 'redo');
+define('LANG_COOKIE', 'bt-lang');
+
+//
+// Interface languages offered in the language menu (see lang/languages.php)
+//
+function languages() {
+	static $languages = NULL;
+	if ($languages === NULL) $languages = include(__DIR__.'/lang/languages.php');
+	return $languages;
+}
+
+//
+// Interface language chosen in the language menu (English by default)
+//
+function lang() {
+	$lang = $_COOKIE[LANG_COOKIE] ?? 'en';
+	return array_key_exists($lang, languages()) ? $lang : 'en';
+}
+
+//
+// Translations for the current language: English text => translated text
+//
+function lang_strings() {
+	static $strings = NULL;
+	if ($strings === NULL) {
+		$strings = array();
+		$file = __DIR__.'/lang/'.lang().'.php';
+		if (lang() !== 'en' && is_readable($file)) $strings = include($file);
+	}
+	return $strings;
+}
+
+//
+// Translate English interface text; extra arguments fill in %s placeholders
+//
+function t($text, ...$args) {
+	$strings = lang_strings();
+	$out = $strings[$text] ?? $text;
+	return $args ? vsprintf($out, $args) : $out;
+}
 
 //
 // Return version number
@@ -220,8 +260,8 @@ function clean_part_desc($d=array()) {
 //
 function mount_drive($vars) {
 	shell_exec('mkdir -p '.MOUNTPOINT);
-	if (!unmount()) return array('status'=>FALSE, 'error'=>'Mountpoint busy or unable to be unmounted');
-	$error = 'Failed to mount drive';
+	if (!unmount()) return array('status'=>FALSE, 'error'=>t('Mountpoint busy or unable to be unmounted'));
+	$error = t('Failed to mount drive');
 	switch ($vars['type']) {
 	case 'local':
 		$dev = preg_replace('/[^a-z0-9]/', '', $vars['local_part']);
@@ -260,7 +300,7 @@ function mount_drive($vars) {
 		$user = trim(preg_replace('/[^a-zA-Z0-9\.\-\_]/', '', $vars['ssh_username']));
 		$pass = $vars['ssh_password'];
 		$dir = $vars['ssh_folder'];
-		if (empty($user) || empty($pass)) return array('status'=>FALSE, 'error'=>'Missing username or password');
+		if (empty($user) || empty($pass)) return array('status'=>FALSE, 'error'=>t('Missing username or password'));
 		$cmd = "sshfs -o StrictHostKeyChecking=no,password_stdin $user@$host:$dir ".MOUNTPOINT;
 		$error = open_pipe_command($cmd, $pass);
 		break;
@@ -278,16 +318,17 @@ function mount_drive($vars) {
 		$error = shell_exec($cmd);
 		break;
 	default:
-		return array('status'=>FALSE, 'error'=>'Unknown mount type');
+		return array('status'=>FALSE, 'error'=>t('Unknown mount type'));
 		break;
 	}
 	// Log command used to mount filesystem
 	file_put_contents(LOG_FILE, "Executing: $cmd\n", FILE_APPEND);
 	// Confirm drive is mounted and return result in an array
 	$m = trim(shell_exec('mount | grep '.MOUNTPOINT));
-	if (strlen($m)<16) return array('status'=>FALSE, 'error'=>nl2br($error));
+	if (trim((string) $error) === '') $error = t('Failed to mount drive');
+	if (strlen($m)<16) return array('status'=>FALSE, 'error'=>nl2br(h($error)));
 	$u = get_usage();
-	if (sizeof($u)<7) return array('status'=>FALSE, 'error'=>nl2br($error));
+	if (sizeof($u)<7) return array('status'=>FALSE, 'error'=>nl2br(h($error)));
 	$u['status'] = TRUE;
 	return $u;
 }
@@ -340,18 +381,20 @@ function get_usage() {
 //
 // Open directory selector dialog
 //
-function choose_dir($start=NULL, $message='Select destination folder') {
+function choose_dir($start=NULL, $message=NULL) {
+	if (is_null($message)) $message = t('Select destination folder');
 	if (is_null($start)) $start = '/'.trim(MOUNTPOINT, '/').'/';
-	$dir = shell_exec('yad --display=:0 --center --maximized --file-selection --directory --filename="'.$start.'" --title="'.$message.'" --window-icon=folder --timeout=300 --close-on-unfocus');
+	$dir = shell_exec('yad --display=:0 --center --maximized --file-selection --directory --filename="'.$start.'" --title='.escapeshellarg($message).' --window-icon=folder --timeout=300 --close-on-unfocus');
 	return $dir;
 }
 
 //
 // Open file selector dialog
 //
-function choose_file($start=NULL, $message='Select backup file') {
+function choose_file($start=NULL, $message=NULL) {
+	if (is_null($message)) $message = t('Select backup file');
 	if (is_null($start)) $start = '/'.trim(MOUNTPOINT, '/').'/';
-	$file = shell_exec('yad --display=:0 --center --maximized --file-selection --file-filter="*.redo *.backup" --filename="'.$start.'" --title="'.$message.'" --window-icon=folder-documents --timeout=300 --close-on-unfocus');
+	$file = shell_exec('yad --display=:0 --center --maximized --file-selection --file-filter="*.redo *.backup" --filename="'.$start.'" --title='.escapeshellarg($message).' --window-icon=folder-documents --timeout=300 --close-on-unfocus');
 	return $file;
 }
 
@@ -397,7 +440,7 @@ function get_host_details() {
 // Show libnotify notice
 //
 function system_notice($title=NULL, $message="Welcome!", $icon='dialog-information') {
-	system('export DISPLAY=:0; notify-send "'.$title.'" "'.$message.'" -i '.$icon);
+	system('export DISPLAY=:0; notify-send '.escapeshellarg((string) $title).' '.escapeshellarg($message).' -i '.escapeshellarg($icon));
 }
 
 //
@@ -405,7 +448,7 @@ function system_notice($title=NULL, $message="Welcome!", $icon='dialog-informati
 //
 function unmount($loc=MOUNTPOINT, $force=TRUE) {
 	$val = shell_exec('umount '.($force?'--force':'').' '.$loc.' 2>&1');
-	if (preg_match('/busy/', $val)) return FALSE;
+	if (preg_match('/busy/', (string) $val)) return FALSE;
 	return TRUE;
 }
 
@@ -452,7 +495,7 @@ function open_pipe_command($cmd, $data) {
 		if ($return_value!==0) return $error.PHP_EOL.$output;
 		return NULL;
 	} else {
-		return 'Failed to execute command';
+		return t('Failed to execute command');
 	}
 }
 
@@ -493,6 +536,14 @@ function h($text) {
 }
 
 //
+// Quote text as a JavaScript string literal (safe in <script> and, via h(),
+// in HTML attributes)
+//
+function js($text) {
+	return json_encode((string) $text, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
+}
+
+//
 // Disk vendor and model without repeating the vendor (lsblk pads the vendor)
 //
 function disk_model($d) {
@@ -521,14 +572,14 @@ function page_header($op, $step, $title, $lead='') {
 		'verify'  => array('Source', 'Image', 'Partitions'),
 	);
 	$names = array('backup' => 'Back up', 'restore' => 'Restore', 'verify' => 'Verify');
-	print '<div class="bt-op">'.$names[$op].'</div>';
+	print '<div class="bt-op">'.t($names[$op]).'</div>';
 	if ($step > 0) {
-		print '<ol class="bt-steps mt-3" aria-label="Steps">';
+		print '<ol class="bt-steps mt-3" aria-label="'.t('Steps').'">';
 		foreach ($steps[$op] as $i => $name) {
 			$n = $i + 1;
 			$state = ($n < $step) ? 'done' : (($n == $step) ? 'now' : '');
 			$dot = ($n < $step) ? '<i class="fas fa-check"></i>' : $n;
-			print "<li class='$state'".($n == $step ? " aria-current='step'" : '')."><span class='bt-dot'>$dot</span>$name</li>";
+			print "<li class='$state'".($n == $step ? " aria-current='step'" : '')."><span class='bt-dot'>$dot</span>".t($name)."</li>";
 		}
 		print '</ol>';
 	}
@@ -539,10 +590,11 @@ function page_header($op, $step, $title, $lead='') {
 //
 // Show a fatal error message and optional back button
 //
-function crash($message="Something went wrong!", $page=NULL) {
+function crash($message=NULL, $page=NULL) {
+	if (is_null($message)) $message = t('Something went wrong!');
 	print "<div class='bt-crash mx-auto mt-4'>";
 	print "  <div class='alert alert-danger d-flex gap-2'><i class='fas fa-exclamation-triangle mt-1'></i><div><b>$message</b></div></div>";
-	if (!empty($page)) print "  <button class='btn btn-outline-secondary' onClick='BT.show(\"$page\");'><i class='fas fa-arrow-left me-1'></i> Back</button>";
+	if (!empty($page)) print "  <button class='btn btn-outline-secondary' onClick='BT.show(\"$page\");'><i class='fas fa-arrow-left me-1'></i> ".t('Back')."</button>";
 	print "</div>";
 	beep('warning');
 	die();
@@ -593,7 +645,7 @@ function backup_init() {
 	$disks = get_disks();
 	$status->bytes_total = 0;
 	$status->bytes_done = 0;
-	if (count(get_object_vars($status->parts))<1) return 'No partitions selected';
+	if (count((array) $status->parts)<1) return t('No partitions selected');
 	foreach ($status->parts as $p) {
 		$part_bytes = get_dev_bytes($p);
 		$status->bytes_total += $part_bytes;
@@ -624,9 +676,9 @@ function backup_init() {
 		'sfd_bin'	=> base64_encode(extract_sfd($status->drive)),
 	);
 	$json_file = sane_path($status->dir).'/'.$status->id.'.'.FILE_EXTENSION;
-	if (file_exists($json_file)) return 'File already exists ('.$json_file.')';
+	if (file_exists($json_file)) return t('File already exists (%s)', $json_file);
 	$written = file_put_contents($json_file, json_encode($json_data));
-	if ($written===FALSE) return 'Unable to write file ('.$json_file.')';
+	if ($written===FALSE) return t('Unable to write file (%s)', $json_file);
 	$status->logline = 0;
 	set_status($status);
 	shell_exec("truncate -s 0 ".LOG_FILE);
@@ -649,7 +701,7 @@ function restore_init() {
 	$disks = get_disks();
 	$status->bytes_total = 0;
 	$status->bytes_done = 0;
-	if (count(get_object_vars($status->parts))<1) return 'No partitions selected';
+	if (count((array) $status->parts)<1) return t('No partitions selected');
 	foreach ($status->parts as $sp=>$tp) {
 		$status->bytes_total += $status->image->parts->$sp->bytes;
 	}
@@ -662,7 +714,7 @@ function restore_init() {
 		file_put_contents($mbr, base64_decode($status->image->mbr_bin));
 		$sfd = tempnam(TMP_DIR, 'sfd_');
 		file_put_contents($sfd, base64_decode($status->image->sfd_bin));
-		if (!unmount($status->drive.'*')) return "Target partition busy or unable to be unmounted";
+		if (!unmount($status->drive.'*')) return t('Target partition busy or unable to be unmounted');
 		$log = shell_exec("wipefs --all --force /dev/".$status->drive);
 		$log .= sleep(0.5);
 		$log .= shell_exec("dd if=$mbr of=/dev/".$status->drive." bs=32768 count=1 2>&1");
@@ -689,7 +741,7 @@ function restore_init() {
 		 */
 		$dst_size = get_dev_bytes($dst);
 		if ($dst_size < $status->image->parts->$src->bytes)
-			return "Original partition $src ('.$status->image->parts->$src->bytes.' bytes) will not fit on destination $dst ('.$dst_size.' bytes)";
+			return t('Original partition %1$s (%2$s bytes) will not fit on destination %3$s (%4$s bytes)', $src, number_format($status->image->parts->$src->bytes), $dst, number_format($dst_size));
 	}
 	return NULL;
 }
@@ -710,7 +762,7 @@ function verify_init() {
 	$disks = get_disks();
 	$status->bytes_total = 0;
 	$status->bytes_done = 0;
-	if (count(get_object_vars($status->parts))<1) return 'No partitions selected';
+	if (count((array) $status->parts)<1) return t('No partitions selected');
 	foreach ($status->parts as $sp=>$tp) {
 		$status->bytes_total += $status->image->parts->$sp->bytes;
 	}
@@ -726,9 +778,9 @@ function verify_init() {
 function get_image_info() {
 	global $status;
 	if ( !property_exists($status, 'file') || empty($status->file) )
-		return 'No backup file specified';
+		return t('No backup file specified');
 	if (!file_exists(sane_path($status->file)))
-		return 'Backup file not found ('.$status->file.')';
+		return t('Backup file not found (%s)', $status->file);
 	if (preg_match('/\.backup$/', $status->file)) {
 		// Old .backup format from version 1.0.4 or earlier
 		$data = json_decode(get_legacy_image_info());
@@ -737,7 +789,7 @@ function get_image_info() {
 		$data = json_decode(file_get_contents(sane_path($status->file)));
 	}
 	if (!is_object($data))
-		return 'Unable to interpret backup file: '.gettype($data).(is_string($data)?' ('.$data.')':'');
+		return t('Unable to interpret backup file: %s', gettype($data).(is_string($data)?' ('.$data.')':''));
 	return $data;
 }
 
@@ -749,15 +801,15 @@ function get_legacy_image_info() {
 	$prefix_path = sane_path(preg_replace('/\.backup$/', '', $status->file));
 	$drive_size = file_get_contents($prefix_path.'.size');
 	if (to_bytes($drive_size)==0)
-		return 'Unable to get original drive size of legacy image';
+		return t('Unable to get original drive size of legacy image');
 	$mbr_data = file_get_contents($prefix_path.'.mbr');
 	if (strlen($mbr_data)<32768)
-		return 'Unable to open MBR data of legacy image';
+		return t('Unable to open MBR data of legacy image');
 	$sfd_file = file($prefix_path.'.sfdisk');
 	// Reformat legacy sfdisk data to ignore extraneous lines that cause errors
 	foreach ($sfd_file as $l) if (!preg_match('/^$|^    \-/', $l)) $sfd_data .= $l;
 	if (strlen($sfd_data)<128)
-		return 'Unable to open sfdisk data of legacy image';
+		return t('Unable to open sfdisk data of legacy image');
 	$timestamp = date('r', filemtime($prefix_path.'.backup'));
 	$img_parts = explode("\n", file_get_contents($prefix_path.'.backup'));
 	$parts = array();
@@ -840,7 +892,7 @@ function restore_part($src, $dst=NULL) {
 	@unlink(TMP_DIR.$src.'.log');
 	// Prepare command to restore a backup
 	$image_files = preg_replace('/\.redo$/', '', escape_path(MOUNTPOINT.$status->file)).'_'.$src.'_??*.img';
-	if (!unmount('/dev/'.$dst)) return 'Unable to unmount target partition';
+	if (!unmount('/dev/'.$dst)) return t('Unable to unmount target partition');
 	// Use of partclone.restore deprecated; use filesystem-specific binary with "--restore"
 	$fs_tool = get_fs_tool($status->image->parts->$src->fs);
 	// Is this a legacy backup image? If so, adjust the source file format

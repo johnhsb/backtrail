@@ -173,6 +173,35 @@ code { color: inherit; font-size: .9em; }
 .bt-bar .bt-icon-btn { background: transparent; border: 0; color: var(--bt-bar-ink); width: 36px; height: 36px; border-radius: 8px; opacity: .8; }
 .bt-bar .bt-icon-btn:hover, .bt-bar .bt-icon-btn:focus-visible { background: rgba(255, 255, 255, .1); opacity: 1; }
 
+/* Language menu */
+.bt-flag { width: 21px; height: 14px; border-radius: 2px; box-shadow: 0 0 0 1px rgba(0, 0, 0, .18); flex: none; }
+.bt-bar .bt-lang-btn {
+  display: flex; align-items: center; gap: .5rem; height: 36px; padding: 0 .65rem;
+  background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .14); border-radius: 8px;
+  color: var(--bt-bar-ink); font-size: .85rem; font-weight: 500;
+}
+.bt-bar .bt-lang-btn:hover, .bt-bar .bt-lang-btn:focus-visible, .bt-bar .bt-lang-btn[aria-expanded="true"] { background: rgba(255, 255, 255, .16); }
+.bt-bar .bt-lang-btn .fa-chevron-down { font-size: .65rem; opacity: .7; }
+.bt-lang-menu {
+  --bs-dropdown-bg: var(--bt-surface); --bs-dropdown-border-color: var(--bt-line); --bs-dropdown-color: var(--bt-ink);
+  --bs-dropdown-link-color: var(--bt-ink); --bs-dropdown-link-hover-bg: var(--bt-raised); --bs-dropdown-link-hover-color: var(--bt-ink);
+  --bs-dropdown-link-active-bg: var(--bt-accent-soft); --bs-dropdown-link-active-color: var(--bt-ink);
+  min-width: 15rem; padding: .35rem; margin-top: .35rem !important; box-shadow: 0 10px 30px rgba(8, 20, 34, .18);
+}
+.bt-lang-menu .dropdown-item { display: flex; align-items: center; gap: .65rem; border-radius: 6px; padding: .5rem .6rem; }
+.bt-lang-menu .dropdown-item.active { font-weight: 600; box-shadow: inset 3px 0 0 var(--bt-accent); }
+.bt-lang-menu .bt-lang-en { margin-left: auto; font-size: .75rem; color: var(--bt-muted); font-weight: 400; }
+
+/* Han characters in the regional form of the interface language
+   (Pretendard covers Latin and Hangul) */
+html:lang(ja) { --bs-font-sans-serif: "Pretendard", "Noto Sans CJK JP", "Noto Sans CJK KR", sans-serif; }
+html:lang(zh-CN) { --bs-font-sans-serif: "Pretendard", "Noto Sans CJK SC", "Noto Sans CJK KR", sans-serif; }
+/* Korean wraps between words; CJK labels need no tracking or capitals */
+html:lang(ko) body { word-break: keep-all; overflow-wrap: anywhere; }
+html:lang(ko) .bt-op, html:lang(ko) .bt-label,
+html:lang(ja) .bt-op, html:lang(ja) .bt-label,
+html:lang(zh-CN) .bt-op, html:lang(zh-CN) .bt-label { letter-spacing: 0; }
+
 .bt-main { flex: 1 0 auto; padding: 1.75rem 1.5rem 2.5rem; }
 .bt-main > .container { max-width: 1080px; }
 .bt-footer { flex: none; padding: .6rem 1.25rem; font-size: .75rem; color: var(--bt-muted); border-top: 1px solid var(--bt-line); display: flex; justify-content: space-between; gap: 1rem; }
@@ -258,6 +287,7 @@ code { color: inherit; font-size: .9em; }
   .bt-stats { grid-template-columns: repeat(2, 1fr); }
   .bt-steps li + li::before { width: 1rem; }
   .bt-bar .bt-remote { display: none; }
+  .bt-bar .bt-lang-btn span { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }

@@ -34,34 +34,34 @@ case 'baremetal':
 	}
 	$size_diff = $status->drive_bytes - $status->image->drive_bytes;
 	if ($size_diff < 0)
-		$error = 'Target drive is '.number_format(abs($size_diff / 1024**2)).'MB smaller than original';
+		$error = t('Target drive is %s MB smaller than original', number_format(abs($size_diff / 1024**2)));
 	break;
 case 'selective':
 	foreach ($_REQUEST['selective_parts'] as $part) {
 		$src = trim(sane_dev($part));
-		$dst = trim(sane_dev($_REQUEST['map_'.$src]));
+		$dst = trim(sane_dev($_REQUEST['map_'.$src] ?? ''));
 		if (empty($src)) {
-			if (empty($error)) $error = 'Invalid partition specified';
+			if (empty($error)) $error = t('Invalid partition specified');
 			continue;
 		}
 		if (empty($dst)) {
-			if (empty($error)) $error = 'Partition '.$src.' selected but no target specified';
+			if (empty($error)) $error = t('Partition %s selected but no target specified', $src);
 			continue;
 		}
 		$status->parts[$src] = $dst;
 		$size_diff = get_dev_bytes($dst) - $status->image->parts->$src->bytes;
 		if ($size_diff < 0)
-			if (empty($error)) $error = 'Target partition '.$dst.' is '.number_format(abs($size_diff / 1024**2)).'MB smaller than original';
+			if (empty($error)) $error = t('Target partition %1$s is %2$s MB smaller than original', $dst, number_format(abs($size_diff / 1024**2)));
 	}
 	break;
 default:
-	$error = 'Invalid operation type requested';
+	$error = t('Invalid operation type requested');
 	break;
 }
 
 // Make sure a partition is selected for restore
 if ( sizeof( (array) $status->parts ) == 0 )
-	if (empty($error)) $error = 'No partitions selected';
+	if (empty($error)) $error = t('No partitions selected');
 
 // Stop if there was an error
 if (!empty($error)) {

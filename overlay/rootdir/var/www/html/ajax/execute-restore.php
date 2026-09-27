@@ -23,7 +23,7 @@ require_once('../functions.inc.php');
 $status = get_status();
 
 // Check for fatal errors
-if (empty($status->image->id)) ajax_abort('Invalid image ID specified');
+if (empty($status->image->id)) ajax_abort(t('Invalid image ID specified'));
 
 // Prepare return array with basic information
 $return = array(
@@ -49,7 +49,7 @@ if (sizeof($status->progress->exec) > 0) {
 	$part_count = sizeof($status->parts);
 	$part_num = sizeof($status->progress->done) + 1;
 	if ($part_num > $part_count) $part_num = $part_count;
-	$return['part_num'] = $part_num.' of '.$part_count;
+	$return['part_num'] = t('%1$s of %2$s', $part_num, $part_count);
 	$log_lines = get_log_lines();
 	if (sizeof($log_lines) > 0) $return['log_msg'] = implode("\n", $log_lines);
 	$part_pct = NULL;
@@ -58,7 +58,7 @@ if (sizeof($status->progress->exec) > 0) {
 		if (preg_match('/^(Starting|Reading|Calculating|Syncing)/', $l))
 			$return['details'] = $l;
 		if (preg_match('/^Elapsed.*%$/', $l))
-			$return['details'] = 'Finding areas with data... '.trim($l, ',');
+			$return['details'] = t('Finding areas with data... %s', trim($l, ','));
 		if (preg_match('/^File system:\s+(.*)$/', $l, $matches))
 			$return['part_mode'] = $matches[1];
 		if (preg_match('/^Device size:\s+(.*) =/', $l, $matches))
@@ -69,7 +69,7 @@ if (sizeof($status->progress->exec) > 0) {
 			$secs = time() - $status->start_time;
 			$elapsed = floor($secs/3600).gmdate(":i:s", $secs%3600);
 			$elapsed = preg_replace('/^0+\:/', '', $elapsed);
-			$return['details'] = 'Restoring image of device '.$part_name.'... Total time elapsed: '.$elapsed;
+			$return['details'] = t('Restoring image of device %1$s... Total time elapsed: %2$s', $part_name, $elapsed);
 			list($e, $r, $p, $s) = explode(', ', $l);
 			$return['time_elapsed'] = trim(preg_replace('/[^0-9\:]/', '', $e), ':');
 			$return['time_remaining'] = trim(preg_replace('/[^0-9\:]/', '', $r), ':');
@@ -83,17 +83,17 @@ if (sizeof($status->progress->exec) > 0) {
 		if (preg_match('/ERROR|WARNING/i', $l))
 			$return['details'] = $l;
 		if (preg_match('/is smaller than source/', $l))
-			ajax_abort('The target partition is too small');
+			ajax_abort(t('The target partition is too small'));
 		if (preg_match('/abort|No space left on device/', $l))
-			ajax_abort('No space left on device or target partition does not exist');
+			ajax_abort(t('No space left on device or target partition does not exist'));
 		if (preg_match('/Input\/output error/i', $l))
-			ajax_abort('Read/write error. Common causes: Drive failure, bad sectors, network disconnection, filesystem errors');
+			ajax_abort(t('Read/write error. Common causes: Drive failure, bad sectors, network disconnection, filesystem errors'));
 		if (preg_match('/broken pipe/i', $l))
-			ajax_abort('Error reading image: Source drive may have disconnected');
+			ajax_abort(t('Error reading image: Source drive may have disconnected'));
 		if (preg_match('/^This is not partclone image/', $l))
-			ajax_abort('Invalid or corrupted partition image');
+			ajax_abort(t('Invalid or corrupted partition image'));
 		if (preg_match('/^Cloned successfully\.$/', $l)) {
-			$return['details'] = "Finished restoring image of $part_name";
+			$return['details'] = t('Finished restoring image of %s', $part_name);
 			$part_pct = 100;
 			// Move partition to the "done" bucket
 			$status->progress->done[] = array_shift($status->progress->exec);
@@ -103,7 +103,7 @@ if (sizeof($status->progress->exec) > 0) {
 		if ( (sizeof($status->progress->exec) > 0) && (!is_null($part_pct)) ) {
 			$status->bytes_done = 0;
 			foreach ($status->progress->done as $d) $status->bytes_done += $status->image->parts->$d->bytes;
-			$status->bytes_done += floor(($part_pct/100) * $part_bytes);
+			$status->bytes_done += floor((floatval($part_pct)/100) * $part_bytes);
 			$overall_pct = round((100 * $status->bytes_done) / $status->bytes_total, 2);
 			$return['overall_pct'] = $overall_pct;
 			set_status($status);
@@ -113,7 +113,7 @@ if (sizeof($status->progress->exec) > 0) {
 	// No partitions currently processing
 	if (sizeof($status->progress->wait) > 0) {
 		// At least one is waiting to be processed
-		$return['details'] = 'Preparing to restore image of '.$status->progress->wait[0].' to '.$status->parts[$status->progress->wait[0]];
+		$return['details'] = t('Preparing to restore image of %1$s to %2$s', $status->progress->wait[0], $status->parts[$status->progress->wait[0]]);
 		// Move a partition to the "exec" bucket
 		$status->progress->exec[] = array_shift($status->progress->wait);
 		set_status($status);
@@ -128,8 +128,8 @@ if (sizeof($status->progress->exec) > 0) {
 			$elapsed = floor($secs/3600).gmdate(":i:s", $secs%3600);
 			$elapsed = preg_replace('/^0+\:/', '', $elapsed);
 			beep('done');
-			$return['details'] = "Restore completed successfully in $elapsed.";
-			$return['done'] = "Restore completed successfully in $elapsed.";
+			$return['details'] = t('Restore completed successfully in %s.', $elapsed);
+			$return['done'] = $return['details'];
 			$return['overall_pct'] = "100.00";
 		}
 	}

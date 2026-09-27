@@ -7,21 +7,21 @@ $disks = get_disks(TRUE);
 
 // Get list of disk options
 $disk_options = get_disk_options($disks);
-if (sizeof($disk_options)==0) crash('FATAL ERROR: No disks found!');
+if (sizeof($disk_options)==0) crash(t('FATAL ERROR: No disks found!'));
 
-page_header('restore', 3, 'Select the target drive', 'Choose the disk to restore the image to. You can review what will be overwritten on the next step.');
+page_header('restore', 3, t('Select the target drive'), t('Choose the disk to restore the image to. You can review what will be overwritten on the next step.'));
 ?>
 
 <form id="redo_form">
   <div class="bt-card">
-    <label class="form-label fw-medium" for="drive">Target drive <i class="fas fa-info-circle bt-field-help" data-bs-toggle="tooltip" title="The disk connected to your computer that the image will be restored to"></i></label>
+    <label class="form-label fw-medium" for="drive"><?php print t('Target drive'); ?> <i class="fas fa-info-circle bt-field-help" data-bs-toggle="tooltip" title="<?php print h(t('The disk connected to your computer that the image will be restored to')); ?>"></i></label>
     <select id="drive" class="form-select">
       <?php foreach ($disk_options as $ov=>$od) print "<option value='".h($ov)."'>".h($od)."</option>"; ?>
     </select>
   </div>
   <div class="bt-actions">
-    <button type="button" class="btn btn-outline-secondary" onClick="BT.show('restore-2');"><i class="fas fa-arrow-left me-1"></i> Back</button>
-    <button type="submit" class="btn btn-primary">Next <i class="fas fa-arrow-right ms-1"></i></button>
+    <button type="button" class="btn btn-outline-secondary" onClick="BT.show('restore-2');"><i class="fas fa-arrow-left me-1"></i> <?php print t('Back'); ?></button>
+    <button type="submit" class="btn btn-primary"><?php print t('Next'); ?> <i class="fas fa-arrow-right ms-1"></i></button>
   </div>
 </form>
 

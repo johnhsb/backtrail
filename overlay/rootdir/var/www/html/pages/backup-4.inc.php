@@ -10,28 +10,28 @@ define('FREE_SPACE_THRESHOLD', 100000000);
 
 $u = get_usage();
 
-page_header('backup', 4, 'Choose a folder', 'The selected drive has <b>'.h($u['free']).'</b> of free space. Choose the folder to save the backup in.');
+page_header('backup', 4, t('Choose a folder'), t('The selected drive has %s of free space. Choose the folder to save the backup in.', '<b>'.h($u['free']).'</b>'));
 ?>
 
 <form id="redo_form">
   <div class="bt-card">
-    <label class="form-label fw-medium" for="dir">Folder <i class="fas fa-info-circle bt-field-help" data-bs-toggle="tooltip" title="Folder to save the backup in"></i></label>
+    <label class="form-label fw-medium" for="dir"><?php print t('Folder'); ?> <i class="fas fa-info-circle bt-field-help" data-bs-toggle="tooltip" title="<?php print h(t('Folder to save the backup in')); ?>"></i></label>
     <div class="input-group">
       <input class="form-control" id="dir" name="dir" placeholder="/" type="text" value="<?php if (property_exists($status, 'dir')) print h($status->dir); ?>">
-      <button class="btn btn-outline-secondary" type="button" onClick="BT.choose('dir', '#dir', 'Invalid folder selected', 'A valid folder has been selected for you.');"><i class="fas fa-folder-open me-1"></i> Select</button>
+      <button class="btn btn-outline-secondary" type="button" onClick="BT.choose('dir', '#dir', <?php print h(js(t('Invalid folder selected'))); ?>, <?php print h(js(t('A valid folder has been selected for you.'))); ?>);"><i class="fas fa-folder-open me-1"></i> <?php print t('Select'); ?></button>
     </div>
   </div>
   <div class="bt-actions">
-    <button type="button" class="btn btn-outline-secondary" onClick="BT.show('backup-3');"><i class="fas fa-arrow-left me-1"></i> Back</button>
-    <button type="submit" class="btn btn-primary">Next <i class="fas fa-arrow-right ms-1"></i></button>
+    <button type="button" class="btn btn-outline-secondary" onClick="BT.show('backup-3');"><i class="fas fa-arrow-left me-1"></i> <?php print t('Back'); ?></button>
+    <button type="submit" class="btn btn-primary"><?php print t('Next'); ?> <i class="fas fa-arrow-right ms-1"></i></button>
   </div>
 </form>
 
 <script>
 <?php if ($u['free_bytes'] < FREE_SPACE_THRESHOLD) { ?>
 bootbox.alert({
-	title: 'Low space warning',
-	message: '<p class="mb-0">There is only <?php print h($u['free']); ?> free on the selected destination drive.</p>'
+	title: <?php print js(t('Low space warning')); ?>,
+	message: '<p class="mb-0">' + <?php print js(t('There is only %s free on the selected destination drive.', h($u['free']))); ?> + '</p>'
 });
 <?php } ?>
 

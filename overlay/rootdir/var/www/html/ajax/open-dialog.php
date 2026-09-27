@@ -12,12 +12,12 @@ case 'dir':
 	$sel = trim(choose_dir($dir.'/'));
 	if (strpos($sel, MOUNTPOINT)===FALSE) {
 		// Oops, a folder outside the mountpoint was selected
-		$result['error'] = 'Folder not located on destination drive';
+		$result['error'] = t('Folder not located on destination drive');
 	} else {
 		// Remove the mountpoint prefix
 		$result['dir'] = preg_replace('#^'.MOUNTPOINT.'#', '', $sel);
 	}
-	if (!is_dir($sel)) $result['error'] = 'Not a folder';
+	if (!is_dir($sel)) $result['error'] = t('Not a folder');
 	break;
 case 'file':
 	$result = array('file'=>'');
@@ -25,15 +25,15 @@ case 'file':
 	$sel = trim(choose_file($file));
 	if (strpos($sel, MOUNTPOINT)===FALSE) {
 		// Oops, a folder outside the mountpoint was selected
-		$result['error'] = 'File not located on destination drive';
+		$result['error'] = t('File not located on destination drive');
 	} else {
 		// Remove the mountpoint prefix
 		$result['file'] = preg_replace('#^'.MOUNTPOINT.'#', '', $sel);
 	}
-	if (!is_file($sel)) $result['error'] = 'Not a file';
+	if (!is_file($sel)) $result['error'] = t('Not a file');
 	break;
 default:
-	$result['error'] = 'Invalid dialog type';
+	$result['error'] = t('Invalid dialog type');
 	break;
 }
 

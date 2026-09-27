@@ -12,8 +12,9 @@ case 'backup':
 	if ($name=='') {
 		print json_encode(array(
 			'status' => FALSE,
-			'error' => 'Invalid backup name',
+			'error' => t('Invalid backup name'),
 		));
+		exit;
 	} else {
 		$status->id = $name;
 		$status->notes = strip_tags($_REQUEST['notes']);
@@ -29,7 +30,7 @@ case 'verify':
 	if (!file_exists(sane_path($status->file))) {
 		print json_encode(array(
 			'status' => FALSE,
-			'error' => 'Invalid image file',
+			'error' => t('Invalid image file'),
 		));
 		exit;
 	}

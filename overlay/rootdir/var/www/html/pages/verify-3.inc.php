@@ -3,8 +3,8 @@
 $status = get_status();
 
 // Set drive name and size
-if (isset($status->drive)) $_REQUEST['drive'] = $status->drive;
-$status->drive = preg_replace('/[^A-Za-z0-9_\-]/', '', $_REQUEST['drive']);
+// A newly chosen drive wins; otherwise keep the saved one (Back button)
+$status->drive = preg_replace('/[^A-Za-z0-9_\-]/', '', $_REQUEST['drive'] ?? ($status->drive ?? ''));
 $status->drive_bytes = get_dev_bytes($status->drive);
 
 // Save status
@@ -14,7 +14,7 @@ set_status($status);
 $image = get_image_info();
 if (is_string($image)) crash($image, 'verify-2');
 
-page_header('verify', 3, 'Choose partitions to check', 'Partitions saved in raw mode can be restored but not verified.');
+page_header('verify', 3, t('Choose partitions to check'), t('Partitions saved in raw mode can be restored but not verified.'));
 ?>
 
 <form id="redo_form">
@@ -23,12 +23,12 @@ page_header('verify', 3, 'Choose partitions to check', 'Partitions saved in raw 
       <table class="table table-hover" id="parts">
         <thead>
           <tr>
-            <th><input class="form-check-input" type="checkbox" aria-label="Select all partitions"></th>
-            <th>Partition</th>
-            <th>Details</th>
-            <th>Filesystem</th>
-            <th>Type</th>
-            <th class="text-end">Size</th>
+            <th><input class="form-check-input" type="checkbox" aria-label="<?php print t('Select all partitions'); ?>"></th>
+            <th><?php print t('Partition'); ?></th>
+            <th><?php print t('Details'); ?></th>
+            <th><?php print t('Filesystem'); ?></th>
+            <th><?php print t('Type'); ?></th>
+            <th class="text-end"><?php print t('Size'); ?></th>
           </tr>
         </thead>
         <tbody>
@@ -39,7 +39,7 @@ page_header('verify', 3, 'Choose partitions to check', 'Partitions saved in raw 
             <td><?php print h($p->desc); ?></td>
             <td class="text-nowrap">
               <?php if ($raw) { ?>
-              <span class="bt-tag">raw</span> <i class="fas fa-info-circle text-danger" data-bs-toggle="tooltip" title="This partition was cloned in raw mode and can be restored, but only valid filesystems can be verified"></i>
+              <span class="bt-tag">raw</span> <i class="fas fa-info-circle text-danger" data-bs-toggle="tooltip" title="<?php print h(t('This partition was cloned in raw mode and can be restored, but only valid filesystems can be verified')); ?>"></i>
               <?php } else { ?>
               <span class="bt-tag"><?php print h($p->fs); ?></span>
               <?php } ?>
@@ -56,8 +56,8 @@ page_header('verify', 3, 'Choose partitions to check', 'Partitions saved in raw 
   <?php include('_image-details.inc.php'); ?>
 
   <div class="bt-actions">
-    <button type="button" class="btn btn-outline-secondary" onClick="BT.show('verify-2');"><i class="fas fa-arrow-left me-1"></i> Back</button>
-    <button type="submit" class="btn btn-primary"><i class="fas fa-check-circle me-1"></i> Start verification</button>
+    <button type="button" class="btn btn-outline-secondary" onClick="BT.show('verify-2');"><i class="fas fa-arrow-left me-1"></i> <?php print t('Back'); ?></button>
+    <button type="submit" class="btn btn-primary"><i class="fas fa-check-circle me-1"></i> <?php print t('Start verification'); ?></button>
   </div>
 </form>
 
@@ -73,6 +73,6 @@ $("#redo_form").on('submit', function (event) {
 	event.preventDefault();
 	var vars = $(this).serializeArray();
 	vars.push({ name: 'type', value: 'verify' });
-	BT.submit('/ajax/save-target.php', vars, 'verify-progress', 'Unable to start verification');
+	BT.submit('/ajax/save-target.php', vars, 'verify-progress', <?php print js(t('Unable to start verification')); ?>);
 });
 </script>

@@ -4,14 +4,14 @@ require_once('../functions.inc.php');
 $sharelist = search_network_shares();
 $found = sizeof($sharelist);
 if ($found==0) {
-	print "<h5>No shared drives found</h5>";
-	print "<p class='mb-0'>Enter the network share details manually.</p>";
+	print "<h5>".t('No shared drives found')."</h5>";
+	print "<p class='mb-0'>".t('Enter the network share details manually.')."</p>";
 	die();
 }
 ?>
 
-<h5>Found <?php print "$found shared drive".($found==1?'':'s'); ?></h5>
-<p>Select a network share:</p>
+<h5><?php print ($found==1) ? t('Found 1 shared drive') : t('Found %s shared drives', $found); ?></h5>
+<p><?php print t('Select a network share:'); ?></p>
 <div class="list-group">
 	<?php
 	foreach ($sharelist as $s) {

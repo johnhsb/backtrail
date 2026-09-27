@@ -5,11 +5,26 @@
 var BT = (function ($) {
 	'use strict';
 
-	var LOADING = '<div class="text-center py-5 text-muted"><div class="spinner-border" role="status"><span class="visually-hidden">Loading</span></div></div>';
+	// Translations for the current language, written into the page by index.php
+	var STRINGS = window.BT_STRINGS || {};
+
+	// Translate English interface text; extra arguments fill in %s or %1$s
+	function t(text) {
+		var args = Array.prototype.slice.call(arguments, 1), next = 0;
+		return (STRINGS[text] || text).replace(/%(?:(\d+)\$)?s/g, function (m, n) {
+			return String(n ? args[n - 1] : args[next++]);
+		});
+	}
+
+	var LOADING = '<div class="text-center py-5 text-muted"><div class="spinner-border" role="status"><span class="visually-hidden">' + t('Loading') + '</span></div></div>';
+
+	// Page shown in #content, so a language change can show it again
+	var current = 'welcome';
 
 	// Bootstrap ignores hide() while a modal is still animating in, which
 	// can leave a "please wait" dialog open after a fast AJAX reply.
-	bootbox.setDefaults({ animate: false, centerVertical: true });
+	bootbox.addLocale('bt', { OK: t('OK'), CANCEL: t('Cancel'), CONFIRM: t('OK') });
+	bootbox.setDefaults({ animate: false, centerVertical: true, locale: 'bt' });
 
 	function parse(data) {
 		return (typeof data === 'string') ? JSON.parse(data) : data;
@@ -27,10 +42,16 @@ var BT = (function ($) {
 	}
 
 	function show(page) {
-		$('#content').html(LOADING).load('action.php?page=' + page);
+		current = page;
+		$('#content').html(LOADING).load('action.php?page=' + page, function (responseTxt, statusTxt, xhr) {
+			if (statusTxt === 'error') {
+				bootbox.alert({ title: t('Unable to load the page'), message: escapeHtml(xhr.status + ': ' + xhr.statusText) });
+			}
+		});
 	}
 
 	function post(page, data) {
+		current = page;
 		$('#content').html(LOADING);
 		$.post('action.php?page=' + page, data).done(function (html) {
 			$('#content').html(html);
@@ -47,7 +68,7 @@ var BT = (function ($) {
 	function fail(title, error) {
 		bootbox.alert({
 			title: title,
-			message: '<div class="alert alert-danger mb-3"><i class="fas fa-exclamation-triangle me-1"></i> <b>' + error + '</b></div><p class="mb-0">Check your settings and try again.</p>'
+			message: '<div class="alert alert-danger mb-3"><i class="fas fa-exclamation-triangle me-1"></i> <b>' + error + '</b></div><p class="mb-0">' + t('Check your settings and try again.') + '</p>'
 		});
 	}
 
@@ -67,7 +88,7 @@ var BT = (function ($) {
 	}
 
 	function shareSearch() {
-		busy('Scanning network for shared drives...');
+		busy(t('Scanning network for shared drives...'));
 		$.post('/ajax/nas-search.php', { type: 'cifs' }).done(function (html) {
 			bootbox.hideAll();
 			bootbox.alert({ message: html });
@@ -89,17 +110,17 @@ var BT = (function ($) {
 				bootbox.hideAll();
 				var r = parse(d);
 				if (r.status) show(nextPage);
-				else fail('Failed to access drive', r.error);
+				else fail(t('Failed to access drive'), r.error);
 			})
 			.fail(function () {
 				bootbox.hideAll();
-				fail('Failed to access drive', 'No response from the backup service');
+				fail(t('Failed to access drive'), t('No response from the backup service'));
 			});
 	}
 
 	// Open the folder or file picker (yad) on the local display
 	function choose(type, input, errorTitle, errorHint) {
-		busy(type === 'dir' ? 'Waiting for folder selection...' : 'Waiting for file selection...', true);
+		busy(type === 'dir' ? t('Waiting for folder selection...') : t('Waiting for file selection...'), true);
 		var data = { type: type };
 		data[type] = $(input).val();
 		$.post('/ajax/open-dialog.php', data).done(function (d) {
@@ -161,7 +182,7 @@ var BT = (function ($) {
 					$('#overall_bar').addClass('bg-danger');
 					bootbox.alert({
 						title: '<i class="fas fa-times-circle text-danger me-1"></i> ' + opts.failTitle,
-						message: '<p>The operation failed and was stopped. The error was:</p><p class="mb-0"><code>' + escapeHtml(r.log_msg) + '</code></p>'
+						message: '<p>' + t('The operation failed and was stopped. The error was:') + '</p><p class="mb-0"><code>' + escapeHtml(r.log_msg) + '</code></p>'
 					});
 					return;
 				}
@@ -205,11 +226,11 @@ var BT = (function ($) {
 
 		$('#cancel').on('click', function () {
 			bootbox.confirm({
-				title: 'Cancel this operation?',
+				title: t('Cancel this operation?'),
 				message: '<p class="mb-0">' + opts.cancelMessage + '</p>',
 				buttons: {
-					confirm: { label: 'Cancel operation', className: 'btn-danger' },
-					cancel: { label: 'Keep going', className: 'btn-outline-secondary' }
+					confirm: { label: t('Cancel operation'), className: 'btn-danger' },
+					cancel: { label: t('Keep going'), className: 'btn-outline-secondary' }
 				},
 				callback: function (yes) {
 					if (yes) { clearInterval(timer); $('#content').load('/ajax/exit.php'); }
@@ -232,7 +253,7 @@ var BT = (function ($) {
 				message: opts.confirm.message,
 				buttons: {
 					confirm: { label: opts.confirm.label, className: 'btn-danger' },
-					cancel: { label: 'Go back', className: 'btn-outline-secondary' }
+					cancel: { label: t('Go back'), className: 'btn-outline-secondary' }
 				},
 				callback: function (yes) {
 					if (yes) start();
@@ -251,6 +272,23 @@ var BT = (function ($) {
 		$('#theme-toggle i').attr('class', theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon');
 	}
 
+	// Interface language: saved in a cookie so the PHP pages use it too, then
+	// the current page is shown again. Not during an operation, whose
+	// progress page would start over.
+	function setLanguage(lang) {
+		if (lang === document.documentElement.lang) return;
+		if (/-progress$/.test(current)) {
+			bootbox.alert({ message: '<p class="mb-0">' + t('You can change the language when the operation has finished.') + '</p>' });
+			return;
+		}
+		document.cookie = 'bt-lang=' + encodeURIComponent(lang) + '; path=/; max-age=31536000; SameSite=Lax';
+		location.replace('/?page=' + encodeURIComponent(current));
+	}
+
+	$(document).on('click', '[data-lang]', function () {
+		setLanguage($(this).attr('data-lang'));
+	});
+
 	$(function () {
 		setTheme(document.documentElement.getAttribute('data-bs-theme') || 'light');
 		$('#theme-toggle').on('click', function () {
@@ -259,6 +297,7 @@ var BT = (function ($) {
 	});
 
 	return {
+		t: t,
 		show: show,
 		post: post,
 		busy: busy,

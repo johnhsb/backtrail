@@ -77,3 +77,8 @@ app icon, and the web app favicon. It needs `cairosvg`:
 Pretendard. It needs `grub-mkfont` from `grub-common`:
 
     branding/src/grub-fonts.sh /usr/share/fonts/opentype/pretendard
+
+`src/flags.py` draws the flag icons of the web app language menu
+(`images/flags/*.svg`) in one 3:2 size, simplified for 14–20 px:
+
+    python3 branding/src/flags.py

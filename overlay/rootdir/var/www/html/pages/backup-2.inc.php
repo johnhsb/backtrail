@@ -3,8 +3,8 @@
 $status = get_status();
 
 // Set drive name
-if (isset($status->drive)) $_REQUEST['drive'] = $status->drive;
-$status->drive = preg_replace('/[^A-Za-z0-9_\-]/', '', $_REQUEST['drive']);
+// A newly chosen drive wins; otherwise keep the saved one (Back button)
+$status->drive = preg_replace('/[^A-Za-z0-9_\-]/', '', $_REQUEST['drive'] ?? ($status->drive ?? ''));
 
 // Save status
 set_status($status);
@@ -12,16 +12,16 @@ set_status($status);
 // Load cached list of disks
 $disks = get_disks();
 foreach ($disks->blockdevices as $d) if ($d->name==$status->drive) $disk = $d;
-if (!isset($disk)) crash('Unable to read information for selected drive.');
+if (!isset($disk)) crash(t('Unable to read information for selected drive.'));
 
 // Build the partition list (extended partitions are only containers)
 $parts = array();
 foreach (($disk->children ?? array()) as $p) {
 	if ($p->parttype=='0x5') continue;
 	$notice = '';
-	if (get_fs_tool($p->fstype)=='dd') $notice = ' <i class="fas fa-info-circle bt-field-help" data-bs-toggle="tooltip" title="This filesystem requires imaging the entire partition, rather than simply the saved data on it."></i>';
-	if (substr((string) $p->fstype,0,6)=='crypto') $notice .= ' <i class="fas fa-lock text-success ms-1" data-bs-toggle="tooltip" title="This partition is encrypted."></i>';
-	if ($p->fstype=='swap') $notice = ' <i class="fas fa-info-circle bt-field-help" data-bs-toggle="tooltip" title="In most cases it is not necessary to image a swap partition."></i>';
+	if (get_fs_tool($p->fstype)=='dd') $notice = ' <i class="fas fa-info-circle bt-field-help" data-bs-toggle="tooltip" title="'.h(t('This filesystem requires imaging the entire partition, rather than simply the saved data on it.')).'"></i>';
+	if (substr((string) $p->fstype,0,6)=='crypto') $notice .= ' <i class="fas fa-lock text-success ms-1" data-bs-toggle="tooltip" title="'.h(t('This partition is encrypted.')).'"></i>';
+	if ($p->fstype=='swap') $notice = ' <i class="fas fa-info-circle bt-field-help" data-bs-toggle="tooltip" title="'.h(t('In most cases it is not necessary to image a swap partition.')).'"></i>';
 	if (isset($status->parts)) {
 		// Restore the current setting
 		$checked = in_array($p->name, $status->parts);
@@ -36,7 +36,7 @@ $model = disk_model($disk);
 // Label only the segments of the partition bar that are wide enough to read
 $total_bytes = max(array_sum(array_column($parts, 'bytes')), 1);
 
-page_header('backup', 2, 'Choose partitions to save', 'The partition table and boot record are always included in the backup.');
+page_header('backup', 2, t('Choose partitions to save'), t('The partition table and boot record are always included in the backup.'));
 ?>
 
 <form id="redo_form">
@@ -56,12 +56,12 @@ page_header('backup', 2, 'Choose partitions to save', 'The partition table and b
         <table class="table table-hover" id="parts">
           <thead>
             <tr>
-              <th><input class="form-check-input" type="checkbox" aria-label="Select all partitions"></th>
-              <th>Partition</th>
-              <th>Label</th>
-              <th>Filesystem</th>
-              <th>Type</th>
-              <th class="text-end">Size</th>
+              <th><input class="form-check-input" type="checkbox" aria-label="<?php print t('Select all partitions'); ?>"></th>
+              <th><?php print t('Partition'); ?></th>
+              <th><?php print t('Label'); ?></th>
+              <th><?php print t('Filesystem'); ?></th>
+              <th><?php print t('Type'); ?></th>
+              <th class="text-end"><?php print t('Size'); ?></th>
             </tr>
           </thead>
           <tbody>
@@ -80,17 +80,17 @@ page_header('backup', 2, 'Choose partitions to save', 'The partition table and b
       </div>
     </div>
     <div class="bt-card bt-summary">
-      <span class="text-muted">Size of selected partitions</span>
+      <span class="text-muted"><?php print t('Size of selected partitions'); ?></span>
       <span class="bt-big" id="sel-size">0 B</span>
-      <span class="text-muted">Only used space is saved for supported filesystems, so the image is usually much smaller.</span>
-      <div class="bt-row"><span>Selected</span><b><span id="sel-count">0</span> of <?php print sizeof($parts); ?></b></div>
-      <div class="bt-row"><span>Drive size</span><b><?php print h($disk->size); ?></b></div>
+      <span class="text-muted"><?php print t('Only used space is saved for supported filesystems, so the image is usually much smaller.'); ?></span>
+      <div class="bt-row"><span><?php print t('Selected'); ?></span><b><?php print t('%1$s of %2$s', '<span id="sel-count">0</span>', sizeof($parts)); ?></b></div>
+      <div class="bt-row"><span><?php print t('Drive size'); ?></span><b><?php print h($disk->size); ?></b></div>
     </div>
   </div>
 
   <div class="bt-actions">
-    <button type="button" class="btn btn-outline-secondary" onClick="BT.show('backup-1');"><i class="fas fa-arrow-left me-1"></i> Back</button>
-    <button type="submit" class="btn btn-primary">Next <i class="fas fa-arrow-right ms-1"></i></button>
+    <button type="button" class="btn btn-outline-secondary" onClick="BT.show('backup-1');"><i class="fas fa-arrow-left me-1"></i> <?php print t('Back'); ?></button>
+    <button type="submit" class="btn btn-primary"><?php print t('Next'); ?> <i class="fas fa-arrow-right ms-1"></i></button>
   </div>
 </form>
 
