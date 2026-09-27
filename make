@@ -223,7 +223,7 @@ apt install --no-install-recommends --yes \
 	plymouth plymouth-themes compton dbus-x11 libnotify-bin xfce4-notifyd \
 	gir1.2-notify-0.7 tint2 nitrogen xfce4-appfinder xfce4-power-manager \
 	gsettings-desktop-schemas lxrandr lxmenu-data lxterminal lxappearance \
-	network-manager-gnome gtk2-engines gnome-themes-extra gtk-theme-switch \
+	network-manager-gnome wpasupplicant gtk2-engines gnome-themes-extra gtk-theme-switch \
 	fonts-noto-cjk pcmanfm libfm-modules gpicview mousepad x11vnc pwgen \
 	xvkbd librsvg2-common zstd \
 	papirus-icon-theme adwaita-icon-theme gtk-update-icon-cache \
@@ -352,15 +352,20 @@ echo "Adding non-free packages..."
 # Briefly activate repos to install non-free firmware packages
 perl -p -i -e 's/main$/main non-free non-free-firmware/' /etc/apt/sources.list
 apt update --yes
-# WARNING: Wireless connections are NOT recommended for backup/restore!
+# Wireless firmware for Intel, Realtek, Qualcomm Atheros and Broadcom
+# adapters, for computers without a wired port. WARNING: Wireless
+# connections are NOT recommended for backup/restore!
 #
-# To include firmware, uncomment or add packages as needed here in the
-# make script to create a custom image.
+# To include more firmware, add packages here to create a custom image.
 #
 apt install --yes \
 	firmware-linux-nonfree \
 	firmware-misc-nonfree \
 	firmware-amd-graphics \
+	firmware-iwlwifi \
+	firmware-realtek \
+	firmware-atheros \
+	firmware-brcm80211 \
 	amd64-microcode \
 	intel-microcode
 perl -p -i -e 's/ non-free non-free-firmware$//' /etc/apt/sources.list

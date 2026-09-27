@@ -96,6 +96,7 @@ and break that parsing.
 | Icons | Most icons blank on trixie: Adwaita became almost all SVG, and the SVG loader and full-color icons were skipped by `--no-install-recommends` | `librsvg2-common` (both systems) and the Papirus icon theme, whose full-color icons replace `adwaita-icon-theme-legacy`; icon caches are kept so apps start without scanning Papirus's 40,000 icons |
 | Cursors | Trixie's Adwaita dropped legacy X11 names, so openbox's app-launch pointer fell back to the old X11 cursor | 12 missing names linked to their Adwaita equivalents (trixie only) |
 | Notification daemon | Autostart path hard-coded to `i386-linux-gnu`, so it did not start on 64-bit | Architecture-independent path |
+| Wi-Fi | Removed in the pending 5.0.0: no Intel, Realtek, Atheros or Broadcom firmware, and on trixie no `wpasupplicant`, so NetworkManager could not use any wireless adapter | Those four firmware packages (non-free build) and `wpasupplicant` are installed; wired connections remain recommended for backup and restore |
 | "Unnamed Window" | SLiM 1.4.1 (trixie) leaves a full-screen window with no name or class after auto-login; Openbox showed it as a black window over the wallpaper and in the taskbar | An Openbox rule keeps windows with no name and no class minimized and out of the taskbar |
 | CJK text | No CJK font installed; CJK characters showed as boxes | **`fonts-noto-cjk`** (Chinese, Japanese, Korean) |
 

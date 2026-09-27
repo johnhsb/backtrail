@@ -38,6 +38,10 @@
     tighter spacing when the window is less than 700 pixels high
   * Report an invalid backup file when starting a verification or restore,
     instead of failing with a server error on the progress page
+  * Add wireless support back for computers without a wired port: firmware
+    for Intel, Realtek, Qualcomm Atheros and Broadcom adapters (non-free
+    build only) and `wpasupplicant`, which NetworkManager needs for Wi-Fi.
+    Wired connections remain recommended for backup and restore
   * Translate the web app into Korean, Japanese, Simplified Chinese, Spanish,
     German, French and Brazilian Portuguese, chosen from a language menu with
     flags; `tools/i18n-check.py` checks the translation files
