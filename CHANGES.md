@@ -1,6 +1,24 @@
-# Changes to Redo Rescue
+# Changes to Backtrail (formerly Redo Rescue)
 
 ## Version 5.0.0 (pending)
+  * Rename the fork to Backtrail with a new logo; images keep the `.redo`
+    format, so backups from Redo Rescue restore unchanged
+  * Replace every original Redo Rescue graphic with Backtrail artwork that is
+    generated from source (`branding/src`)
+  * Rewrite the web app for Bootstrap 5.3 with jQuery 3.7 and Bootbox 6:
+    step indicator, drive and partition views, light and dark modes
+  * Show a partition map and the selected size when choosing what to back up
+  * Fix "select all" in the selective restore tab changing the other tab
+  * Fix a blank screen when the chosen backup file is not a valid image
+  * Remove the donation QR code and its PHP QR library
+  * One theme for the boot menu, splash screen, desktop and wallpaper:
+    new GRUB theme with a countdown ring, Plymouth `backtrail` theme,
+    Openbox `Backtrail` theme, tint2 colors and GTK Adwaita
+  * Use Pretendard for Latin and Korean text, with Noto Sans CJK for
+    Chinese and Japanese (fontconfig, GRUB fonts and web app); the 32-bit
+    system installs `fonts-pretendard` from trixie because bookworm lacks it
+  * Replace Lato and the Numix GTK theme with Pretendard and Adwaita
+  * Set the hostname to `backtrail` and name the ISO `backtrail-VERSION.iso`
   * Update base to Debian 13 (trixie) with PHP 8.4 for improved hardware support
   * Add 32-bit system based on Debian 12 (bookworm) to the same ISO; the boot
     menu selects 64-bit or 32-bit automatically based on the CPU

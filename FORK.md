@@ -1,6 +1,6 @@
 # Fork Notes: Changes from Upstream
 
-This fork is based on [redorescue/redorescue](https://github.com/redorescue/redorescue)
+Backtrail (this fork) is based on [redorescue/redorescue](https://github.com/redorescue/redorescue)
 at commit `ec1f4f2` ("Update for PHP8", 2023-10-30). For the per-release
 changelog, see [CHANGES.md](CHANGES.md).
 
@@ -29,7 +29,10 @@ changelog, see [CHANGES.md](CHANGES.md).
 3. **Reliable builds**: interrupted or failed builds must not leave host
    mounts or broken caches behind.
 4. **CJK text display**: show Chinese, Japanese and Korean text correctly in
-   the browser and in the Redo application.
+   the browser and in the application.
+5. **Own identity**: Redo Rescue's logos and graphics are not licensed for
+   forks, so the fork needs its own name, artwork and a consistent look from
+   the boot menu to the application.
 
 
 ## Improvements over upstream
@@ -90,6 +93,44 @@ and break that parsing.
 | Notification daemon | Autostart path hard-coded to `i386-linux-gnu`, so it did not start on 64-bit | Architecture-independent path |
 | CJK text | No CJK font installed; CJK characters showed as boxes | **`fonts-noto-cjk`** (Chinese, Japanese, Korean) |
 
+### Name, artwork and interface
+
+Redo Rescue's license requires forks to replace its logos and graphics, so
+the fork was renamed **Backtrail** and every original graphic was removed.
+Internal names (the `.redo` image format, `redo.service`, the `redo` user)
+are unchanged, so existing backups and scripts keep working.
+
+| Area | Upstream | This fork |
+|---|---|---|
+| Logo | Redo Rescue logo | Contour-line mark generated from source (`branding/src`); see [branding/README.md](branding/README.md) |
+| Boot menu | GRUB theme with Redo artwork and Helvetica bitmap fonts | Navy contour background, Backtrail logo, Pretendard fonts, countdown ring |
+| Boot splash | Plymouth `redo` theme | Plymouth `backtrail` theme in the same colors |
+| Desktop | Numix GTK and Openbox theme, Lato font | `Backtrail` Openbox theme, matching tint2 panel, GTK Adwaita, Pretendard, new wallpaper and app icon |
+| Web framework | Bootstrap 3.4, jQuery 1.12, Bootbox 5, plus bootstrap-notify, jquery-validation and animate.css | **Bootstrap 5.3, jQuery 3.7, Bootbox 6**; unused libraries removed |
+| Application | Separate page layouts | Step indicator, drive list on the welcome screen, partition map with selected size, shared location, progress and image-detail views, light and dark modes |
+| Names | Redo Rescue, `redorescue` hostname, `redorescue-VERSION.iso` | Backtrail, `backtrail` hostname, `backtrail-VERSION.iso` |
+
+**Fonts.** Interface text uses Pretendard, which covers Latin and all Hangul
+syllables, with Noto Sans CJK for Chinese and Japanese. Debian 12 has no
+Pretendard package, so the 32-bit build installs `fonts-pretendard` alone
+from trixie; the package has no dependencies, and a low apt pin keeps every
+other package on bookworm. Because Pretendard lacks the archaic jamo that
+fontconfig requires for Korean, text tagged `ko` would otherwise fall back
+to Noto Sans CJK KR; `local.conf` keeps it on Pretendard and gives text
+tagged `ja` or `zh` the matching regional Noto Sans CJK face.
+
+**Fixes found during the rewrite:**
+
+* Choosing a file that is not a valid image returned two JSON objects, and
+  the page did nothing; it now shows the error.
+* "Select all" in the selective restore tab also changed the checkboxes in
+  the full-recovery tab.
+* PHP 8.4 notices for disks and partitions without a vendor, filesystem or
+  OS entry, and a fatal error when the partition step was opened without a
+  selection.
+* The vendor name was repeated in drive descriptions ("WD WD Elements"),
+  because lsblk pads it with spaces.
+
 ### Size and speed
 
 The squashfs and initrd are compressed with zstd (default levels) instead of
@@ -114,7 +155,8 @@ microcode, which the kernel requires uncompressed.
 
 ### Repository
 
-* `README.md` and `CHANGES.md` updated for the dual-architecture build.
+* `README.md` and `CHANGES.md` updated for the dual-architecture build and
+  the Backtrail name.
 * `.gitignore` added for build output (ISO, caches, build roots, logs).
 
 
@@ -132,6 +174,10 @@ microcode, which the kernel requires uncompressed.
   Ctrl+C during debootstrap, `clean`, `changes` and `boot`.
 * **Real builds**: full builds booted under QEMU; icons confirmed after the
   icon fix.
+* **Theme**: the GRUB theme was booted under QEMU. Every web app page was
+  checked in headless Chromium in light and dark modes, with stub disk tools
+  and a sample image, and pages were linted with PHP 8.4 and 32-bit PHP 8.2.
+  Font selection was checked with fontconfig for each CJK language.
 
 
 ## Limitations and trade-offs
@@ -143,10 +189,10 @@ microcode, which the kernel requires uncompressed.
   release to move to.
 * **32-bit CPU requirements**: an i686-class CPU is required. Chromium
   requires SSE3, so on CPUs without it (Pentium III, Pentium M, Athlon XP)
-  the system may boot but the Redo interface is unlikely to start.
+  the system may boot but the Backtrail interface is unlikely to start.
 * **32-bit UEFI**: machines with 32-bit-only UEFI firmware are not
   supported (same as upstream).
-* **Language**: the Redo interface remains in English, and no input method
+* **Language**: the interface remains in English, and no input method
   is included for typing CJK text.
 * **Debian 9**: the legacy isolinux build path was removed, so Debian 9
   images can no longer be built.
