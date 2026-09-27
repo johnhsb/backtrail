@@ -166,9 +166,10 @@ script_build() {
 	fi
 	if [ "$BASE" == "trixie" ]; then
 		# Trixie-specific PHP version and packages
-		# (hfsutils and reiser4progs were removed from Debian 13)
+		# (hfsutils and reiser4progs were removed from Debian 13; Adwaita's
+		# full-color icons moved to adwaita-icon-theme-legacy)
 		PHPV="8.4"
-		PKGS="chromium-common chromium-sandbox volumeicon-alsa exfatprogs"
+		PKGS="chromium-common chromium-sandbox volumeicon-alsa exfatprogs adwaita-icon-theme-legacy"
 	elif [ "$BASE" == "bookworm" ]; then
 		# Bookworm-specific PHP version and packages
 		PHPV="8.2"
@@ -217,7 +218,7 @@ apt install --no-install-recommends --yes \
 	gsettings-desktop-schemas lxrandr lxmenu-data lxterminal lxappearance \
 	network-manager-gnome gtk2-engines numix-gtk-theme gtk-theme-switch \
 	fonts-lato pcmanfm libfm-modules gpicview mousepad x11vnc pwgen \
-	xvkbd \
+	xvkbd librsvg2-common \
 	\
 	beep laptop-detect os-prober discover lshw-gtk hdparm smartmontools \
 	nmap time lvm2 gparted gnome-disk-utility baobab gddrescue testdisk \

@@ -12,6 +12,7 @@
   * Drop `hfsutils` and `reiser4progs` on trixie (removed from Debian 13)
   * Image ReiserFS and NILFS2 partitions in raw mode (no partclone tool in Debian)
   * Fix xfce4-notifyd autostart path on amd64
+  * Install SVG icon loader and Adwaita legacy icons (missing icons on trixie)
   * Remove wireless non-free firmware packages
   * Fix bug that prevented selecting a new disk once one is chosen
   * Add support for mounting and imaging BTRFS filesystems
