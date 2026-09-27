@@ -1,6 +1,6 @@
 <?php
 #
-# Redo Rescue: Backup and Recovery Made Easy <redorescue.com>
+# Backtrail, based on Redo Rescue <redorescue.com>
 # Copyright (C) 2010-2023 Zebradots Software
 #
 # This program is free software: you can redistribute it and/or modify
@@ -22,7 +22,7 @@ require_once('functions.inc.php');
 // Show welcome notice once
 if (!file_exists(STATUS_FILE)) {
 	system_notice(
-		"Welcome to Redo Rescue",
+		"Welcome to Backtrail",
 		"Additional tools can be found through the start menu",
 		"dialog-information"
 	);
@@ -39,76 +39,64 @@ $status->hostname = $host_info['name'];
 // Save status
 set_status($status);
 
-// Set QR data
-define('QR_DATA', 'QSw3KUU5Jl1JPSQsVjxDQSo6JTUzPEcwVTxVOVYxQy06MTRVSiw2TSY+NyRSCmAK');
+$vnc_pass = is_readable(VNCPASS_FILE) ? trim(file_get_contents(VNCPASS_FILE)) : '';
+$bits = (PHP_INT_SIZE == 8) ? '64-bit' : '32-bit';
 ?>
 <!doctype html>
 <html lang="en">
   <head>
-    <title>Redo Rescue</title>
+    <title>Backtrail</title>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="stylesheet" href="/assets/bootstrap-3.4.1/dist/css/bootstrap-custom.min.css">
+    <script>
+      (function () {
+        var t = null;
+        try { t = localStorage.getItem('bt-theme'); } catch (e) {}
+        if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-bs-theme', t);
+      })();
+    </script>
+    <link rel="stylesheet" href="/assets/bootstrap-5.3.8/css/bootstrap.min.css">
     <link rel="stylesheet" href="/assets/fontawesome-free-5.12.1-web/css/fontawesome.min.css">
     <link rel="stylesheet" href="/assets/fontawesome-free-5.12.1-web/css/solid.min.css">
-    <link rel="stylesheet" href="/assets/fontawesome-free-5.12.1-web/css/brands.min.css">
-    <link rel="stylesheet" href="/assets/animate.css-4.1.0/animate.min.css">
+    <link rel="stylesheet" href="/assets/backtrail/app.css">
   </head>
   <body>
 
-    <div id="flex-master">
-      <div id="flex-header">
-        <div class="logo"></div>
-      </div>
-      <div id="flex-body">
+    <header class="bt-bar">
+      <img class="bt-logo" src="/images/backtrail-logo-dark.svg" alt="Backtrail">
+      <span class="bt-pill"><?php print h(get_version()); ?> · <?php print $bits; ?></span>
+      <span class="bt-spacer"></span>
+      <?php if (!empty($status->ip)) { ?>
+      <span class="bt-remote" title="Connect with a VNC viewer for remote assistance">
+        <i class="fas fa-desktop"></i> Remote access <code><?php print h($status->ip); ?></code>
+        <?php if ($vnc_pass !== '') { ?>· password <code><?php print h($vnc_pass); ?></code><?php } ?>
+      </span>
+      <?php } ?>
+      <button type="button" id="theme-toggle" class="bt-icon-btn" aria-label="Switch between light and dark mode"><i class="fas fa-moon"></i></button>
+    </header>
 
-        <div id="content" class="container">
-	</div>
+    <main class="bt-main">
+      <div id="content" class="container"></div>
+    </main>
 
-      </div>
-      <div id="flex-footer">
-        <div class="row">
-          <div class="col-xs-6">
-	    <span class="small text-muted">Version <?php print get_version(); ?></span>
-          </div>
-	  <div class="col-xs-6 text-right">
-	    <span class="small"><i class="fas fa-pizza-slice icon-button text-primary" data-toggle="popover" title="Donate" data-content="<div class='small text-center'><img src='/images/qr.php?q=<?php print convert_data(QR_DATA); ?>' width='240' height='240'><h4><i class='fab fa-bitcoin text-warning'></i> BTC:</h4><code><?php print convert_data(QR_DATA); ?></code></div>"></i></span>
-	    <span class="small"><i class="fas fa-key icon-button text-primary" data-toggle="popover" title="Remote access" data-content="<span class='small'>You may also connect via VNC to <?php print (empty($status->ip)?'this system':'<b>'.$status->ip.'</b>'); ?> with password <code><?php print trim(file_get_contents(VNCPASS_FILE)); ?></code></span>"></i></span>
-          </div>
-        </div>
-      </div>
-    </div>
+    <footer class="bt-footer">
+      <span>Backtrail <?php print h(get_version()); ?></span>
+      <span>Based on Redo Rescue by Zebradots Software · GNU GPLv3</span>
+    </footer>
 
-    <!-- Include JS files -->
-    <script src="/assets/jquery-1.12.4/dist/jquery.min.js"></script>
-    <script src="/assets/bootstrap-3.4.1/dist/js/bootstrap.min.js"></script>
-    <script src="/assets/bootstrap-notify-3.1.3/dist/bootstrap-notify.min.js"></script>
-    <script src="/assets/bootbox-5.4.0/dist/bootbox.min.js"></script>
-
+    <script src="/assets/jquery-3.7.1/jquery.min.js"></script>
+    <script src="/assets/bootstrap-5.3.8/js/bootstrap.bundle.min.js"></script>
+    <script src="/assets/bootbox-6.0.4/bootbox.min.js"></script>
+    <script src="/assets/backtrail/app.js"></script>
     <script>
-      $(document).ready(function(){
-
-	// Set up popovers
-	$('[data-toggle="popover"]').popover({
-		container: "body",
-		placement: "auto left",
-		trigger: "hover click",
-		html: true,
-	});
-
-	// Get current step and show page
-	$("#content").load("action.php", function(responseTxt, statusTxt, xhr){
-		if(statusTxt == "error") {
-			bootbox.alert({
-			size: "small",
-				title: "Error loading content",
-				message: xhr.status + ": " + xhr.statusText,
-			});
-		}
-	});
-
+      $(function () {
+        $('#content').load('action.php', function (responseTxt, statusTxt, xhr) {
+          if (statusTxt === 'error') {
+            bootbox.alert({ title: 'Unable to load the page', message: xhr.status + ': ' + xhr.statusText });
+          }
+        });
       });
     </script>
 

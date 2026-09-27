@@ -1,36 +1,54 @@
-<h1>Welcome</h1>
-<h3>Select an option</h3>
-
-<p>Easily create a snapshot of your system or completely restore from one. Click an option to begin:</p>
-
-<div id="welcome">
-  <p class="text-center">
-
-    <button onClick="showPage('backup-1');" class="btn btn-lg btn-info">
-      <p><i class="fas fa-upload fa-4x"></i></p>
-      <div>Backup</div>
-    </button>
-
-    <button onClick="showPage('verify-1');" class="btn btn-lg btn-success">
-      <p><i class="fas fa-check-circle fa-4x"></i></p>
-      <div>Verify</div>
-    </button>
-
-    <button onClick="showPage('restore-1');" class="btn btn-lg btn-danger">
-      <p><i class="fas fa-download fa-4x"></i></p>
-      <div>Restore</div>
-    </button>
-
-  </p>
-</div>
-
-<!-- Load fonts immediately in a hidden container -->
-<div id="font-awesome-loader" style="height: 0px; width: 0px; overflow: hidden;">
-  <i class="fas fa-asterisk"></i>
-</div>
-
-<script>
-function showPage(id) {
-	$('#content').html('<?php print LOADING_HTML; ?>').load('action.php?page='+id);
+<?php
+// List the drives connected to this computer (cached after the first load)
+$disks = get_disks();
+$drives = array();
+foreach ($disks->blockdevices as $d) {
+	if ($d->type !== 'disk') continue;
+	$labels = array();
+	if (property_exists($d, 'children')) foreach ($d->children as $c) {
+		if (!empty($c->label)) $labels[] = $c->label.(empty($c->fstype) ? '' : " ($c->fstype)");
+	}
+	$desc = array_filter(array(
+		disk_model($d),
+		strtoupper($d->tran ?? ''),
+		property_exists($d, 'os') ? $d->os : '',
+		implode(', ', $labels),
+	));
+	$drives[] = array('name' => $d->name, 'size' => $d->size, 'desc' => implode(' · ', $desc));
 }
-</script>
+?>
+
+<h1 class="bt-title mt-2">What would you like to do?</h1>
+<p class="bt-lead">Everything runs from this USB drive. Nothing on your disks changes until you confirm.</p>
+
+<div class="bt-ops">
+  <button type="button" class="bt-op-card" onClick="BT.show('backup-1');">
+    <span class="bt-ico"><i class="fas fa-upload"></i></span>
+    <span class="bt-t">Back up</span>
+    <span class="bt-d">Save an image of a drive to a USB disk or a network share.</span>
+    <span class="bt-m">Saves used space only · .redo image</span>
+  </button>
+  <button type="button" class="bt-op-card" onClick="BT.show('verify-1');">
+    <span class="bt-ico"><i class="fas fa-check-circle"></i></span>
+    <span class="bt-t">Verify</span>
+    <span class="bt-d">Check a saved image for errors without writing to any disk.</span>
+    <span class="bt-m">Read-only</span>
+  </button>
+  <button type="button" class="bt-op-card danger" onClick="BT.show('restore-1');">
+    <span class="bt-ico"><i class="fas fa-download"></i></span>
+    <span class="bt-t">Restore</span>
+    <span class="bt-d">Write a saved image back to a drive.</span>
+    <span class="bt-m">Overwrites the target drive</span>
+  </button>
+</div>
+
+<?php if (sizeof($drives) > 0) { ?>
+<div class="bt-label">Detected drives</div>
+<?php foreach ($drives as $d) { ?>
+<div class="bt-drive">
+  <span class="bt-dev"><?php print h($d['name']); ?></span>
+  <span><?php print h($d['desc']); ?></span>
+  <span class="bt-size"><?php print h($d['size']); ?></span>
+</div>
+<?php } ?>
+<?php } ?>

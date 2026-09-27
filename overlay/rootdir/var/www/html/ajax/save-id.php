@@ -31,6 +31,7 @@ case 'verify':
 			'status' => FALSE,
 			'error' => 'Invalid image file',
 		));
+		exit;
 	}
 	break;
 

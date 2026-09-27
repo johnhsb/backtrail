@@ -15,8 +15,9 @@ $all_disks = get_disks(TRUE);
 
 // Only show parts of the selected target drive
 $disks = new stdClass();
+$disks->blockdevices = array();
 foreach ($all_disks->blockdevices as $e) if ($e->name==$status->drive)
-	foreach ($e->children as $c)
+	foreach (($e->children ?? array()) as $c)
 		// Skip extended partitions
 		if ($c->parttype!=='0x5') $disks->blockdevices[] = $c;
 $options = get_part_options($disks, array(), '/.*/');
@@ -25,241 +26,157 @@ $options = array(''=>'(None)') + $options;
 // Load image details
 $image = get_image_info();
 if (is_string($image)) crash($image, 'restore-3');
+
+// Compare the original and target drive sizes
+$size_notes = array();
+$size_diff = $status->drive_bytes - $image->drive_bytes;
+$size_diff_h = round($size_diff / 1024**3, 1);
+if ($size_diff < 0)
+	$size_notes[] = array('class' => 'warning', 'icon' => 'exclamation-triangle',
+		'msg' => 'Target drive is '.($size_diff_h * -1).'G smaller than original &mdash; some parts may not fit');
+if ($size_diff > 1024**2 * 100)
+	$size_notes[] = array('class' => 'info', 'icon' => 'info-circle',
+		'msg' => 'Target drive is '.$size_diff_h.'G larger than original &mdash; <b>GParted</b> can be used to enlarge partitions after restore');
+if ($size_diff == 0)
+	$size_notes[] = array('class' => 'info', 'icon' => 'info-circle', 'msg' => 'Target drive is same size as original');
+
+// Target partition for each image partition in a full recovery
+function baremetal_target($drive, $name) {
+	// Must also accommodate NVMe-style partition IDs
+	preg_match('/(.+\D+)(\d+)$/', $name, $m);  // $m[2] contains the part_num
+	return $drive.(preg_match('/^nvme/', $drive) ? 'p' : '').$m[2];
+}
+
+page_header('restore', 4, 'Choose what to restore', 'Restoring to <span class="bt-dev">'.h($status->drive).'</span>. Data on the selected target partitions will be overwritten.');
 ?>
 
-<h1>Restore</h1>
-<h3>Step 4: Choose restore options</h3>
-<p>Select which parts of the backup image to restore:</p>
-
-<form id="redo_form" class="form-horizontal">
-
-  <ul id="redo_tabs" class="nav nav-tabs" style="margin-bottom: 1em;">
-    <li class="active"><a href="#baremetal" data-toggle="tab">Full system recovery <i class="fas fa-info-circle text-info" data-toggle="tooltip" title="Restores backup image even if the target is blank. Master boot record and partition table will be completely overwritten."></i></a></li>
-    <li><a href="#selective" data-toggle="tab">Restore data only <i class="fas fa-info-circle text-info" data-toggle="tooltip" title="Preserves and does not alter the current master boot record or partition table. Only writes data into existing selected partitions."></i></a></li>
+<form id="redo_form">
+  <ul id="redo_tabs" class="nav nav-tabs" role="tablist">
+    <li class="nav-item" role="presentation"><button class="nav-link active" type="button" data-bs-toggle="tab" data-bs-target="#baremetal" role="tab">Full system recovery <i class="fas fa-info-circle bt-field-help" data-bs-toggle="tooltip" title="Restores the backup image even if the target is blank. The boot record and partition table will be completely overwritten."></i></button></li>
+    <li class="nav-item" role="presentation"><button class="nav-link" type="button" data-bs-toggle="tab" data-bs-target="#selective" role="tab">Restore data only <i class="fas fa-info-circle bt-field-help" data-bs-toggle="tooltip" title="Keeps the current boot record and partition table. Only writes data into the existing partitions you select."></i></button></li>
   </ul>
-  <div id="myTabContent" class="tab-content">
+  <div class="tab-content">
 
-    <div class="tab-pane fade active in" id="baremetal">
-      <table class="table table-striped table-hover">
-        <thead>
-          <tr>
-            <th><input type="checkbox" id="toggle" onClick="$('input:checkbox').prop('checked', $(this).prop('checked'));"></th>
-            <th>Part</th>
-            <th>Size</th>
-            <th>Type</th>
-            <th>Filesystem</th>
-            <th>Details</th>
-            <th></th>
-	    <th>Target</th>
-	  </tr>
-        </thead>
-        <tbody>
-	<?php
-	foreach ($image->parts as $name=>$p) {
-		// Must also accommodate NVMe-style partition IDs
-		$part_pre = '';
-		preg_match('/(.+\D+)(\d+)$/', $name, $m);  // $m[2] contains the part_num
-		$part_num = $m[2];
-		if (preg_match('/^nvme/', $status->drive)) $part_pre = 'p';
-		$status->parts[$part] = $status->drive.$part_pre.$part_num;
-		$checked = 'checked';
-		print "<tr>";
-		print "  <td><input type='checkbox' $checked name='baremetal_parts[]' id='baremetal_$name' value='$name'></td>";
-		print "  <td>$name</td>";
-		print "  <td>$p->size</td>";
-		print "  <td nowrap>$p->type</td>";
-		print "  <td nowrap>$p->fs</td>";
-		print "  <td>$p->desc</td>";
-		print "  <td><i class='fas fa-arrow-right text-muted'></i></td>";
-		print "  <td>$status->drive$part_pre$part_num</td>";
-		print "</tr>";
-	}
-	?>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="tab-pane fade" id="selective">
-      <table class="table table-striped table-hover">
-        <thead>
-          <tr>
-            <th><input type="checkbox" id="toggle" onClick="toggleAll($(this));"></th>
-            <th>Part</th>
-            <th>Size</th>
-            <th>Type</th>
-            <th>Filesystem</th>
-            <th>Details</th>
-            <th></th>
-	    <th width="20%">Target</th>
-	  </tr>
-        </thead>
-        <tbody>
-	<?php
-	foreach ($image->parts as $name=>$p) {
-		$checked = '';
-		print "<tr>";
-		print "  <td><p class='form-control-static'><input type='checkbox' $checked name='selective_parts[]' id='selective_$name' value='$name' onClick='toggleEnabled(\"$name\");'></p></td>";
-		print "  <td><p class='form-control-static'>$name</p></td>";
-		print "  <td><p class='form-control-static'>$p->size</p></td>";
-		print "  <td><p class='form-control-static text-nowrap'>$p->type</p></td>";
-		print "  <td><p class='form-control-static text-nowrap'>$p->fs</p></td>";
-		print "  <td><p class='form-control-static'>$p->desc</p></td>";
-		print "  <td><p class='form-control-static'><i class='fas fa-arrow-right text-muted'></i></p></td>";
-		print "  <td><select disabled name='map_$name' id='map_$name' class='form-control' onChange='updateOptions(\"$name\");'>";
-		foreach ($options as $ov=>$od) print "<option value='$ov'>$od</option>";
-		print "  </select></td>";
-		print "</tr>";
-	}
-	?>
-        </tbody>
-      </table>
-      <div class="alert alert-warning">
-        <p><i class="fas fa-exclamation-circle"></i> Remapping partitions to new targets will render a restored operating system unbootable. This option is for advanced users only.</p>
-      </div>
-   </div>
-
-  </div>
-
-  <div class="form-group">
-    <div class="col-sm-12">
-      <div class="panel panel-info">
-	<div id="details-toggle" class="panel-heading" style="cursor: pointer;"><i class="fas fa-angle-down" style="margin-right: 0.5ex;"></i> Image details</div>
-	<div id="details" class="panel-body collapse small">
-	<?php
-	$fields = array(
-		'Name'		=> $image->id,
-		'Version'	=> $image->version,
-		'Created'	=> $image->timestamp,
-		'Notes'		=> '<i>'.$image->notes.'</i>',
-		'Drive size'	=> round($image->drive_bytes / (1024**3), 2).'G ('.number_format($image->drive_bytes).' bytes)',
-	);
-
-	if (is_legacy($image->version)) $fields['Version'] .= ' <i class="fas fa-info-circle text-warning" data-toggle="tooltip" title="Backup created by a previous version of Redo Rescue; compatibility not guaranteed"></i>';
-	$notes = array();
-	$size_diff = $status->drive_bytes - $image->drive_bytes;
-	$size_diff_h = round($size_diff / 1024**3, 1);
-	if ($size_diff < 0)
-		$notes[] = array(
-			'class'	=> 'warning',
-			'icon'	=> 'exclamation-triangle',
-			'msg'	=> 'Target drive is '.($size_diff_h * -1).'G smaller than original &mdash; some parts may not fit',
-		);
-	if ($size_diff > 1024**2 * 100)
-		$notes[] = array(
-			'class'	=> 'info',
-			'icon'	=> 'info-circle',
-			'msg'	=> 'Target drive is '.$size_diff_h.'G larger than original &mdash; <b>GParted</b> can be used to enlarge partitions after restore',
-		);
-	if ($size_diff == 0)
-		$notes[] = array(
-			'class'	=> 'info',
-			'icon'	=> 'info-circle',
-			'msg'	=> 'Target drive is same size as original',
-		);
-	foreach ($fields as $k=>$v) {
-	?>
-          <div class="row">
-            <div class="col-sm-2"><p class="text-right"><b><?php print $k; ?></b></p></div>
-              <div class="col-sm-10"><p>
-		<?php
-		print $v;
-		if ($k=='Drive size') foreach ($notes as $n) print " <i class='fas fa-".$n['icon']." text-".$n['class']."' data-toggle='tooltip' title='".$n['msg']."'></i>";
-		?>
-              </p></div>
-	  </div>
-	<?php
-	}
-	?>
-        </div>
+    <div class="tab-pane fade show active" id="baremetal" role="tabpanel">
+      <div class="table-responsive">
+        <table class="table table-hover" id="bm-parts">
+          <thead>
+            <tr>
+              <th><input class="form-check-input" type="checkbox" aria-label="Select all partitions"></th>
+              <th>Partition</th><th>Details</th><th>Filesystem</th><th>Type</th><th class="text-end">Size</th><th></th><th>Target</th>
+            </tr>
+          </thead>
+          <tbody>
+          <?php foreach ($image->parts as $name=>$p) { ?>
+            <tr>
+              <td><input class="form-check-input" type="checkbox" checked name="baremetal_parts[]" id="baremetal_<?php print h($name); ?>" value="<?php print h($name); ?>"></td>
+              <td><label class="bt-dev" for="baremetal_<?php print h($name); ?>"><?php print h($name); ?></label></td>
+              <td><?php print h($p->desc); ?></td>
+              <td class="text-nowrap"><span class="bt-tag"><?php print h($p->fs ?: 'raw'); ?></span></td>
+              <td class="text-nowrap"><?php print h($p->type); ?></td>
+              <td class="text-end text-nowrap"><?php print h($p->size); ?></td>
+              <td><i class="fas fa-arrow-right text-muted"></i></td>
+              <td class="bt-dev"><?php print h(baremetal_target($status->drive, $name)); ?></td>
+            </tr>
+          <?php } ?>
+          </tbody>
+        </table>
       </div>
     </div>
-  </div>
 
-  <div class="form-group">
-    <div class="col-sm-12 text-right">
-      <button type="reset" class="btn btn-default" onClick="$('#content').load('action.php?page=restore-3');">&lt; Back</button>
-      <button type="submit" class="btn btn-warning">Next &gt;</button>
+    <div class="tab-pane fade" id="selective" role="tabpanel">
+      <div class="table-responsive">
+        <table class="table" id="sel-parts">
+          <thead>
+            <tr>
+              <th><input class="form-check-input" type="checkbox" id="sel-toggle" aria-label="Select all partitions"></th>
+              <th>Partition</th><th>Details</th><th>Filesystem</th><th class="text-end">Size</th><th></th><th style="width: 30%">Target</th>
+            </tr>
+          </thead>
+          <tbody>
+          <?php foreach ($image->parts as $name=>$p) { $n = h($name); ?>
+            <tr>
+              <td><input class="form-check-input" type="checkbox" name="selective_parts[]" id="selective_<?php print $n; ?>" value="<?php print $n; ?>" onClick="toggleEnabled('<?php print $n; ?>');"></td>
+              <td><label class="bt-dev" for="selective_<?php print $n; ?>"><?php print $n; ?></label></td>
+              <td><?php print h($p->desc); ?></td>
+              <td class="text-nowrap"><span class="bt-tag"><?php print h($p->fs ?: 'raw'); ?></span></td>
+              <td class="text-end text-nowrap"><?php print h($p->size); ?></td>
+              <td><i class="fas fa-arrow-right text-muted"></i></td>
+              <td>
+                <select disabled name="map_<?php print $n; ?>" id="map_<?php print $n; ?>" class="form-select form-select-sm" onChange="updateOptions();">
+                  <?php foreach ($options as $ov=>$od) print "<option value='".h($ov)."'>".h($od)."</option>"; ?>
+                </select>
+              </td>
+            </tr>
+          <?php } ?>
+          </tbody>
+        </table>
+      </div>
+      <div class="alert alert-warning d-flex gap-2 mt-3 mb-2">
+        <i class="fas fa-exclamation-circle mt-1"></i>
+        <div>Restoring partitions to different targets will make a restored operating system unbootable. This option is for advanced users only.</div>
+      </div>
     </div>
+
   </div>
 
+  <?php include('_image-details.inc.php'); ?>
+
+  <div class="bt-actions">
+    <button type="button" class="btn btn-outline-secondary" onClick="BT.show('restore-3');"><i class="fas fa-arrow-left me-1"></i> Back</button>
+    <button type="submit" class="btn btn-danger"><i class="fas fa-download me-1"></i> Restore</button>
+  </div>
 </form>
 
 <script>
-
-<?php if (isset($status->type)) { ?>
-	// Set selection options
-	$(document).ready(function() {
-		// Uncheck all boxes
-		$('input:checkbox').prop('checked', false);
-		// Switch tab
-		$('.nav-tabs a[href="#<?php print $status->type; ?>"]').tab('show');
-		<?php
-		if (isset($status->parts)) foreach ($status->parts as $s=>$d) {
-			print '$("#baremetal_'.$s.'").prop("checked", true);';
-			print '$("#selective_'.$s.'").prop("checked", true);';
-			print '$("#map_'.$s.'").prop("disabled", false).val("'.$d.'");';
-			print 'updateOptions("'.$s.'");';
-		}
-		?>
-	});
-<?php } // End set selection options ?>
-	
-$("#redo_form").submit(function(event) {
-	event.preventDefault();
-	var type = $('ul#redo_tabs li.active a').attr('href');
-	var vars = $('#redo_form '+type+' :input').serializeArray();
-	vars.push({ name: 'type', value: type });
-	var posting = $.ajax({
-		'url': '/ajax/save-target.php',
-       		'type': 'POST',
-		data: vars,
-	})
-	posting.done(function(data) {
-		r = $.parseJSON(data);
-		if (r['status']) {
-			// Success: Proceed to next page
-			$('#content').load('action.php?page=restore-progress');
-		} else {
-			// Failure: Notify user of error
-			bootbox.alert('<h3>Uh-oh!</h3><div class="alert alert-danger"><p><i class="fas fa-exclamation-triangle"></i> <b>Error: ' + r['error'] + '</b></p></div><p>Check your settings and try again.</p>');
-		}
-	});
-});
-
-$('#details-toggle').click(function() {
-	$('#details').toggle();
-	$('i', this).toggleClass("fa-angle-up fa-angle-down");
-});
-
-function toggleAll(e) {
-	var state = $(e).prop('checked');
-	$('#selective select option').prop('disabled', false);
-	$('input:checkbox').prop('checked', $(e).prop('checked'));
-	$('#selective select').prop('disabled', !$(e).prop('checked'));
-	if (!$(e).prop('checked')) $('#selective select').val('');
-}
+BT.bindPartitions('#bm-parts');
 
 function toggleEnabled(part) {
-	$('#map_'+part).prop( 'disabled', !$('#selective_'+part).is(':checked') );
-	if (!$('#selective_'+part).is(':checked')) {
-		$('#map_'+part).val('');
-		updateOptions(part);
-	}
+	var on = $('#selective_' + part).is(':checked');
+	$('#map_' + part).prop('disabled', !on);
+	if (!on) $('#map_' + part).val('');
+	updateOptions();
 }
 
-function updateOptions(part) {
-	// Re-enable all options
-	$('#selective select option').prop('disabled', false);
-	$('#selective select').each(function() {
-		// Disable selected options from all dropdowns (except "None")
-		if ($(this).val() != '') {
-			$('#selective select option[value="'+$(this).val()+'"]').not(":selected").prop('disabled', true);
-		}
-	});
-	$('#selective select').each(function() {
-		// Enable all selected options
-		$(this).find('option[value="'+$(this).val()+'"]').prop('disabled', false);
+// A target partition can only be chosen once (except "None")
+function updateOptions() {
+	var $selects = $('#selective select');
+	$selects.find('option').prop('disabled', false);
+	$selects.each(function () {
+		if ($(this).val() !== '') $selects.not(this).find('option[value="' + $(this).val() + '"]').prop('disabled', true);
 	});
 }
 
+$('#sel-toggle').on('change', function () {
+	var on = this.checked;
+	$('#sel-parts tbody input[type=checkbox]').prop('checked', on);
+	$('#selective select').prop('disabled', !on);
+	if (!on) $('#selective select').val('');
+	updateOptions();
+});
+
+<?php if (isset($status->type)) { ?>
+// Restore the previous selection
+$('#redo_form tbody input[type=checkbox]').prop('checked', false);
+var savedTab = document.querySelector('#redo_tabs [data-bs-target="#<?php print preg_replace('/[^a-z]/', '', $status->type); ?>"]');
+if (savedTab) bootstrap.Tab.getOrCreateInstance(savedTab).show();
+<?php
+if (isset($status->parts)) foreach ($status->parts as $s=>$d) {
+	$s = sane_dev($s); $d = sane_dev($d);
+	print '$("#baremetal_'.$s.'").prop("checked", true);';
+	print '$("#selective_'.$s.'").prop("checked", true);';
+	print '$("#map_'.$s.'").prop("disabled", false).val("'.$d.'");';
+}
+?>
+updateOptions();
+$('#bm-parts tbody input[type=checkbox]').first().trigger('change');
+<?php } ?>
+
+$("#redo_form").on('submit', function (event) {
+	event.preventDefault();
+	var type = $('#redo_tabs .nav-link.active').attr('data-bs-target');
+	var vars = $(type + ' :input').serializeArray();
+	vars.push({ name: 'type', value: type });
+	BT.submit('/ajax/save-target.php', vars, 'restore-progress', 'Unable to start the restore');
+});
 </script>

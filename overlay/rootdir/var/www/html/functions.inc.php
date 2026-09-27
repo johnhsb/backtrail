@@ -38,6 +38,7 @@ function get_version() {
 // Determine tool for the given filesystem
 //
 function get_fs_tool($fs) {
+	$fs = (string) $fs;
 	if (preg_match('/btrfs/i', $fs)) return 'btrfs';
 	if (preg_match('/exfat/i', $fs)) return 'exfat';
 	if (preg_match('/ext/i', $fs)) return 'extfs';
@@ -135,15 +136,13 @@ function get_disk_options($disks, $type_filter='/(^disk)/') {
 	$options = array();
 	foreach ($disks->blockdevices as $d) {
 		if (!preg_match($type_filter, $d->type)) continue;
-		// Prevent redundant vendor names
-		$d->model = str_replace($d->vendor, '', $d->model);
-		$d->tran = strtoupper($d->tran);
+		$d->tran = strtoupper((string) $d->tran);
 		if ($d->type=='rom') $d->type = 'CD/DVD';
 		$os = NULL; if (property_exists($d, 'os')) $os = $d->os;
 		$desc = $d->size;
 		$desc .= (empty($d->tran)?"":" $d->tran");
 		$desc .= (empty($d->type)?"":" $d->type");
-		$model = trim("$d->vendor $d->model");
+		$model = disk_model($d);
 		$desc .= (empty($model)?"":", $model");
 		$options[$d->name] = "$d->name: ".$desc.(empty($os)?"":", $os");
 	}
@@ -161,7 +160,7 @@ function get_part_options($disks, $exclude=array(), $fstype_filter='/fat.*|exfat
 			// The disk has children, so check each part
 			foreach ($d->children as $c) {
 				if (in_array($c->name, $exclude)) continue;
-				if (!preg_match($fstype_filter, $c->fstype)) continue;
+				if (!preg_match($fstype_filter, (string) $c->fstype)) continue;
 				$p = array(
 					'name'	=> $c->name,
 					'vendor'=> $d->vendor,
@@ -170,16 +169,16 @@ function get_part_options($disks, $exclude=array(), $fstype_filter='/fat.*|exfat
 					'type'	=> $c->type,
 					'tran'	=> $c->tran,
 					'fstype'=> $c->fstype,
-					'ptdesc'=> $c->ptdesc,
+					'ptdesc'=> $c->ptdesc ?? '',
 					'label'	=> $c->label,
-					'os'	=> $c->os,
+					'os'	=> $c->os ?? '',
 				);
 				$options[$c->name] = clean_part_desc($p);
 			}
 		}
 		// Then check the device itself for a valid filesystem
 		if (in_array($d->name, $exclude)) continue;
-		if (!preg_match($fstype_filter, $d->fstype)) continue;
+		if (!preg_match($fstype_filter, (string) $d->fstype)) continue;
 		$p = array(
 			'name'	=> $d->name,
 			'vendor'=> $d->vendor,
@@ -206,9 +205,9 @@ function clean_part_desc($d=array()) {
 	$desc .= (empty($d['type'])?"":" ".$d['type']);
 	$desc .= (empty($d['fstype'])?"":" (".$d['fstype'].")");
 	$desc .= (empty($d['ptdesc'])?"":" ".$d['ptdesc']);
-	$d['vendor'] = trim(preg_replace('/\s+/', ' ', $d['vendor']));
-	$d['model'] = trim(preg_replace('/\s+/', ' ', $d['model']));
-	$d['model'] = trim(str_replace($d['vendor'], '', $d['model']));
+	$d['vendor'] = trim(preg_replace('/\s+/', ' ', (string) $d['vendor']));
+	$d['model'] = trim(preg_replace('/\s+/', ' ', (string) $d['model']));
+	if ($d['vendor'] !== '') $d['model'] = trim(str_replace($d['vendor'], '', $d['model']));
 	$vm = trim($d['vendor'].' '.$d['model']);
 	$desc .= (empty($vm)?"":" on $vm");
 	$desc .= (empty($d['label'])?"":", ".$d['label']);
@@ -483,41 +482,70 @@ function search_network_shares() {
 // Insert javascript snippet to activate tooltips
 //
 function activate_tooltips() {
-	print '
-	<script>
-	$("body").on("click", "*", function(){ $(\'[data-toggle="tooltip"]\').tooltip("hide") });
-	$(document).ready(function() {
-		$(\'[data-toggle="tooltip"]\').tooltip({
-			container: "body",
-			placement: "auto right",
-			trigger: "hover",
-			html: true,
-		});
-	});
-	</script>';
+	print '<script>BT.initTooltips();</script>';
+}
+
+//
+// Escape text for HTML output
+//
+function h($text) {
+	return htmlspecialchars((string) $text, ENT_QUOTES, 'UTF-8');
+}
+
+//
+// Disk vendor and model without repeating the vendor (lsblk pads the vendor)
+//
+function disk_model($d) {
+	$vendor = trim((string) ($d->vendor ?? ''));
+	$model = trim((string) ($d->model ?? ''));
+	if ($vendor !== '' && stripos($model, $vendor) === 0) $vendor = '';
+	return trim("$vendor $model");
+}
+
+//
+// Convert an lsblk size such as "476.9G" to bytes
+//
+function size_bytes($size) {
+	if (!preg_match('/^([\d.]+)([BKMGTP]?)/i', trim((string) $size), $m)) return 0;
+	$exp = strpos('BKMGTP', strtoupper($m[2] ?: 'B'));
+	return (float) $m[1] * pow(1024, $exp);
+}
+
+//
+// Print the operation name, step indicator, title and lead text of a page
+//
+function page_header($op, $step, $title, $lead='') {
+	$steps = array(
+		'backup'  => array('Source', 'Partitions', 'Destination', 'Folder', 'Name'),
+		'restore' => array('Source', 'Image', 'Target', 'Options'),
+		'verify'  => array('Source', 'Image', 'Partitions'),
+	);
+	$names = array('backup' => 'Back up', 'restore' => 'Restore', 'verify' => 'Verify');
+	print '<div class="bt-op">'.$names[$op].'</div>';
+	if ($step > 0) {
+		print '<ol class="bt-steps mt-3" aria-label="Steps">';
+		foreach ($steps[$op] as $i => $name) {
+			$n = $i + 1;
+			$state = ($n < $step) ? 'done' : (($n == $step) ? 'now' : '');
+			$dot = ($n < $step) ? '<i class="fas fa-check"></i>' : $n;
+			print "<li class='$state'".($n == $step ? " aria-current='step'" : '')."><span class='bt-dot'>$dot</span>$name</li>";
+		}
+		print '</ol>';
+	}
+	print '<h1 class="bt-title">'.$title.'</h1>';
+	if (!empty($lead)) print '<p class="bt-lead">'.$lead.'</p>';
 }
 
 //
 // Show a fatal error message and optional back button
 //
 function crash($message="Something went wrong!", $page=NULL) {
-	print "<div class='alert alert-danger'><p><i class='fas fa-exclamation-triangle'></i> <b>$message</b></p></div>";
-	if (!empty($page)) {
-		print "<div class='row'>";
-		print "  <div class='col-xs-12 text-center'>";
-		print "    <button class='btn btn-default' onClick='$(\"#content\").load(\"action.php?page=$page\");'>&lt; Back</button>";
-		print "  </div>";
-		print "</div>";
-	}
+	print "<div class='bt-crash mx-auto mt-4'>";
+	print "  <div class='alert alert-danger d-flex gap-2'><i class='fas fa-exclamation-triangle mt-1'></i><div><b>$message</b></div></div>";
+	if (!empty($page)) print "  <button class='btn btn-outline-secondary' onClick='BT.show(\"$page\");'><i class='fas fa-arrow-left me-1'></i> Back</button>";
+	print "</div>";
 	beep('warning');
 	die();
-}
-
-//
-// Convert encoded data
-//
-function convert_data($data) {
-	return convert_uudecode(base64_decode($data));
 }
 
 //

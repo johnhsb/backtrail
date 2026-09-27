@@ -13,89 +13,96 @@ set_status($status);
 $disks = get_disks();
 foreach ($disks->blockdevices as $d) if ($d->name==$status->drive) $disk = $d;
 if (!isset($disk)) crash('Unable to read information for selected drive.');
-?>
 
-<h1>Backup</h1>
-<h3>Step 2: Select parts to save</h3>
-<p>Select which parts of the drive to include in the backup:</p>
-
-<form id="redo_form" class="form-horizontal">
-
-  <table class="table table-striped table-hover">
-    <thead>
-      <tr>
-        <th><input type="checkbox" id="toggle" onClick="$('input:checkbox').prop('checked', $(this).prop('checked'));"></th>
-        <th>ID</th>
-	<th>Size</th>
-	<th>Type</th>
-        <th>Filesystem</th>
-        <th>Details</th>
-      </tr>
-    </thead>
-    <tbody>
-<?php
-$fsuse_var = 'fsuse%';
-foreach ($disk->children as $p) {
+// Build the partition list (extended partitions are only containers)
+$parts = array();
+foreach (($disk->children ?? array()) as $p) {
 	if ($p->parttype=='0x5') continue;
-	$pct = '';
-	if (property_exists($p, $fsuse_var)) $pct = $p->$fsuse_var;
 	$notice = '';
-	if (get_fs_tool($p->fstype)=='dd') $notice = ' <a data-toggle="tooltip" title="This filesystem requires imaging the entire partition, rather than simply the saved data on it."><i class="fas fa-info-circle text-info"></i></a>';
-	if (substr($p->fstype,0,6)=='crypto') $notice .= ' <a data-toggle="tooltip" title="This partition is encrypted."><i class="fas fa-lock text-success"></i></a>';
-	if ($p->fstype=='swap') {
-		$notice = ' <a data-toggle="tooltip" title="In most cases it is not necessary to image a swap partition."><i class="fas fa-info-circle text-info"></i></a>';
-		$checked = '';
-	}
+	if (get_fs_tool($p->fstype)=='dd') $notice = ' <i class="fas fa-info-circle bt-field-help" data-bs-toggle="tooltip" title="This filesystem requires imaging the entire partition, rather than simply the saved data on it."></i>';
+	if (substr((string) $p->fstype,0,6)=='crypto') $notice .= ' <i class="fas fa-lock text-success ms-1" data-bs-toggle="tooltip" title="This partition is encrypted."></i>';
+	if ($p->fstype=='swap') $notice = ' <i class="fas fa-info-circle bt-field-help" data-bs-toggle="tooltip" title="In most cases it is not necessary to image a swap partition."></i>';
 	if (isset($status->parts)) {
 		// Restore the current setting
-		$checked = '';
-		if (in_array($p->name, $status->parts)) $checked = 'checked';
+		$checked = in_array($p->name, $status->parts);
 	} else {
 		// Check most partitions by default
-		if ($p->fstype!=='swap') $checked = 'checked';
+		$checked = ($p->fstype!=='swap');
 	}
-	$desc = array();
-	if (!empty($p->label)) $desc[] = $p->label;
-	if (!empty($p->os)) $desc[] = $p->os;
-	$desc = trim(implode(' ', $desc));
-	print "<tr".(empty($notice)?'':' class="info"').">";
-	print "  <td><input type='checkbox' $checked name='parts[]' id='part_$p->name' value='$p->name'></td>";
-	print "  <td>$p->name</td>";
-	print "  <td>$p->size</td>";
-	print "  <td nowrap>$p->ptdesc</td>";
-	print "  <td nowrap>$p->fstype$notice</td>";
-	print "  <td>$desc</td>";
-	print "</tr>";
+	$desc = trim(implode(' · ', array_filter(array($p->label ?? '', $p->os ?? ''))));
+	$parts[] = array('p' => $p, 'notice' => $notice, 'checked' => $checked, 'desc' => $desc, 'bytes' => size_bytes($p->size));
 }
+$model = disk_model($disk);
+// Label only the segments of the partition bar that are wide enough to read
+$total_bytes = max(array_sum(array_column($parts, 'bytes')), 1);
 
+page_header('backup', 2, 'Choose partitions to save', 'The partition table and boot record are always included in the backup.');
 ?>
-    </tbody>
-  </table>
 
-  <div class="form-group">
-    <div class="col-sm-12 text-right">
-      <button type="reset" class="btn btn-default" onClick="$('#content').load('action.php?page=backup-1');">&lt; Back</button>
-      <button type="submit" class="btn btn-warning">Next &gt;</button>
+<form id="redo_form">
+  <div class="bt-split">
+    <div class="bt-card">
+      <div class="bt-diskhead">
+        <span class="bt-dev"><?php print h($disk->name); ?></span>
+        <span><?php print h($model); ?></span>
+        <span class="bt-size"><?php print h($disk->size); ?><?php if (!empty($disk->pttype)) print ' · '.h(strtoupper($disk->pttype)); ?></span>
+      </div>
+      <div class="bt-pbar" aria-hidden="true">
+        <?php foreach ($parts as $x) { ?>
+        <span data-part="<?php print h($x['p']->name); ?>" style="flex: <?php print max($x['bytes'], 1); ?> 1 0" title="<?php print h($x['p']->name.' · '.$x['p']->size); ?>"><?php if ($x['bytes'] / $total_bytes >= .08) print h($x['p']->name); ?></span>
+        <?php } ?>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover" id="parts">
+          <thead>
+            <tr>
+              <th><input class="form-check-input" type="checkbox" aria-label="Select all partitions"></th>
+              <th>Partition</th>
+              <th>Label</th>
+              <th>Filesystem</th>
+              <th>Type</th>
+              <th class="text-end">Size</th>
+            </tr>
+          </thead>
+          <tbody>
+          <?php foreach ($parts as $x) { $p = $x['p']; ?>
+            <tr>
+              <td><input class="form-check-input" type="checkbox" name="parts[]" id="part_<?php print h($p->name); ?>" value="<?php print h($p->name); ?>" data-bytes="<?php print $x['bytes']; ?>"<?php print $x['checked'] ? ' checked' : ''; ?>></td>
+              <td><label class="bt-dev" for="part_<?php print h($p->name); ?>"><?php print h($p->name); ?></label></td>
+              <td><?php print h($x['desc']); ?></td>
+              <td class="text-nowrap"><span class="bt-tag"><?php print h($p->fstype ?: 'raw'); ?></span><?php print $x['notice']; ?></td>
+              <td class="text-nowrap"><?php print h($p->ptdesc ?? ''); ?></td>
+              <td class="text-end text-nowrap"><?php print h($p->size); ?></td>
+            </tr>
+          <?php } ?>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="bt-card bt-summary">
+      <span class="text-muted">Size of selected partitions</span>
+      <span class="bt-big" id="sel-size">0 B</span>
+      <span class="text-muted">Only used space is saved for supported filesystems, so the image is usually much smaller.</span>
+      <div class="bt-row"><span>Selected</span><b><span id="sel-count">0</span> of <?php print sizeof($parts); ?></b></div>
+      <div class="bt-row"><span>Drive size</span><b><?php print h($disk->size); ?></b></div>
     </div>
   </div>
 
+  <div class="bt-actions">
+    <button type="button" class="btn btn-outline-secondary" onClick="BT.show('backup-1');"><i class="fas fa-arrow-left me-1"></i> Back</button>
+    <button type="submit" class="btn btn-primary">Next <i class="fas fa-arrow-right ms-1"></i></button>
+  </div>
 </form>
 
 <script>
-$("#redo_form").submit(function(event) {
+BT.bindPartitions('#parts');
+$("#redo_form").on('submit', function (event) {
 	event.preventDefault();
-	var url = 'action.php?page=backup-3';
-	var formdata = $('#redo_form').serializeArray();
-	// Include unchecked boxes
-	formdata = formdata.concat(
-		$('#redo_form input[type=checkbox]:not(:checked)').map(
-			function() {
-				return { 'name': this.name, 'value': false }
-			}).get()
-		);
-	var posting = $.post(url, formdata);
-	posting.done(function(data) {
-		$("#content").html($(data));
-	});
+	var formdata = $(this).serializeArray();
+	// Include unchecked boxes so the selection is saved
+	formdata = formdata.concat($('#parts tbody input[type=checkbox]:not(:checked)').map(function () {
+		return { name: this.name, value: false };
+	}).get());
+	BT.post('backup-3', formdata);
 });
 </script>

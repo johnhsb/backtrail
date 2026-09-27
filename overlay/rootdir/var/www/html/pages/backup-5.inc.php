@@ -6,63 +6,37 @@ $status = get_status();
 if (array_key_exists('dir', $_REQUEST)) $status->dir = $_REQUEST['dir'];
 
 // Make sure the path exists
-if (!is_dir(sane_path($status->dir))) crash('Not a valid path: '.sane_path($status->dir), 'backup-4');
+if (!is_dir(sane_path($status->dir))) crash('Not a valid path: '.h(sane_path($status->dir)), 'backup-4');
 
 // Save status
 set_status($status);
 
 $suggested_name = date('Ymd');
 if (!empty($status->hostname)) $suggested_name .= '-'.$status->hostname;
+
+page_header('backup', 5, 'Name the backup', 'The name identifies this backup image when you restore it later.');
 ?>
 
-<h1>Backup</h1>
-<h3>Step 5: Name the backup</h3>
-<p>Enter a name to identify this backup image:</p>
-
-<form id="redo_form" class="form-horizontal">
-
-  <div class="form-group">
-    <label class="col-sm-2 control-label">Name <a data-toggle="tooltip" title="Your name should contain only letters, numbers, dashes and underscores"><i class="fas fa-info-circle text-info"></i></a></label>
-    <div class="col-sm-10">
-      <input class="form-control" id="name" name="name" placeholder="<?php print $suggested_name; ?>" value="<?php print $suggested_name; ?>" type="text">
+<form id="redo_form">
+  <div class="bt-card">
+    <div class="mb-3">
+      <label class="form-label fw-medium" for="name">Name <i class="fas fa-info-circle bt-field-help" data-bs-toggle="tooltip" title="Use only letters, numbers, dashes and underscores"></i></label>
+      <input class="form-control" id="name" name="name" placeholder="<?php print h($suggested_name); ?>" value="<?php print h($suggested_name); ?>" type="text">
+    </div>
+    <div>
+      <label class="form-label fw-medium" for="notes">Notes <span class="text-muted fw-normal">(optional)</span></label>
+      <input class="form-control" id="notes" name="notes" placeholder="What is on this drive, or why you made this backup" value="" type="text">
     </div>
   </div>
-
-  <div class="form-group">
-    <label class="col-sm-2 control-label">Notes <a data-toggle="tooltip" title="Optionally add a note describing your backup image"><i class="fas fa-info-circle text-info"></i></a></label>
-    <div class="col-sm-10">
-      <input class="form-control" id="notes" name="notes" placeholder="Optional description of this backup" value="" type="text">
-    </div>
+  <div class="bt-actions">
+    <button type="button" class="btn btn-outline-secondary" onClick="BT.show('backup-4');"><i class="fas fa-arrow-left me-1"></i> Back</button>
+    <button type="submit" class="btn btn-primary"><i class="fas fa-upload me-1"></i> Start backup</button>
   </div>
-
-  <div class="form-group">
-    <div class="col-sm-12 text-right">
-      <button type="reset" class="btn btn-default" onClick="$('#content').load('action.php?page=backup-4');">&lt; Back</button>
-      <button type="submit" class="btn btn-warning">Next &gt;</button>
-    </div>
-  </div>
-
 </form>
 
 <script>
-$("#redo_form").submit(function(event) {
+$("#redo_form").on('submit', function (event) {
 	event.preventDefault();
-	var name = $('#name').val();
-	var notes = $('#notes').val();
-	$.ajax({
-		'url': '/ajax/save-id.php',
-       		'type': 'POST',
-		data: { type: 'backup', name: name, notes: notes },
-	})
-	.done(function(data) {
-		r = $.parseJSON(data);
-		if (r['status']) {
-			// Success: Proceed to next page
-			$('#content').load('action.php?page=backup-progress');
-		} else {
-			// Failure: Notify user of error
-			bootbox.alert('<h3>Invalid backup name</h3><div class="alert alert-danger"><p><i class="fas fa-exclamation-triangle"></i> <b>Error: ' + r['error'] + '</b></p></div><p>Check your settings and try again.</p>');
-		}
-	});
+	BT.submit('/ajax/save-id.php', { type: 'backup', name: $('#name').val(), notes: $('#notes').val() }, 'backup-progress', 'Invalid backup name');
 });
 </script>
