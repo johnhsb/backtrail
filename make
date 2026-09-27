@@ -143,10 +143,11 @@ ff02::1		ip6-allnodes
 ff02::2		ip6-allrouters
 END
 
-# Set default locale
+# Set default locale: UTF-8 so non-ASCII names (e.g. CJK labels)
+# are not escaped, while program messages stay in English for parsing
 cat >> /etc/bash.bashrc <<END
-export LANG="C"
-export LC_ALL="C"
+export LANG="C.UTF-8"
+export LC_ALL="C.UTF-8"
 END
 
 # Export environment
@@ -217,7 +218,7 @@ apt install --no-install-recommends --yes \
 	gir1.2-notify-0.7 tint2 nitrogen xfce4-appfinder xfce4-power-manager \
 	gsettings-desktop-schemas lxrandr lxmenu-data lxterminal lxappearance \
 	network-manager-gnome gtk2-engines numix-gtk-theme gtk-theme-switch \
-	fonts-lato pcmanfm libfm-modules gpicview mousepad x11vnc pwgen \
+	fonts-lato fonts-noto-cjk pcmanfm libfm-modules gpicview mousepad x11vnc pwgen \
 	xvkbd librsvg2-common \
 	\
 	beep laptop-detect os-prober discover lshw-gtk hdparm smartmontools \
@@ -267,6 +268,8 @@ ln -s /usr/bin/pcmanfm /usr/bin/nautilus
 # Configure nginx/php-fpm application server
 perl -p -i -e 's/^user = .*$/user = root/g' /etc/php/$PHPV/fpm/pool.d/www.conf
 perl -p -i -e 's/^group = .*$/group = root/g' /etc/php/$PHPV/fpm/pool.d/www.conf
+# Workers start with a cleared environment; commands they run need UTF-8
+echo 'env[LANG] = C.UTF-8' >> /etc/php/$PHPV/fpm/pool.d/www.conf
 perl -p -i -e 's/^ExecStart=(.*)$/ExecStart=\$1 -R/g' /lib/systemd/system/php$PHPV-fpm.service
 cat > /etc/nginx/sites-available/redo <<'END'
 server {
