@@ -46,5 +46,5 @@ tint2 &
 # Give user 'redo' access to the running X server
 xhost si:localuser:redo &
 
-# Launch the Backtrail app in Chromium
-( sleep 1 && sudo -u redo chromium --start-maximized --app=http://localhost ) &
+# Launch the Backtrail app window (WebKitGTK)
+( sleep 1 && sudo -u redo backtrail-app ) &

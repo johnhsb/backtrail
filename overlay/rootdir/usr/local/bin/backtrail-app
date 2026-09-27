@@ -1,0 +1,102 @@
+#!/usr/bin/python3
+# Show the Backtrail web app (served by nginx on localhost) in its own
+# window, using the WebKitGTK engine
+import os
+import sys
+from urllib.parse import urlsplit
+
+# No accessibility bus runs in the live session; skip the warning about it
+os.environ.setdefault('NO_AT_BRIDGE', '1')
+
+import gi
+gi.require_version('Gtk', '3.0')
+gi.require_version('WebKit2', '4.1')
+from gi.repository import GLib, Gtk, Gdk, WebKit2
+
+URL = sys.argv[1] if len(sys.argv) > 1 else 'http://localhost'
+ZOOM_STEPS = [0.67, 0.75, 0.8, 0.9, 1.0, 1.1, 1.25, 1.5, 1.75, 2.0]
+
+GLib.set_prgname('backtrail')
+GLib.set_application_name('Backtrail')
+
+# Keep cookies (the chosen language) when the window is closed and reopened;
+# local storage (the chosen theme) is kept by default
+data_dir = os.path.join(GLib.get_user_data_dir(), 'backtrail')
+os.makedirs(data_dir, exist_ok=True)
+WebKit2.WebContext.get_default().get_website_data_manager().get_cookie_manager().set_persistent_storage(
+    os.path.join(data_dir, 'cookies.sqlite'), WebKit2.CookiePersistentStorage.SQLITE)
+
+view = WebKit2.WebView()
+settings = view.get_settings()
+settings.set_enable_developer_extras(False)
+settings.set_javascript_can_access_clipboard(True)
+settings.set_enable_back_forward_navigation_gestures(False)
+
+window = Gtk.Window(title='Backtrail')
+window.set_icon_name('backtrail')
+window.set_default_size(1024, 700)
+window.maximize()
+window.add(view)
+
+
+def on_title(view, _param):
+    window.set_title(view.get_title() or 'Backtrail')
+
+
+def zoom(step):
+    level = view.get_zoom_level()
+    if step == 0:
+        view.set_zoom_level(1.0)
+        return
+    near = min(range(len(ZOOM_STEPS)), key=lambda i: abs(ZOOM_STEPS[i] - level))
+    view.set_zoom_level(ZOOM_STEPS[max(0, min(len(ZOOM_STEPS) - 1, near + step))])
+
+
+def on_key(_window, event):
+    ctrl = event.state & Gdk.ModifierType.CONTROL_MASK
+    key = Gdk.keyval_name(event.keyval)
+    if key == 'F5' or (ctrl and key == 'r'):
+        view.reload()
+    elif ctrl and key in ('plus', 'equal', 'KP_Add'):
+        zoom(1)
+    elif ctrl and key in ('minus', 'KP_Subtract'):
+        zoom(-1)
+    elif ctrl and key in ('0', 'KP_0'):
+        zoom(0)
+    else:
+        return False
+    return True
+
+
+def on_policy(_view, decision, kind):
+    # Stay on the app: ignore links to other sites and new windows
+    if kind == WebKit2.PolicyDecisionType.NEW_WINDOW_ACTION:
+        decision.ignore()
+        return True
+    if kind == WebKit2.PolicyDecisionType.NAVIGATION_ACTION:
+        uri = decision.get_navigation_action().get_request().get_uri()
+        if urlsplit(uri).netloc != urlsplit(URL).netloc:
+            decision.ignore()
+            return True
+    return False
+
+
+def on_context_menu(_view, menu, _event, _hit):
+    # Keep only editing actions (copy, paste, select all); drop Back,
+    # Reload, Inspect and the like
+    keep = {WebKit2.ContextMenuAction.COPY, WebKit2.ContextMenuAction.CUT,
+            WebKit2.ContextMenuAction.PASTE, WebKit2.ContextMenuAction.SELECT_ALL}
+    for item in list(menu.get_items()):
+        if item.get_stock_action() not in keep:
+            menu.remove(item)
+    return menu.get_n_items() == 0
+
+
+view.connect('notify::title', on_title)
+view.connect('context-menu', on_context_menu)
+view.connect('decide-policy', on_policy)
+window.connect('key-press-event', on_key)
+window.connect('destroy', Gtk.main_quit)
+view.load_uri(URL)
+window.show_all()
+Gtk.main()

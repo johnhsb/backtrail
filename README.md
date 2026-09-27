@@ -49,9 +49,9 @@ format, so backups made with Redo Rescue can be restored with Backtrail. See
   * Error handling and low space warnings
   * Detailed logs can be copied to clipboard
   * Restores images made with Redo Rescue and Redo Backup 1.0.4
-  * Browser-based application with PHP backend
+  * Web application with PHP backend, shown in its own window (WebKitGTK)
   * Displays Chinese, Japanese and Korean partition labels and file names
-  * Browser-based interface with light and dark modes
+  * Interface with light and dark modes
   * Interface in English, Korean, Japanese, Simplified Chinese, Spanish,
     German, French and Brazilian Portuguese
   * System tools and diagnostic programs included in image

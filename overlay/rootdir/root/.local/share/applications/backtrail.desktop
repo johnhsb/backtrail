@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Exec=sudo -u redo chromium --start-maximized --app=http://localhost
+Exec=sudo -u redo backtrail-app
 Name=Backtrail
 Comment=Backup and recovery
 Categories=Utility;

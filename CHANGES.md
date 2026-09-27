@@ -42,6 +42,19 @@
     for Intel, Realtek, Qualcomm Atheros and Broadcom adapters (non-free
     build only) and `wpasupplicant`, which NetworkManager needs for Wi-Fi.
     Wired connections remain recommended for backup and restore
+  * Show the app in its own WebKitGTK window (`/usr/local/bin/backtrail-app`)
+    instead of Chromium. The image is smaller, and the 32-bit system now
+    also runs the app on CPUs without SSE3 (Pentium III and M, Athlon XP).
+    The desktop no longer has a general web browser
+  * Make the ISO about 500 MB smaller: name `lxpolkit` as the polkit agent
+    (trixie otherwise picks `ukui-polkit`, which pulls in Qt, OpenCV and
+    GDAL), leave program translations and the Noto CJK serif faces out of
+    the image, leave the AMD, NVIDIA and Intel graphics drivers and their
+    firmware out of the initrd (they load from the live filesystem), and
+    drop CPU microcode
+  * Install non-free firmware without recommended packages and name the
+    trixie firmware packages that `firmware-misc-nonfree` only recommends
+    (Intel graphics and network, MediaTek and Ralink Wi-Fi, NVIDIA)
   * Translate the web app into Korean, Japanese, Simplified Chinese, Spanish,
     German, French and Brazilian Portuguese, chosen from a language menu with
     flags; `tools/i18n-check.py` checks the translation files

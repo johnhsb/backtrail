@@ -146,7 +146,6 @@ startup_notifications = 1
 launcher_tooltip = 1
 launcher_item_app = xfce4-appfinder.desktop
 launcher_item_app = backtrail.desktop
-launcher_item_app = chromium.desktop
 launcher_item_app = pcmanfm.desktop
 launcher_item_app = shutdown.desktop
 

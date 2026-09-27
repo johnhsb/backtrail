@@ -176,19 +176,19 @@ script_build() {
 		# Trixie-specific PHP version and packages
 		# (hfsutils and reiser4progs were removed from Debian 13)
 		PHPV="8.4"
-		PKGS="chromium-common chromium-sandbox volumeicon-alsa exfatprogs fonts-pretendard"
+		PKGS="volumeicon-alsa exfatprogs fonts-pretendard"
 	elif [ "$BASE" == "bookworm" ]; then
 		# Bookworm-specific PHP version and packages
 		PHPV="8.2"
-		PKGS="chromium-common chromium-sandbox volumeicon-alsa exfatprogs hfsutils reiser4progs"
+		PKGS="volumeicon-alsa exfatprogs hfsutils reiser4progs"
 	elif [ "$BASE" == "bullseye" ]; then
 		# Bullseye-specific PHP version and packages
 		PHPV="7.4"
-		PKGS="chromium-common chromium-sandbox volumeicon-alsa curlftpfs exfat-utils hfsutils reiser4progs"
+		PKGS="volumeicon-alsa curlftpfs exfat-utils hfsutils reiser4progs"
 	elif [ "$BASE" == "buster" ]; then
 		# Buster uses PHP 7.3
 		PHPV="7.3"
-		PKGS="chromium-common chromium-sandbox volti obmenu curlftpfs exfat-utils hfsutils reiser4progs"
+		PKGS="volti obmenu curlftpfs exfat-utils hfsutils reiser4progs"
 	else
 		# Stretch uses PHP 7.0
 		PHPV="7.0"
@@ -199,6 +199,56 @@ script_build() {
 	else
 		SECSUITE="$BASE-security"
 	fi
+	cat >> $ROOT/$FILE <<'EOL'
+# Keep files the live system never uses out of the image: program
+# translations (the session runs in C.UTF-8 and the web app has its own)
+# and the Noto CJK serif faces (the desktop and the app use sans-serif)
+cat > /etc/dpkg/dpkg.cfg.d/90backtrail-exclude <<END
+path-exclude=/usr/share/locale/*
+path-include=/usr/share/locale/locale.alias
+path-exclude=/usr/share/fonts/opentype/noto/NotoSerifCJK*
+END
+
+# Leave the graphics drivers that load large firmware (AMD, NVIDIA, Intel)
+# out of the initramfs. Plymouth and live-boot add every KMS driver, which
+# also copies over 150 MB of firmware that the live filesystem already has;
+# the drivers load from there once it is mounted, and the boot splash uses
+# the firmware framebuffer until then.
+mkdir -p /etc/initramfs-tools/hooks
+cat > /etc/initramfs-tools/hooks/backtrail-gpu <<'END'
+#!/bin/sh
+PREREQ=""
+prereqs() { echo "$PREREQ"; }
+case "$1" in
+prereqs) prereqs; exit 0 ;;
+esac
+
+DRM="/lib/modules/${version}/kernel/drivers/gpu/drm"
+DIRS="amd radeon nouveau i915 xe"
+
+# Initramfs-tools 0.144 and later (Debian 13) queue modules and copy them
+# after the hooks have run: take these drivers off the queue
+if [ -n "${__MODULES_TO_ADD}" ] && [ -f "${__MODULES_TO_ADD}" ]; then
+	for d in $DIRS; do
+		[ -d "$DRM/$d" ] || continue
+		find "$DRM/$d" -name '*.ko*' -printf '%f\n' | sed 's/\.ko.*$//'
+	done | sort -u > "${DESTDIR}/.gpu-modules"
+	grep -v -x -F -f "${DESTDIR}/.gpu-modules" "${__MODULES_TO_ADD}" > "${DESTDIR}/.modules" || true
+	cat "${DESTDIR}/.modules" > "${__MODULES_TO_ADD}"
+	rm -f "${DESTDIR}/.gpu-modules" "${DESTDIR}/.modules"
+fi
+
+# Older versions (Debian 12) copy modules and firmware straight away
+for d in $DIRS; do
+	rm -rf "${DESTDIR}/usr/lib/modules/${version}/kernel/drivers/gpu/drm/$d"
+done
+for d in amdgpu radeon nvidia i915 xe; do
+	rm -rf "${DESTDIR}/usr/lib/firmware/$d" "${DESTDIR}/usr/lib/firmware/updates/$d"
+done
+END
+chmod 755 /etc/initramfs-tools/hooks/backtrail-gpu
+
+EOL
 	cat >> $ROOT/$FILE <<EOL
 # Enable stable updates and security repositories
 cat > /etc/apt/sources.list <<END
@@ -212,7 +262,10 @@ export DEBIAN_FRONTEND=noninteractive
 apt update --yes
 apt upgrade --yes
 
-# Install packages
+# Install packages. python3-gi and gir1.2-webkit2-4.1 run the app window
+# (/usr/local/bin/backtrail-app, WebKitGTK). lxpolkit is named so that it
+# is the polkit agent network-manager-gnome needs: apt would otherwise pick
+# ukui-polkit on Debian 13, which pulls in Qt, OpenCV and GDAL (about 190 MB).
 apt install --no-install-recommends --yes \
 	\
 	linux-image-$KERN live-boot systemd-sysv firmware-linux-free sudo \
@@ -223,7 +276,7 @@ apt install --no-install-recommends --yes \
 	plymouth plymouth-themes compton dbus-x11 libnotify-bin xfce4-notifyd \
 	gir1.2-notify-0.7 tint2 nitrogen xfce4-appfinder xfce4-power-manager \
 	gsettings-desktop-schemas lxrandr lxmenu-data lxterminal lxappearance \
-	network-manager-gnome wpasupplicant gtk2-engines gnome-themes-extra gtk-theme-switch \
+	network-manager-gnome lxpolkit wpasupplicant gtk2-engines gnome-themes-extra gtk-theme-switch \
 	fonts-noto-cjk pcmanfm libfm-modules gpicview mousepad x11vnc pwgen \
 	xvkbd librsvg2-common zstd \
 	papirus-icon-theme adwaita-icon-theme gtk-update-icon-cache \
@@ -234,7 +287,7 @@ apt install --no-install-recommends --yes \
 	smbclient cifs-utils nfs-common sshfs partclone pigz yad f2fs-tools \
 	exfat-fuse btrfs-progs \
 	\
-	nginx php-fpm php-cli chromium $PKGS
+	nginx php-fpm php-cli python3-gi gir1.2-webkit2-4.1 $PKGS
 EOL
 	if [ "$BASE" != "trixie" ]; then
 		cat >> $ROOT/$FILE <<'EOL'
@@ -271,15 +324,6 @@ fi
 # Disable SSH server and delete keys
 systemctl disable ssh
 rm -f /etc/ssh/ssh_host_*
-
-# Prevent chromium "save password" prompts
-mkdir -p /etc/chromium/policies/managed
-cat > /etc/chromium/policies/managed/no-password-management.json <<END
-{
-    "AutoFillEnabled": false,
-    "PasswordManagerEnabled": false
-}
-END
 
 # Add regular user
 useradd --create-home $USER --shell /bin/bash
@@ -347,6 +391,14 @@ script_add_nonfree() {
 	# WARNING: Wireless connections are *NOT* recommended for backup
 	# and restore operations, but are included for other uses.
 	#
+	if [ "$BASE" == "trixie" ]; then
+		# Debian 13 moved these out of firmware-misc-nonfree, which only
+		# recommends them: Intel graphics (i915/xe), Intel network and misc,
+		# MediaTek and Ralink Wi-Fi, NVIDIA graphics
+		NFPKGS="firmware-intel-graphics firmware-intel-misc firmware-mediatek firmware-nvidia-graphics"
+	else
+		NFPKGS=""
+	fi
 	cat >> $ROOT/$FILE <<EOL
 echo "Adding non-free packages..."
 # Briefly activate repos to install non-free firmware packages
@@ -357,8 +409,11 @@ apt update --yes
 # connections are NOT recommended for backup/restore!
 #
 # To include more firmware, add packages here to create a custom image.
+# Recommended packages are not installed, so every package is named here;
+# CPU microcode (amd64-microcode, intel-microcode, recommended by
+# firmware-linux-nonfree) is left out to keep the image small.
 #
-apt install --yes \
+apt install --no-install-recommends --yes \
 	firmware-linux-nonfree \
 	firmware-misc-nonfree \
 	firmware-amd-graphics \
@@ -366,8 +421,7 @@ apt install --yes \
 	firmware-realtek \
 	firmware-atheros \
 	firmware-brcm80211 \
-	amd64-microcode \
-	intel-microcode
+	$NFPKGS
 perl -p -i -e 's/ non-free non-free-firmware$//' /etc/apt/sources.list
 apt update --yes
 EOL
@@ -393,6 +447,7 @@ script_exit() {
 rm -f /usr/bin/{rpcclient,smbcacls,smbclient,smbcquotas,smbget,smbspool,smbtar}
 rm -rf /usr/share/doc
 rm -rf /usr/share/man
+find /usr/share/locale -mindepth 1 -maxdepth 1 ! -name locale.alias -exec rm -rf {} +
 
 # Clean up and exit
 apt-get autoremove
@@ -467,6 +522,10 @@ create_livefs() {
 	# Fix permissions
 	$PERS chroot $ROOT/ /bin/bash -c "chown -R root: /etc /root"
 	$PERS chroot $ROOT/ /bin/bash -c "chown -R www-data: /var/www/html"
+	$PERS chroot $ROOT/ /bin/bash -c "chown root: /usr/local/bin/backtrail-app /usr/share/icons/hicolor/*/apps/backtrail.*"
+
+	# List the app icon in the icon theme cache
+	$PERS chroot $ROOT/ /bin/bash -c "gtk-update-icon-cache -q -f /usr/share/icons/hicolor"
 
 	# Enable startup of Redo monitor service
 	$PERS chroot $ROOT/ /bin/bash -c "chmod 644 /etc/systemd/system/redo.service"

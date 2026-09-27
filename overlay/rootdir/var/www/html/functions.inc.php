@@ -461,7 +461,7 @@ function exit_app() {
 	killall_ops();
 	// Save empty status
 	set_status(new stdClass());
-	system('killall chromium');
+	system('killall backtrail-app');
 }
 
 //

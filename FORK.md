@@ -29,7 +29,7 @@ changelog, see [CHANGES.md](CHANGES.md).
 3. **Reliable builds**: interrupted or failed builds must not leave host
    mounts or broken caches behind.
 4. **CJK text display**: show Chinese, Japanese and Korean text correctly in
-   the browser and in the application.
+   on the desktop and in the application.
 5. **Own identity**: Redo Rescue's logos and graphics are not licensed for
    forks, so the fork needs its own name, artwork and a consistent look from
    the boot menu to the application.
@@ -45,7 +45,7 @@ changelog, see [CHANGES.md](CHANGES.md).
 | 32-bit system | Not available | **Debian 12 i386 (686 kernel), PHP 8.2** | Runs on older 32-bit PCs |
 | Boot selection | 64-bit only | **Automatic by CPU**: GRUB `cpuid -l` on BIOS; 64-bit on UEFI | One USB stick for all PCs; UEFI Secure Boot kept |
 | Manual fallback | — | 32-bit menu entry on 64-bit BIOS machines | Recovery option if the 64-bit system fails |
-| Security updates | Packages from the base release only | **`-updates` and `-security` repositories, plus a full upgrade** | Chromium, kernel and PHP ship with current security fixes |
+| Security updates | Packages from the base release only | **`-updates` and `-security` repositories, plus a full upgrade** | The app's web engine (WebKitGTK), kernel and PHP ship with current security fixes |
 
 Debian 13 no longer provides an i386 kernel, so the 32-bit system uses
 Debian 12. The ISO contains two independent live systems (`/live-amd64` and
@@ -66,7 +66,7 @@ Debian 12. The ISO contains two independent live systems (`/live-amd64` and
 The locale is set for every path that runs commands:
 
 * `/etc/locale.conf` for systemd services (Redo monitor, php-fpm)
-* `/etc/default/locale` for the login session (slim → X → Chromium)
+* `/etc/default/locale` for the login session (slim → X → app window)
 * `env[LANG]` in the php-fpm pool, because workers start with a cleared
   environment
 * `/etc/bash.bashrc` for terminal shells
@@ -96,7 +96,7 @@ and break that parsing.
 | Icons | Most icons blank on trixie: Adwaita became almost all SVG, and the SVG loader and full-color icons were skipped by `--no-install-recommends` | `librsvg2-common` (both systems) and the Papirus icon theme, whose full-color icons replace `adwaita-icon-theme-legacy`; icon caches are kept so apps start without scanning Papirus's 40,000 icons |
 | Cursors | Trixie's Adwaita dropped legacy X11 names, so openbox's app-launch pointer fell back to the old X11 cursor | 12 missing names linked to their Adwaita equivalents (trixie only) |
 | Notification daemon | Autostart path hard-coded to `i386-linux-gnu`, so it did not start on 64-bit | Architecture-independent path |
-| Wi-Fi | Removed in the pending 5.0.0: no Intel, Realtek, Atheros or Broadcom firmware, and on trixie no `wpasupplicant`, so NetworkManager could not use any wireless adapter | Those four firmware packages (non-free build) and `wpasupplicant` are installed; wired connections remain recommended for backup and restore |
+| Wi-Fi | Removed in the pending 5.0.0: no Intel, Realtek, Atheros or Broadcom firmware, and on trixie no `wpasupplicant`, so NetworkManager could not use any wireless adapter | Those four firmware packages plus MediaTek and Ralink firmware (non-free build) and `wpasupplicant` are installed; wired connections remain recommended for backup and restore |
 | "Unnamed Window" | SLiM 1.4.1 (trixie) leaves a full-screen window with no name or class after auto-login; Openbox showed it as a black window over the wallpaper and in the taskbar | An Openbox rule keeps windows with no name and no class minimized and out of the taskbar |
 | CJK text | No CJK font installed; CJK characters showed as boxes | **`fonts-noto-cjk`** (Chinese, Japanese, Korean) |
 
@@ -180,8 +180,40 @@ zstd versus 5.2 s with gzip, which speeds up booting and application
 start-up, especially on older CPUs. xz would be smaller but decompressed
 about six times slower than zstd, so it was not used.
 
-The 64-bit initrd shrinks less because it begins with about 50 MB of CPU
-microcode, which the kernel requires uncompressed.
+The 64-bit initrd shrinks less because about 50 MB of it is stored
+uncompressed: CPU microcode (about 14 MB), which the kernel requires that
+way, and kernel modules, which are already xz-compressed.
+
+### Image size
+
+Adding the language, font, icon and wireless changes brought the ISO to
+1,934 MB. Every installed package and area was measured by compressing it
+the way the build does (zstd squashfs), and packages that the build did not
+ask for were traced to what pulled them in. Changes made:
+
+| Change | 64-bit | 32-bit |
+|---|---|---|
+| App window on WebKitGTK instead of Chromium (Chromium 148 MB out, WebKit 71 MB in) | -77 MB | -66 MB |
+| `lxpolkit` as the polkit agent: trixie picked `ukui-polkit`, which brought 78 packages (Qt 5, OpenCV, GDAL) | -62 MB | - |
+| No program translations (`/usr/share/locale`): the session runs in `C.UTF-8` and the web app has its own translations | -44 MB | -42 MB |
+| No Noto CJK serif faces: the desktop and the app use sans-serif | -39 MB | -39 MB |
+| Graphics drivers that load firmware (amdgpu, radeon, nouveau, i915, xe) left out of the initrd; plymouth and live-boot added every one, copying over 150 MB of firmware that the live filesystem already has | -67 MB | -22 MB |
+| No CPU microcode (initrd and squashfs) | -28 MB | -28 MB |
+| **Total (estimated)** | **-317 MB** | **-197 MB** |
+
+The ISO is expected to be about 1,420 MB (-27%). The initrd change was
+checked by building both initrds with the hook: the 64-bit initrd without
+microcode is about 48 MB instead of 130 MB, the 32-bit one about 36 MB
+instead of 72 MB, and the small display drivers used by virtual machines
+(bochs, virtio, qxl, vmwgfx) and the simple framebuffer drivers stay in.
+
+Other large dependencies are needed and stay: `cpp` (for `xrdb`, part of
+`x11-xserver-utils`), Ghostscript (through imlib2, used by tint2 and
+Openbox), Tk (x11vnc), `grub-common` (os-prober, used to name installed
+systems) and the Samba client (`smbtree`, used to find network shares).
+Non-free firmware is installed without recommended packages; on trixie the
+Intel graphics, Intel network, MediaTek and NVIDIA firmware packages are
+named explicitly because `firmware-misc-nonfree` only recommends them.
 
 ### Repository
 
@@ -221,6 +253,12 @@ microcode, which the kernel requires uncompressed.
   package, and the restored GPT disk then had its backup header.
 * **Screens**: the wallpaper was checked in the VM at 1920x1080, 1280x800,
   1024x768, 1280x1024 and 1024x600, and the app at 1024x600.
+* **App window**: before the switch from Chromium, the WebKitGTK window was
+  tested in the VM on the 64-bit system and on an emulated 32-bit CPU
+  without SSE3: page layout, language menu, dark mode, the language and
+  theme being kept after the window is reopened, drop-down lists, tooltips,
+  tabs, the folder picker, a full backup with its completion dialog,
+  copying the log to the clipboard and the Exit button.
 * **Languages**: the main pages were checked for layout and wrapping across
   the eight languages, the language menu was used to switch languages mid-flow,
   and backup and verification runs were simulated with stub tools to check
@@ -230,13 +268,21 @@ microcode, which the kernel requires uncompressed.
 ## Limitations and trade-offs
 
 * **ISO size**: the ISO carries two systems, so it is larger than a
-  single-system image (about 1.7 GB with zstd).
+  single-system image (about 1.4 GB).
+* **No web browser**: the app runs in its own window, which cannot open
+  other sites, so the desktop has no general web browser.
+* **Boot splash**: AMD, NVIDIA and Intel graphics drivers load after the
+  live filesystem is mounted, so on those GPUs the splash screen starts on
+  the firmware framebuffer and may appear later, or as text when booting
+  in BIOS mode.
+* **No CPU microcode**: microcode updates are not loaded at boot. Most
+  CPUs run correctly without them, but a few rely on them to fix bugs.
 * **32-bit support period**: the 32-bit system gets security updates only
   until Debian 12 LTS ends (expected mid-2028). Debian has no newer i386
   release to move to.
-* **32-bit CPU requirements**: an i686-class CPU is required. Chromium
-  requires SSE3, so on CPUs without it (Pentium III, Pentium M, Athlon XP)
-  the system may boot but the Backtrail interface is unlikely to start.
+* **32-bit CPU requirements**: an i686-class CPU is required. The app
+  window uses WebKitGTK, which Debian builds for i386 without SSE2; it was
+  tested on an emulated CPU without SSE3, where Chromium refused to start.
 * **32-bit UEFI**: machines with 32-bit-only UEFI firmware are not
   supported (same as upstream).
 * **Language**: the web app is translated, but the desktop, system tools
