@@ -91,7 +91,7 @@ and break that parsing.
 
 | Issue | Upstream / first trixie build | This fork |
 |---|---|---|
-| Icons | Most icons blank on trixie: Adwaita became almost all SVG, and the SVG loader and full-color icons were skipped by `--no-install-recommends` | `librsvg2-common` (both systems) and `adwaita-icon-theme-legacy` (trixie) |
+| Icons | Most icons blank on trixie: Adwaita became almost all SVG, and the SVG loader and full-color icons were skipped by `--no-install-recommends` | `librsvg2-common` (both systems) and the Papirus icon theme, whose full-color icons replace `adwaita-icon-theme-legacy`; icon caches are kept so apps start without scanning Papirus's 40,000 icons |
 | Cursors | Trixie's Adwaita dropped legacy X11 names, so openbox's app-launch pointer fell back to the old X11 cursor | 12 missing names linked to their Adwaita equivalents (trixie only) |
 | Notification daemon | Autostart path hard-coded to `i386-linux-gnu`, so it did not start on 64-bit | Architecture-independent path |
 | "Unnamed Window" | SLiM 1.4.1 (trixie) leaves a full-screen window with no name or class after auto-login; Openbox showed it as a black window over the wallpaper and in the taskbar | An Openbox rule keeps windows with no name and no class minimized and out of the taskbar |
@@ -109,7 +109,7 @@ are unchanged, so existing backups and scripts keep working.
 | Logo | Redo Rescue logo | Contour-line mark generated from source (`branding/src`); see [branding/README.md](branding/README.md) |
 | Boot menu | GRUB theme with Redo artwork and Helvetica bitmap fonts, and a "Choose language" submenu that only offered English | Navy contour background, Backtrail logo, Pretendard fonts, countdown ring; the language submenu is removed because the web app has its own language menu |
 | Boot splash | Plymouth `redo` theme | Plymouth `backtrail` theme in the same colors |
-| Desktop | Numix GTK and Openbox theme, Lato font | `Backtrail` Openbox theme, matching tint2 panel, GTK Adwaita, Pretendard, new wallpaper and app icon |
+| Desktop | Numix GTK and Openbox theme, Adwaita icons, Lato font | `Backtrail` Openbox theme, matching tint2 panel, GTK Adwaita with Papirus icons, Pretendard, new wallpaper and app icon |
 | Web framework | Bootstrap 3.4, jQuery 1.12, Bootbox 5, plus bootstrap-notify, jquery-validation and animate.css | **Bootstrap 5.3, jQuery 3.7, Bootbox 6**; unused libraries removed |
 | Application | Separate page layouts | Step indicator, drive list on the welcome screen, partition map with selected size, shared location, progress and image-detail views, light and dark modes |
 | Names | Redo Rescue, `redorescue` hostname, `redorescue-VERSION.iso` | Backtrail, `backtrail` hostname, `backtrail-VERSION.iso` |

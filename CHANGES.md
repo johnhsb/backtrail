@@ -25,6 +25,8 @@
     English; the web app has its own language menu
   * Hide the full-screen window that SLiM 1.4 leaves after auto-login, which
     appeared as a black "Unnamed Window"
+  * Use the Papirus icon theme instead of Adwaita (cursors stay Adwaita), and
+    keep icon theme caches so apps do not scan Papirus's 40,000 icons at start
   * Translate the web app into Korean, Japanese, Simplified Chinese, Spanish,
     German, French and Brazilian Portuguese, chosen from a language menu with
     flags; `tools/i18n-check.py` checks the translation files
