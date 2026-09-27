@@ -119,14 +119,11 @@ def grub_theme():
     icons = os.path.join(GRUB, "icons")
     # on a navy tile so it stays visible on the cyan selection bar
     png(build.app_icon(small=True), os.path.join(icons, "backtrail.png"), 32, 32)
-    globe = ('<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/>'
-             '<path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18"/>')
     screen = '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>'
     # countdown: ticks disappear around a track ring, seconds shown inside
     png(doc(56, 56, f'<circle cx="28" cy="28" r="23" fill="none" stroke="{TRACK}" stroke-width="3"/>'),
         os.path.join(GRUB, "timeout_ring.png"))
     png(doc(7, 7, f'<circle cx="3.5" cy="3.5" r="3.2" fill="{CONTOUR}"/>'), os.path.join(GRUB, "timeout_tick.png"))
-    png(line_icon(globe), os.path.join(icons, "locale.png"))
     png(line_icon(screen), os.path.join(icons, "screen.png"))
 
 
