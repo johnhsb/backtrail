@@ -16,6 +16,24 @@ format, so backups made with Redo Rescue can be restored with Backtrail. See
 [FORK.md](FORK.md) for what changed and why.
 
 
+## Screenshots
+
+<p align="center">
+  <a href="docs/screenshots/boot-menu.png"><img width="49%" src="docs/screenshots/boot-menu.png" alt="Boot menu"></a>
+  <a href="docs/screenshots/welcome.png"><img width="49%" src="docs/screenshots/welcome.png" alt="Welcome screen with the detected drives"></a>
+</p>
+<p align="center">
+  <a href="docs/screenshots/partitions.png"><img width="49%" src="docs/screenshots/partitions.png" alt="Choosing the partitions to back up"></a>
+  <a href="docs/screenshots/backup-progress.png"><img width="49%" src="docs/screenshots/backup-progress.png" alt="Backup in progress"></a>
+</p>
+<p align="center">
+  <a href="docs/screenshots/detailed-log.png"><img width="49%" src="docs/screenshots/detailed-log.png" alt="Detailed log in dark mode"></a>
+  <a href="docs/screenshots/languages.png"><img width="49%" src="docs/screenshots/languages.png" alt="Language menu with the interface in Korean"></a>
+</p>
+
+<p align="center">Boot menu, welcome screen, partition selection, backup progress, detailed log (dark mode) and the language menu. The drives shown are sample data.</p>
+
+
 ## Features
 
   * Free and open source software
