@@ -1,0 +1,96 @@
+name: Build ISO
+
+# Manual runs build a test ISO (kept as a workflow artifact for 7 days).
+# Pushing a tag vX.Y.Z builds the release ISO and attaches it, its checksum
+# and the package lists to a draft release, to be reviewed and published.
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-iso-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  iso:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read version
+        id: ver
+        run: |
+          VER=$(sed -n 's/^VER=//p' make)
+          echo "ver=$VER" >> "$GITHUB_OUTPUT"
+          if [ "$GITHUB_REF_TYPE" = tag ] && [ "$GITHUB_REF_NAME" != "v$VER" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match VER=$VER in make"
+            exit 1
+          fi
+
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+          df -h /
+
+      # Downloaded packages; the key changes with the package lists in make
+      - uses: actions/cache@v4
+        with:
+          path: cache
+          key: apt-${{ hashFiles('make') }}
+          restore-keys: apt-
+
+      # The build needs a Debian 13 host (grub, shim and debootstrap for
+      # both targets) and root for chroot and mounts
+      - name: Build
+        run: |
+          docker run --rm --privileged -v "$PWD:/src" -w /src debian:trixie bash -euc '
+            apt-get update
+            apt-get install -y --no-install-recommends debootstrap squashfs-tools \
+              grub-pc-bin grub-efi-amd64-signed shim-signed mtools xorriso rsync \
+              dosfstools perl ca-certificates
+            ./make
+          ' 2>&1 | tee build.log
+          test -s "backtrail-${{ steps.ver.outputs.ver }}.iso"
+
+      - name: Collect release files
+        run: |
+          VER=${{ steps.ver.outputs.ver }}
+          sudo chown -R "$USER" .
+          mkdir dist
+          mv "backtrail-$VER.iso" dist/
+          for A in amd64 i386; do
+            cp "image/live-$A/filesystem.packages" "dist/backtrail-$VER-$A.packages"
+          done
+          (cd dist && sha256sum -- * > SHA256SUMS)
+          cat dist/SHA256SUMS
+          ls -lh dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: backtrail-${{ steps.ver.outputs.ver }}
+          path: dist/
+          retention-days: 7
+          compression-level: 0
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: build-log
+          path: build.log
+          retention-days: 7
+
+      - name: Draft release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VER=${{ steps.ver.outputs.ver }}
+          gh release create "$GITHUB_REF_NAME" --draft --verify-tag \
+            --title "Backtrail $VER" \
+            --notes "See [CHANGES.md](https://github.com/$GITHUB_REPOSITORY/blob/$GITHUB_REF_NAME/CHANGES.md) for what changed. Check the download with \`sha256sum -c SHA256SUMS\`. The \`.packages\` files list the Debian packages in each live system; see the README's Source code section." \
+            dist/*

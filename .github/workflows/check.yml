@@ -1,0 +1,44 @@
+name: Check
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  scripts:
+    name: Shell and Python scripts
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: shellcheck
+        run: shellcheck --severity=error make overlay/rootdir/root/enable-ssh overlay/rootdir/root/redo-monitor
+      - name: Python syntax
+        # parse only, so no __pycache__ lands in the overlay
+        run: python3 -c 'import ast, sys; [ast.parse(open(f).read(), f) for f in sys.argv[1:]]' overlay/rootdir/usr/local/bin/backtrail-app tools/*.py branding/src/*.py
+      - name: Logos match their generator
+        run: |
+          python3 branding/src/build.py branding
+          git diff --exit-code branding
+
+  php:
+    name: PHP ${{ matrix.php }}
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        # 8.2: 32-bit system (Debian 12); 8.4: 64-bit system (Debian 13)
+        php: ['8.2', '8.4']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+      - name: Syntax
+        run: |
+          find overlay -name '*.php' -print0 | xargs -0 -n1 php -l > lint.log || { grep -v '^No syntax errors' lint.log; exit 1; }
+          echo "$(wc -l < lint.log) files checked"
+      - name: Translations
+        run: python3 tools/i18n-check.py
