@@ -1,0 +1,77 @@
+name: Bug report
+description: Something does not work as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. For security problems, do not use this form; see
+        [SECURITY.md](https://github.com/johnhsb/backtrail/blob/master/SECURITY.md).
+  - type: input
+    id: version
+    attributes:
+      label: Backtrail version
+      description: Shown on the boot menu, e.g. 1.0.0
+    validations:
+      required: true
+  - type: dropdown
+    id: system
+    attributes:
+      label: System
+      options:
+        - 64-bit
+        - 32-bit
+        - Not sure
+    validations:
+      required: true
+  - type: dropdown
+    id: boot
+    attributes:
+      label: Boot mode
+      options:
+        - UEFI with Secure Boot
+        - UEFI without Secure Boot
+        - BIOS (legacy)
+        - Not sure
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Booting
+        - Backup
+        - Restore
+        - Verification
+        - Network shares
+        - Desktop or display
+        - Translation
+        - Building the ISO
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: hardware
+    attributes:
+      label: Hardware and disks
+      description: Computer model, disk types (SATA, NVMe, USB), partition table (GPT or MBR) and file systems involved.
+  - type: textarea
+    id: log
+    attributes:
+      label: Detailed log
+      description: Use "Copy to clipboard" under the app's detailed log and paste it here.
+      render: text
+  - type: checkboxes
+    id: redo
+    attributes:
+      label: Redo Rescue images
+      options:
+        - label: The problem involves a backup made with Redo Rescue or Redo Backup

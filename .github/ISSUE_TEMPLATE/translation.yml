@@ -1,0 +1,18 @@
+name: Translation
+description: Report a wrong or missing translation, or offer a new language
+labels: [translation]
+body:
+  - type: input
+    id: language
+    attributes:
+      label: Language
+      placeholder: e.g. Korean (ko)
+    validations:
+      required: true
+  - type: textarea
+    id: text
+    attributes:
+      label: Text
+      description: The English text, the current translation and your suggestion. A screenshot helps.
+    validations:
+      required: true
