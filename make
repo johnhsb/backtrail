@@ -1,6 +1,7 @@
 #!/bin/bash
 #
-# Backtrail: Backup and recovery live system
+# Backtrail: Backup and recovery made easy
+# Copyright (C) 2026 The Backtrail Authors
 # Based on Redo Rescue <redorescue.com>
 # Copyright (C) 2010-2023 Zebradots Software
 #
@@ -18,7 +19,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-VER=5.0.0
+VER=1.0.0
 # Each target (ARCH:BASE) becomes a separate live system in the same ISO;
 # the boot menu picks the one matching the CPU. Debian 13 has no i386 kernel.
 TARGETS="amd64:trixie i386:bookworm"

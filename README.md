@@ -10,10 +10,31 @@
 your system. Restore the image, even to a new blank drive, and recover in
 minutes from ransomware and viruses, deletions, hardware damage, and hackers.
 
-Backtrail is a fork of [Redo Rescue](https://github.com/redorescue/redorescue)
-(also known as Redo Backup) by Zebradots Software. It keeps the `.redo` image
-format, so backups made with Redo Rescue can be restored with Backtrail. See
-[FORK.md](FORK.md) for what changed and why.
+Backtrail is an independent open source project. Version 1.0 is its first
+release.
+
+
+## Heritage
+
+Backtrail continues [Redo Rescue](https://github.com/redorescue/redorescue)
+(earlier known as Redo Backup), created by Zebradots Software in 2010. Redo
+Rescue's last release was 4.0.0 in 2021, and its development stopped in
+October 2023 while 5.0.0 was still unreleased. Backtrail starts from that
+point, with Redo Rescue's full commit history, and carries the work forward:
+
+  * **Compatible images**: Backtrail keeps the `.redo` image format, so
+    backups made with Redo Rescue, and with Redo Backup 1.0.4, restore with
+    Backtrail.
+  * **Same approach**: a live system with a simple step-by-step app on top of
+    `sfdisk` and `partclone`, for bare-metal backup and recovery.
+  * **Maintained**: a current Debian base with security updates, 32-bit PC
+    support, translations and fixes for the problems found since.
+
+Backtrail has its own name and artwork because Redo Rescue's logos and
+graphics are not licensed for derived projects. It is not affiliated with or
+endorsed by Zebradots Software. See [HERITAGE.md](HERITAGE.md) for what
+Backtrail changed from Redo Rescue and why, and [CHANGES.md](CHANGES.md) for
+the release history of both.
 
 
 ## Screenshots
@@ -63,7 +84,9 @@ format, so backups made with Redo Rescue can be restored with Backtrail. See
 
 ## Download
 
-Backtrail has no published ISO yet; build one as described under [Build](#build).
+Backtrail 1.0 is in preparation and has no published ISO yet; build one as
+described under [Build](#build). Releases will be published on the
+[Releases](https://github.com/johnhsb/backtrail/releases) page.
 
 
 ## Examples
@@ -95,11 +118,11 @@ Backtrail relies on [sfdisk](https://manpages.debian.org/stretch/util-linux/sfdi
 
 To build an ISO image from within Debian Linux:
 
-  1. `git clone https://github.com/johnhsb/redorescue.git`
-  2. `cd redorescue`
+  1. `git clone https://github.com/johnhsb/backtrail.git`
+  2. `cd backtrail`
   3. `sudo ./make`
 
-The result is `backtrail-VERSION.iso`, for example `backtrail-5.0.0.iso`.
+The result is `backtrail-VERSION.iso`, for example `backtrail-1.0.0.iso`.
 
 The ISO contains a 64-bit (Debian 13) and a 32-bit (Debian 12) live system; the boot menu picks one based on the CPU. Build targets are set by `TARGETS` in the `make` script.
 
@@ -117,15 +140,19 @@ delete `cache/` to free its space.
 The logo, boot menu, splash screen and wallpaper images are generated from
 `branding/src`; see [branding/README.md](branding/README.md).
 
-Source code for Redo Rescue releases can be found on [SourceForge](https://sourceforge.net/projects/redobackup/files/src/).
+Source code for Redo Rescue releases before its move to GitHub can be found
+on [SourceForge](https://sourceforge.net/projects/redobackup/files/src/).
 
 
 ## License
 
 **Backtrail** is released under the GNU GPLv3, like Redo Rescue, on which it
-is based (Copyright (C) 2010-2023 Zebradots Software).
+is based.
+
+  * Copyright (C) 2026 The Backtrail Authors
+  * Copyright (C) 2010-2023 Zebradots Software (Redo Rescue)
 
 Redo Rescue's distinctive logos and graphics are not released under the GNU
-GPLv3 and require forks to use their own. Backtrail replaces all of them with
+GPLv3 and require derived projects to use their own. Backtrail replaces all of them with
 its own artwork in `branding/`. The Pretendard and Sora typefaces are licensed
 under the SIL Open Font License 1.1.

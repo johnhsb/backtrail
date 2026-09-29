@@ -7,7 +7,9 @@
 /rootdir-*/
 /scratch/
 /backtrail-*.iso
-/redorescue-*.iso
 
 # Python bytecode from branding/src
 __pycache__/
+
+# Local Claude Code settings
+/.claude/settings.local.json

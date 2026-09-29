@@ -1,45 +1,55 @@
-# Fork Notes: Changes from Upstream
+# Heritage: From Redo Rescue to Backtrail
 
-Backtrail (this fork) is based on [redorescue/redorescue](https://github.com/redorescue/redorescue)
-at commit `ec1f4f2` ("Update for PHP8", 2023-10-30). For the per-release
-changelog, see [CHANGES.md](CHANGES.md).
+Backtrail continues [Redo Rescue](https://github.com/redorescue/redorescue),
+the backup and recovery live system by Zebradots Software. It starts from Redo
+Rescue's last commit, `ec1f4f2` ("Update for PHP8", 2023-10-30), and keeps its
+full history. This document describes what Backtrail 1.0 changed from Redo
+Rescue and why. For the per-release changelog of both projects, see
+[CHANGES.md](CHANGES.md).
 
 
 ## Background
 
-* Upstream development stopped during the pending 5.0.0 release, which was
-  based on Debian 12 (bookworm) for 64-bit PCs only. The last published
-  release is 4.0.0 (2021).
+* Redo Rescue (first released as Redo Backup in 2010) made bare-metal backup
+  and recovery possible in a few clicks from a live CD or USB stick.
+* Its last release is 4.0.0 (2021), based on Debian 11. Development stopped
+  in October 2023 while 5.0.0, based on Debian 12 (bookworm) for 64-bit PCs
+  only, was still unreleased.
 * Debian 13 (trixie) has since been released. Debian 12 has left regular
   security support and entered its LTS period.
-* Upstream images are 64-bit only, so older 32-bit PCs, which often need a
+* Redo Rescue images are 64-bit only, so older 32-bit PCs, which often need a
   rescue tool the most, cannot run them.
-* Building and reviewing the upstream script revealed several problems:
-  missing host build dependencies, chroot mounts left behind by interrupted
-  builds, an integer overflow in 32-bit PHP, and missing icons, fonts and
-  locale support once the base moved to trixie.
+* Building and reviewing the last Redo Rescue script revealed several
+  problems: missing host build dependencies, chroot mounts left behind by
+  interrupted builds, an integer overflow in 32-bit PHP, and missing icons,
+  fonts and locale support once the base moved to trixie.
+
+Backtrail takes up the work so that Redo Rescue's users have a maintained
+tool, and so that existing `.redo` backups stay restorable.
 
 
-## Goals
+## Principles
 
-1. **Current base system**: move the 64-bit system to Debian 13 for newer
+1. **Compatibility**: backups made with Redo Rescue restore with Backtrail.
+   Internal names that scripts and images depend on stay unchanged.
+2. **Current base system**: move the 64-bit system to Debian 13 for newer
    hardware support and a longer security support window.
-2. **One ISO for 32-bit and 64-bit PCs**: detect the CPU at boot and start
+3. **One ISO for 32-bit and 64-bit PCs**: detect the CPU at boot and start
    the matching system automatically.
-3. **Reliable builds**: interrupted or failed builds must not leave host
+4. **Reliable builds**: interrupted or failed builds must not leave host
    mounts or broken caches behind.
-4. **CJK text display**: show Chinese, Japanese and Korean text correctly in
-   on the desktop and in the application.
-5. **Own identity**: Redo Rescue's logos and graphics are not licensed for
-   forks, so the fork needs its own name, artwork and a consistent look from
-   the boot menu to the application.
+5. **CJK text display**: show Chinese, Japanese and Korean text correctly on
+   the desktop and in the application.
+6. **Own identity**: Redo Rescue's logos and graphics are not licensed for
+   derived projects, so Backtrail has its own name, artwork and a consistent
+   look from the boot menu to the application.
 
 
-## Improvements over upstream
+## Changes from Redo Rescue
 
 ### Platform and security
 
-| Area | Upstream | This fork | Benefit |
+| Area | Redo Rescue | Backtrail | Benefit |
 |---|---|---|---|
 | 64-bit system | Debian 12, Linux 6.1, PHP 8.2 | **Debian 13, Linux 6.12, PHP 8.4** | Newer hardware support, longer security support |
 | 32-bit system | Not available | **Debian 12 i386 (686 kernel), PHP 8.2** | Runs on older 32-bit PCs |
@@ -53,7 +63,7 @@ Debian 12. The ISO contains two independent live systems (`/live-amd64` and
 
 ### Backup and restore application
 
-| Issue | Upstream behavior | This fork |
+| Issue | Redo Rescue behavior | Backtrail |
 |---|---|---|
 | 32-bit PHP integer limit | Sizes above 2 GiB were clamped to 2147483647: restores were refused as "will not fit" and progress went negative (-35.9% at 50% in testing) | `to_bytes()` keeps large values as floats; 64-bit behavior is unchanged |
 | ReiserFS and NILFS2 | Called `partclone.reiser4` / `partclone.nilfs2`, which do not match ReiserFS or do not exist in Debian (`partclone.reiser4` was also removed in trixie) | Imaged in raw mode, which the application already supports |
@@ -79,7 +89,7 @@ and break that parsing.
 
 ### Build script (`make`)
 
-| Issue | Upstream | This fork |
+| Issue | Redo Rescue | Backtrail |
 |---|---|---|
 | Interrupted build | `proc`, `sys` and `dev/pts` stayed mounted inside the build root | Unmounted automatically on exit or interrupt; `clean` unmounts first and deletes with `--one-file-system` |
 | Failed debootstrap | A broken cache archive was created and reused by the next build | Cache is written only after success, via an atomic rename |
@@ -91,23 +101,24 @@ and break that parsing.
 
 ### Desktop
 
-| Issue | Upstream / first trixie build | This fork |
+| Issue | Redo Rescue / first trixie build | Backtrail |
 |---|---|---|
 | Icons | Most icons blank on trixie: Adwaita became almost all SVG, and the SVG loader and full-color icons were skipped by `--no-install-recommends` | `librsvg2-common` (both systems) and the Papirus icon theme, whose full-color icons replace `adwaita-icon-theme-legacy`; icon caches are kept so apps start without scanning Papirus's 40,000 icons |
 | Cursors | Trixie's Adwaita dropped legacy X11 names, so openbox's app-launch pointer fell back to the old X11 cursor | 12 missing names linked to their Adwaita equivalents (trixie only) |
 | Notification daemon | Autostart path hard-coded to `i386-linux-gnu`, so it did not start on 64-bit | Architecture-independent path |
-| Wi-Fi | Removed in the pending 5.0.0: no Intel, Realtek, Atheros or Broadcom firmware, and on trixie no `wpasupplicant`, so NetworkManager could not use any wireless adapter | Those four firmware packages plus MediaTek and Ralink firmware (non-free build) and `wpasupplicant` are installed; wired connections remain recommended for backup and restore |
+| Wi-Fi | Removed in the unreleased Redo Rescue 5.0.0: no Intel, Realtek, Atheros or Broadcom firmware, and on trixie no `wpasupplicant`, so NetworkManager could not use any wireless adapter | Those four firmware packages plus MediaTek and Ralink firmware (non-free build) and `wpasupplicant` are installed; wired connections remain recommended for backup and restore |
 | "Unnamed Window" | SLiM 1.4.1 (trixie) leaves a full-screen window with no name or class after auto-login; Openbox showed it as a black window over the wallpaper and in the taskbar | An Openbox rule keeps windows with no name and no class minimized and out of the taskbar |
 | CJK text | No CJK font installed; CJK characters showed as boxes | **`fonts-noto-cjk`** (Chinese, Japanese, Korean) |
 
 ### Name, artwork and interface
 
-Redo Rescue's license requires forks to replace its logos and graphics, so
-the fork was renamed **Backtrail** and every original graphic was removed.
+Redo Rescue's license requires derived projects to replace its logos and
+graphics, so the project is named **Backtrail** and every original graphic
+was removed.
 Internal names (the `.redo` image format, `redo.service`, the `redo` user)
 are unchanged, so existing backups and scripts keep working.
 
-| Area | Upstream | This fork |
+| Area | Redo Rescue | Backtrail |
 |---|---|---|
 | Logo | Redo Rescue logo | Contour-line mark generated from source (`branding/src`); see [branding/README.md](branding/README.md) |
 | Boot menu | GRUB theme with Redo artwork and Helvetica bitmap fonts, and a "Choose language" submenu that only offered English | Navy contour background, Backtrail logo, Pretendard fonts, countdown ring; the language submenu is removed because the web app has its own language menu |
@@ -218,7 +229,7 @@ named explicitly because `firmware-misc-nonfree` only recommends them.
 ### Repository
 
 * `README.md` and `CHANGES.md` updated for the dual-architecture build and
-  the Backtrail name.
+  the Backtrail name; this document describes the changes from Redo Rescue.
 * `.gitignore` added for build output (ISO, caches, build roots, logs).
 
 
@@ -284,7 +295,7 @@ named explicitly because `firmware-misc-nonfree` only recommends them.
   window uses WebKitGTK, which Debian builds for i386 without SSE2; it was
   tested on an emulated CPU without SSE3, where Chromium refused to start.
 * **32-bit UEFI**: machines with 32-bit-only UEFI firmware are not
-  supported (same as upstream).
+  supported (same as Redo Rescue).
 * **Language**: the web app is translated, but the desktop, system tools
   and boot menu remain in English, and no input method is included for
   typing CJK text. The translations were written for this release and

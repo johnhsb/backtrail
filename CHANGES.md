@@ -1,8 +1,16 @@
-# Changes to Backtrail (formerly Redo Rescue)
+# Changes
 
-## Version 5.0.0 (pending)
-  * Rename the fork to Backtrail with a new logo; images keep the `.redo`
-    format, so backups from Redo Rescue restore unchanged
+Backtrail continues Redo Rescue, whose last commit is part of the unreleased
+Redo Rescue 5.0.0 below. Backtrail's version numbers start again at 1.0.0.
+See [HERITAGE.md](HERITAGE.md) for the background.
+
+# Backtrail
+
+## Version 1.0.0 (pending)
+  * First Backtrail release, based on Redo Rescue 4.0.0 and the unreleased
+    5.0.0 changes listed under Redo Rescue below
+  * New name, Backtrail, with a new logo; images keep the `.redo` format,
+    so backups from Redo Rescue restore unchanged
   * Replace every original Redo Rescue graphic with Backtrail artwork that is
     generated from source (`branding/src`)
   * Rewrite the web app for Bootstrap 5.3 with jQuery 3.7 and Bootbox 6:
@@ -79,6 +87,13 @@
   * Compress live filesystem and initrd with zstd (smaller ISO, faster reads)
   * Use the C.UTF-8 locale so non-ASCII partition labels and names are not
     escaped (e.g. `\xed\x95\x9c`); program messages remain in English
+
+# Redo Rescue
+
+Releases by Zebradots Software, kept here for reference.
+
+## Version 5.0.0 (unreleased; development stopped 2023-10-30)
+  * Update base to Debian 12 (bookworm) for improved hardware support
   * Remove wireless non-free firmware packages
   * Fix bug that prevented selecting a new disk once one is chosen
   * Add support for mounting and imaging BTRFS filesystems

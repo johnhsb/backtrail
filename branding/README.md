@@ -1,7 +1,7 @@
 # Backtrail brand assets
 
 Backtrail replaces the original Redo Rescue logos and graphics, which are not
-licensed for use by forks (see the License section of the README).
+licensed for use by derived projects (see the License section of the README).
 
 The mark shows two contour lines around a summit. The rings also read as the
 tracks of a disk platter, and the dotted trail leads from the summit back to

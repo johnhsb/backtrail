@@ -1,6 +1,8 @@
 <?php
 #
-# Backtrail, based on Redo Rescue <redorescue.com>
+# Backtrail: Backup and recovery made easy
+# Copyright (C) 2026 The Backtrail Authors
+# Based on Redo Rescue <redorescue.com>
 # Copyright (C) 2010-2023 Zebradots Software
 #
 # This program is free software: you can redistribute it and/or modify
