@@ -535,6 +535,11 @@ create_livefs() {
 	# Update version number
 	echo $VER > $ROOT/var/www/html/VERSION
 
+	# List installed packages and their source packages (empty when named
+	# like the package), so the matching Debian sources can be found
+	$PERS chroot $ROOT/ dpkg-query -W \
+		-f='${binary:Package}\t${Version}\t${Source}\n' > $LIVE/filesystem.packages
+
 	# Copy kernel and initial ramdisk
 	cp $ROOT/boot/vmlinuz* $LIVE/vmlinuz
 	cp $ROOT/boot/initrd* $LIVE/initrd

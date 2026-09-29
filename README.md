@@ -155,4 +155,14 @@ is based.
 Redo Rescue's distinctive logos and graphics are not released under the GNU
 GPLv3 and require derived projects to use their own. Backtrail replaces all of them with
 its own artwork in `branding/`. The Pretendard and Sora typefaces are licensed
-under the SIL Open Font License 1.1.
+under the SIL Open Font License 1.1; the boot menu uses subsets of Pretendard
+renamed "Backtrail Sans", as its license requires.
+
+### Source code
+
+The ISO is built from this repository and from Debian packages. Each live
+system lists its packages in `/live-amd64/filesystem.packages` and
+`/live-i386/filesystem.packages` on the ISO, and each release attaches the
+same lists. The source of every listed package version is available from
+[Debian](https://snapshot.debian.org/); if you cannot get it there, ask in an
+[issue](https://github.com/johnhsb/backtrail/issues) and it will be provided.

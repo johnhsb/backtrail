@@ -9,6 +9,11 @@ See [HERITAGE.md](HERITAGE.md) for the background.
 ## Version 1.0.0 (pending)
   * First Backtrail release, based on Redo Rescue 4.0.0 and the unreleased
     5.0.0 changes listed under Redo Rescue below
+  * List each live system's packages and their Debian source packages in
+    `/live-ARCH/filesystem.packages` on the ISO
+  * Name the boot menu's Pretendard subsets "Backtrail Sans", since
+    Pretendard's license reserves its name for the original fonts, and
+    include the license next to them
   * New name, Backtrail, with a new logo; images keep the `.redo` format,
     so backups from Redo Rescue restore unchanged
   * Replace every original Redo Rescue graphic with Backtrail artwork that is
