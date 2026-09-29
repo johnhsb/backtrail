@@ -29,12 +29,7 @@ case 'baremetal':
 	foreach ($_REQUEST['baremetal_parts'] as $part) {
 		$part = sane_dev($part);
 		// Target partitions remapped to target drive + part number
-		// Must also accommodate NVMe-style partition IDs
-		$part_pre = '';
-		preg_match('/(.+\D+)(\d+)$/', $part, $m);  // $m[2] contains the part_num
-		$part_num = $m[2];
-		if (preg_match('/^nvme/', $status->drive)) $part_pre = 'p';
-		$status->parts[$part] = $status->drive.$part_pre.$part_num;
+		$status->parts[$part] = baremetal_target($status->drive, $part);
 	}
 	$size_diff = $status->drive_bytes - $status->image->drive_bytes;
 	if ($size_diff < 0)

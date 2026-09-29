@@ -141,27 +141,32 @@ function get_disks($force_refresh=FALSE) {
 				}
 			}
 		}
-		$typelist = explode(PHP_EOL, trim(shell_exec('fdisk -l -o Device,Type')));
-		foreach ($typelist as $t) if (preg_match('/^\/dev\//', $t)) {
-			list($part, $type) = explode('  ', $t);
-			$part = str_replace('/dev/', '', $part);
-			if ((strlen($part)>3) && (strlen($type)>3)) {
-				foreach ($list->blockdevices as &$l) {
-					if (property_exists($l, 'children')) {
-						//print "Disk ".$l->name." has partitions...\n";
-						foreach ($l->children as &$c) {
-							if ($c->name==$part) {
-								//print "* ".$c->name." is type $type.\n";
-								$c->ptdesc = $type;
-							}
-						}
-					}
+		$types = parse_fdisk_types(shell_exec('fdisk -l -o Device,Type'));
+		foreach ($list->blockdevices as &$l) {
+			if (property_exists($l, 'children')) {
+				foreach ($l->children as &$c) {
+					if (isset($types[$c->name])) $c->ptdesc = $types[$c->name];
 				}
 			}
 		}
 		file_put_contents(DISKS_FILE, json_encode($list));
 		return $list;
 	}
+}
+
+//
+// Partition types from the output of "fdisk -l -o Device,Type": device name
+// (without /dev/) => type. The columns are split at the first run of spaces
+// because their gap is one space wide when the device name is the longest,
+// and the type itself may contain spaces ("Linux filesystem").
+//
+function parse_fdisk_types($output) {
+	$types = array();
+	foreach (explode("\n", (string) $output) as $line) {
+		if (!preg_match('#^/dev/(\S+)\s+(\S.*?)\s*$#', $line, $m)) continue;
+		if (strlen($m[1])>3 && strlen($m[2])>3) $types[$m[1]] = $m[2];
+	}
+	return $types;
 }
 
 //
@@ -258,73 +263,95 @@ function clean_part_desc($d=array()) {
 }
 
 //
-// Mount a given drive
+// Build the command that mounts a drive. Every value from the form is passed
+// as one quoted argument, and passwords are kept out of the arguments:
+// 'cmd' is what to run, 'log' is the same command with the password hidden,
+// 'stdin' is text to write to the command's input (or NULL), 'dev' is the
+// local partition mounted (or NULL), and 'error' is set if it can't be built.
 //
-function mount_drive($vars) {
-	shell_exec('mkdir -p '.MOUNTPOINT);
-	if (!unmount()) return array('status'=>FALSE, 'error'=>t('Mountpoint busy or unable to be unmounted'));
-	$error = t('Failed to mount drive');
+function build_mount_command($vars) {
+	$m = array('cmd'=>NULL, 'log'=>NULL, 'stdin'=>NULL, 'dev'=>NULL, 'error'=>NULL);
+	$mnt = MOUNTPOINT;
 	switch ($vars['type']) {
 	case 'local':
-		$dev = preg_replace('/[^a-z0-9]/', '', $vars['local_part']);
-		$cmd = 'mount /dev/'.$dev.' '.MOUNTPOINT.' 2>&1';
-		$error = shell_exec($cmd);
-		$status = get_status();
-		$status->source = $dev;
-		set_status($status);
+		$m['dev'] = preg_replace('/[^a-z0-9]/', '', $vars['local_part']);
+		$m['cmd'] = 'mount '.escapeshellarg('/dev/'.$m['dev']).' '.$mnt.' 2>&1';
 		break;
 	case 'nfs':
 		$host = preg_replace('/[^a-zA-Z0-9\.\-\_]/', '', $vars['nfs_host']);
 		$path = preg_replace('/[^a-zA-Z0-9\.\-\_ \/]/', '', $vars['nfs_share']);
-		$cmd = "mount '$host:$path' ".MOUNTPOINT.' 2>&1';
-		$error = shell_exec($cmd);
+		$m['cmd'] = 'mount '.escapeshellarg("$host:$path").' '.$mnt.' 2>&1';
 		break;
 	case 'cifs':
 		$loc = trim(preg_replace('/\\\+|\/+/', '|', $vars['cifs_location']));
-		list($host, $path) = explode('|', trim($loc, '|'));
+		list($host, $path) = array_pad(explode('|', trim($loc, '|')), 2, '');
 		$host = preg_replace('/[^a-zA-Z0-9\.\-\_]/', '', $host);
 		$path = preg_replace('/[^a-zA-Z0-9\.\-\_ ]/', '', $path);
 		$domain = preg_replace('/[^a-zA-Z0-9\.\-\_]/', '', $vars['cifs_domain']);
 		$user = trim(preg_replace('/[^a-zA-Z0-9\.\-\_]/', '', $vars['cifs_username']));
-		$pass = $vars['cifs_password'];
-		$cmd = "mount.cifs '//$host/$path' ".MOUNTPOINT." -o ";
+		$pass = (string) $vars['cifs_password'];
 		$options = array();
-		if (empty($user) && empty($pass)) $options[] = "guest";
+		if (empty($user) && $pass === '') $options[] = 'guest';
 		if (!empty($domain)) $options[] = "dom=$domain";
 		if (!empty($user)) $options[] = "user=$user";
-		if (!empty($pass)) $options[] = "pass='$pass'";
-		$cmd .= trim(implode(',', $options), ',');
+		$cmd = 'mount.cifs '.escapeshellarg("//$host/$path").' '.$mnt;
+		if ($options) $cmd .= ' -o '.escapeshellarg(implode(',', $options));
 		$cmd .= ' 2>&1';
-		$error = shell_exec($cmd);
+		// mount.cifs reads the password from PASSWD, so commas and quotes
+		// in it are safe
+		$m['cmd'] = ($pass === '' ? '' : 'PASSWD='.escapeshellarg($pass).' ').$cmd;
+		$m['log'] = ($pass === '' ? '' : 'PASSWD=*** ').$cmd;
 		break;
 	case 'ssh':
 		$host = trim(preg_replace('/[^a-zA-Z0-9\.\-\_]/', '', $vars['ssh_host']));
 		$user = trim(preg_replace('/[^a-zA-Z0-9\.\-\_]/', '', $vars['ssh_username']));
 		$pass = $vars['ssh_password'];
-		$dir = $vars['ssh_folder'];
-		if (empty($user) || empty($pass)) return array('status'=>FALSE, 'error'=>t('Missing username or password'));
-		$cmd = "sshfs -o StrictHostKeyChecking=no,password_stdin $user@$host:$dir ".MOUNTPOINT;
-		$error = open_pipe_command($cmd, $pass);
+		if (empty($user) || empty($pass)) {
+			$m['error'] = t('Missing username or password');
+			break;
+		}
+		// No host key is known to a live system that has just started
+		$m['cmd'] = 'sshfs -o StrictHostKeyChecking=no,password_stdin '.escapeshellarg("$user@$host:".$vars['ssh_folder']).' '.$mnt;
+		$m['stdin'] = $pass;
 		break;
 	case 'ftp':
 		$host = trim(preg_replace('/[^a-zA-Z0-9\.\-\_]/', '', $vars['ftp_host']));
 		$user = trim(preg_replace('/[^a-zA-Z0-9\.\-\_]/', '', $vars['ftp_username']));
-		$pass = $vars['ftp_password'];
-		$cmd = "curlftpfs $host ".MOUNTPOINT;
+		$pass = (string) $vars['ftp_password'];
+		$cmd = 'curlftpfs '.escapeshellarg($host).' '.$mnt;
+		$m['cmd'] = $m['log'] = $cmd;
 		if (!empty($user)) {
-			$cmd .= " -o 'user=$user";
-			if (!empty($pass)) $cmd .= ':'.$pass;
-			$cmd .= "'";
+			$m['cmd'] .= ' -o '.escapeshellarg('user='.$user.($pass === '' ? '' : ":$pass"));
+			$m['log'] .= ' -o '.escapeshellarg('user='.$user.($pass === '' ? '' : ':***'));
 		}
-		$cmd .= ' 2>&1';
-		$error = shell_exec($cmd);
+		$m['cmd'] .= ' 2>&1';
+		$m['log'] .= ' 2>&1';
 		break;
 	default:
-		return array('status'=>FALSE, 'error'=>t('Unknown mount type'));
+		$m['error'] = t('Unknown mount type');
 		break;
 	}
-	// Log command used to mount filesystem
-	file_put_contents(LOG_FILE, "Executing: $cmd\n", FILE_APPEND);
+	if ($m['log'] === NULL) $m['log'] = $m['cmd'];
+	return $m;
+}
+
+//
+// Mount a given drive
+//
+function mount_drive($vars) {
+	shell_exec('mkdir -p '.MOUNTPOINT);
+	if (!unmount()) return array('status'=>FALSE, 'error'=>t('Mountpoint busy or unable to be unmounted'));
+	$m = build_mount_command($vars);
+	if (!empty($m['error'])) return array('status'=>FALSE, 'error'=>$m['error']);
+	if ($m['stdin'] !== NULL) $error = open_pipe_command($m['cmd'], $m['stdin']);
+	else $error = shell_exec($m['cmd']);
+	if (!is_null($m['dev'])) {
+		$status = get_status();
+		$status->source = $m['dev'];
+		set_status($status);
+	}
+	// Log command used to mount filesystem (without any password)
+	file_put_contents(LOG_FILE, 'Executing: '.$m['log']."\n", FILE_APPEND);
 	// Confirm drive is mounted and return result in an array
 	$m = trim(shell_exec('mount | grep '.MOUNTPOINT));
 	if (trim((string) $error) === '') $error = t('Failed to mount drive');
@@ -386,7 +413,7 @@ function get_usage() {
 function choose_dir($start=NULL, $message=NULL) {
 	if (is_null($message)) $message = t('Select destination folder');
 	if (is_null($start)) $start = '/'.trim(MOUNTPOINT, '/').'/';
-	$dir = shell_exec('yad --display=:0 --center --maximized --file-selection --directory --filename="'.$start.'" --title='.escapeshellarg($message).' --window-icon=folder --timeout=300 --close-on-unfocus');
+	$dir = shell_exec('yad --display=:0 --center --maximized --file-selection --directory --filename='.escapeshellarg($start).' --title='.escapeshellarg($message).' --window-icon=folder --timeout=300 --close-on-unfocus');
 	return $dir;
 }
 
@@ -396,7 +423,7 @@ function choose_dir($start=NULL, $message=NULL) {
 function choose_file($start=NULL, $message=NULL) {
 	if (is_null($message)) $message = t('Select backup file');
 	if (is_null($start)) $start = '/'.trim(MOUNTPOINT, '/').'/';
-	$file = shell_exec('yad --display=:0 --center --maximized --file-selection --file-filter="*.redo *.backup" --filename="'.$start.'" --title='.escapeshellarg($message).' --window-icon=folder-documents --timeout=300 --close-on-unfocus');
+	$file = shell_exec('yad --display=:0 --center --maximized --file-selection --file-filter="*.redo *.backup" --filename='.escapeshellarg($start).' --title='.escapeshellarg($message).' --window-icon=folder-documents --timeout=300 --close-on-unfocus');
 	return $file;
 }
 
@@ -494,7 +521,7 @@ function open_pipe_command($cmd, $data) {
 		$return_value = proc_close($process);
 		//print "* Command returned: $return_value\n";
 		//print "* Errors: $error\n";
-		if ($return_value!==0) return $error.PHP_EOL.$output;
+		if ($return_value!==0) return $error;
 		return NULL;
 	} else {
 		return t('Failed to execute command');
@@ -671,7 +698,7 @@ function backup_init() {
 				$status->details[$p] = array(
 					'bytes'	=> $part_bytes,
 					'size'	=> $c->size,
-					'type'	=> $c->ptdesc,
+					'type'	=> $c->ptdesc ?? '',
 					'fs'	=> $c->fstype,
 					'desc'	=> $desc,
 				);
@@ -722,6 +749,11 @@ function restore_init() {
 	set_status($status);
 	shell_exec("truncate -s 0 ".LOG_FILE);
 	if ($status->type=='baremetal') {
+		// The partitions don't exist until the table is restored, so check
+		// the drive itself before anything on it is changed
+		$size_diff = get_dev_bytes($status->drive) - $status->image->drive_bytes;
+		if ($size_diff < 0)
+			return t('Target drive is %s MB smaller than original', number_format(abs($size_diff / 1024**2)));
 		// Restore MBR and partition table
 		$mbr = tempnam(TMP_DIR, 'mbr_');
 		file_put_contents($mbr, base64_decode($status->image->mbr_bin));
@@ -729,15 +761,15 @@ function restore_init() {
 		file_put_contents($sfd, base64_decode($status->image->sfd_bin));
 		if (!unmount($status->drive.'*')) return t('Target partition busy or unable to be unmounted');
 		$log = shell_exec("wipefs --all --force /dev/".$status->drive);
-		$log .= sleep(0.5);
+		usleep(500000);
 		$log .= shell_exec("dd if=$mbr of=/dev/".$status->drive." bs=32768 count=1 2>&1");
 		$log .= shell_exec("sync");
-		$log .= sleep(0.5);
+		usleep(500000);
 		$log .= shell_exec("sfdisk --force /dev/".$status->drive." < $sfd");
 		$log .= shell_exec("sync");
-		$log .= sleep(0.5);
+		usleep(500000);
 		$log .= shell_exec("partprobe /dev/".$status->drive);
-		$log .= sleep(0.5);
+		usleep(500000);
 		@unlink($mbr);
 		@unlink($sfd);
 		file_put_contents(LOG_FILE, $log, FILE_APPEND);
@@ -909,7 +941,7 @@ function restore_part($src, $dst=NULL) {
 	// Use of partclone.restore deprecated; use filesystem-specific binary with "--restore"
 	$fs_tool = get_fs_tool($status->image->parts->$src->fs);
 	// Is this a legacy backup image? If so, adjust the source file format
-	if (is_legacy($status->image->version)) {
+	if (is_legacy($status->file)) {
 		// Handle restoring from an old backup image
 		$prefix_path = escape_path(sane_path(preg_replace('/\.backup$/', '', $status->file)));
 		$part_num = preg_replace('/[^0-9]/', '', $src);
@@ -935,7 +967,7 @@ function verify_part($src) {
 	// Prepare command to verify a backup
 	$image_files = preg_replace('/\.redo$/', '', escape_path(MOUNTPOINT.$status->file)).'_'.$src.'_??*.img';
 	// Is this a legacy backup image? If so, adjust the source file format
-	if (is_legacy($status->image->version)) {
+	if (is_legacy($status->file)) {
 		// Handle restoring from an old backup image
 		$prefix_path = escape_path(sane_path(preg_replace('/\.backup$/', '', $status->file)));
 		$part_num = preg_replace('/[^0-9]/', '', $src);
@@ -950,11 +982,12 @@ function verify_part($src) {
 }
 
 //
-// Determine if the image version is older than this release
+// Determine if the image file is in the old Redo Backup 1.0.x format (a
+// .backup file with separate .size, .mbr and .sfdisk files). The version
+// number can't tell: Backtrail's own numbers start again at 1.0.0.
 //
-function is_legacy($ver) {
-	if (version_compare($ver, '2.0', '<')) return TRUE;
-	return FALSE;
+function is_legacy($file) {
+	return (bool) preg_match('/\.backup$/', (string) $file);
 }
 
 //
@@ -997,6 +1030,16 @@ function process_running() {
 //
 function sync_drives() {
 	shell_exec('sync');
+}
+
+//
+// Partition on the target drive for a partition of the image: the drive plus
+// the partition number, with a "p" between them when the drive's name ends
+// in a digit, as the kernel names them (nvme0n1p1, mmcblk0p1, loop0p1)
+//
+function baremetal_target($drive, $name) {
+	if (!preg_match('/(\d+)$/', $name, $m)) return $drive;
+	return $drive.(preg_match('/\d$/', $drive) ? 'p' : '').$m[1];
 }
 
 //

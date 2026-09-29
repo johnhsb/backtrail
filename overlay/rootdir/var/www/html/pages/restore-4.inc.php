@@ -40,13 +40,6 @@ if ($size_diff > 1024**2 * 100)
 if ($size_diff == 0)
 	$size_notes[] = array('class' => 'info', 'icon' => 'info-circle', 'msg' => t('Target drive is the same size as the original'));
 
-// Target partition for each image partition in a full recovery
-function baremetal_target($drive, $name) {
-	// Must also accommodate NVMe-style partition IDs
-	preg_match('/(.+\D+)(\d+)$/', $name, $m);  // $m[2] contains the part_num
-	return $drive.(preg_match('/^nvme/', $drive) ? 'p' : '').$m[2];
-}
-
 page_header('restore', 4, t('Choose what to restore'), t('Restoring to %s. Data on the selected target partitions will be overwritten.', '<span class="bt-dev">'.h($status->drive).'</span>'));
 ?>
 
