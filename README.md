@@ -124,6 +124,12 @@ To build an ISO image from within Debian Linux:
 
 The result is `backtrail-VERSION.iso`, for example `backtrail-1.0.0.iso`.
 
+The build needs a Debian or Ubuntu machine with internet access. `./make`
+first checks the tools it uses (`debootstrap`, `squashfs-tools`, `xorriso`,
+`mtools`, `dosfstools`, `rsync`, `perl`, GRUB and its Secure Boot files) and
+installs any that are missing with `apt-get`, so nothing needs to be
+installed beforehand.
+
 The ISO contains a 64-bit (Debian 13) and a 32-bit (Debian 12) live system; the boot menu picks one based on the CPU. Build targets are set by `TARGETS` in the `make` script.
 
 After building, it's easy to modify a file or install a package without rebuilding and downloading all the packages again:

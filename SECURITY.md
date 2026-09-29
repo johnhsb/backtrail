@@ -45,7 +45,8 @@ network you trust. It needs full access to the disks, so:
 * The backup and restore app's PHP backend runs as `root` and has no login.
   nginx serves it only on the loopback address (`127.0.0.1:80`), so it can
   be used only from the machine itself, or through VNC.
-* The firewall drops incoming connections except SSH (22) and VNC (5900).
+* The firewall (IPv4 and IPv6) drops incoming connections except SSH (22)
+  and VNC (5900).
 
 Run Backtrail on a network you trust, or disconnect the network cable when
 you back up to a local disk.

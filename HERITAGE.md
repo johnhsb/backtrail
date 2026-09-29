@@ -73,6 +73,9 @@ Debian 12. The ISO contains two independent live systems (`/live-amd64` and
 | Starting a backup on PHP 8 | `backup_init()` counted the selected partitions with `get_object_vars()`, but a backup's partition list is an array, so PHP 8 stopped with a `TypeError` before the backup began | Counted as an array for backups, restores and verifications |
 | Changing the drive | After going back from the partition or restore-options step, the drive chosen first was kept even when another was selected | A newly chosen drive replaces the saved one |
 | Partition table tools on trixie | `sfdisk` and `fdisk` moved to the separate `fdisk` package, which Debian 13 no longer installs as a dependency; 64-bit backups saved no partition table dump, so a restored GPT disk had no backup GPT header, and partition types were blank | `fdisk` is installed explicitly |
+| Full restore to `mmcblk`, `loop` and `nbd` drives | Only `nvme` drives got the `p` before the partition number, so images restored to `mmcblk0p1` style drives (eMMC, SD cards) went to `mmcblk01`, which does not exist | The `p` is added whenever the drive's name ends in a digit, as the kernel names partitions |
+| Target size check | The drive's size was checked only when the target was chosen; the check of each partition ran after the drive had been wiped, when the partitions first exist | The drive's size is checked again right before anything on it changes |
+| Passwords in mount commands | CIFS and FTP passwords went into the command line inside quotes and into the log; a quote in a password broke the command | Values are quoted as one argument each, CIFS passwords go through `PASSWD`, and the log hides them |
 | Leftover progress | Starting a second operation without reloading the app resumed the first one's progress and waited forever | The first step of each operation clears the previous selections and progress |
 
 The locale is set for every path that runs commands:
@@ -95,10 +98,10 @@ and break that parsing.
 |---|---|---|
 | Interrupted build | `proc`, `sys` and `dev/pts` stayed mounted inside the build root | Unmounted automatically on exit or interrupt; `clean` unmounts first and deletes with `--one-file-system` |
 | Failed debootstrap | A broken cache archive was created and reused by the next build | Cache is written only after success, via an atomic rename |
-| Missing host tools | Without `rsync` and `mkfs.vfat` the build still "succeeded", producing an ISO with no overlay applied and a broken UEFI boot image | `rsync` and `dosfstools` added to the host dependencies |
+| Missing host tools | Without `rsync` and `mkfs.vfat` the build still "succeeded", producing an ISO with no overlay applied and a broken UEFI boot image | `./make` checks every tool and GRUB file it uses before it starts, and installs the missing packages with `apt-get` |
 | Build targets | One system | `TARGETS="amd64:trixie i386:bookworm"`; `./make changes amd64` or `i386` updates a single system |
 | 32-bit chroot | — | Runs under `setarch i686`, so `uname -m` reports a 32-bit machine |
-| Legacy code | Unused Debian 9 isolinux path | Removed |
+| Legacy code | Unused Debian 9 isolinux path, and package lists for Debian 9 to 11 | Removed; only trixie and bookworm are built |
 | Repeated downloads | Every full build downloaded all packages again (about 700 per system); only the debootstrap base was cached | `cache/apt-BASE-ARCH` is mounted over the chroot's package cache, so rebuilds only fetch changed packages; the image itself still ships without `.deb` files |
 
 ### Desktop

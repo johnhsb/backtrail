@@ -37,21 +37,31 @@ Build the ISO on Debian 13 (or in a Debian 13 container or VM) as described
 in the README's [Build](README.md#build) section. `sudo ./make changes`
 updates a built image without downloading everything again.
 
-Before sending a change, test it in a virtual machine, for example:
+Before sending a change, test it in a virtual machine. `tools/qemu-boot.sh`
+starts the ISO with two blank test disks (`-u` for UEFI, `-i` for the 32-bit
+system):
 
-    qemu-system-x86_64 -enable-kvm -m 2048 -cdrom backtrail-1.0.0.iso \
-        -drive file=test-disk.qcow2,if=virtio
+    tools/qemu-boot.sh
 
 For changes to backup, restore or verification, run a backup and a full
 restore of a test disk, and check the 32-bit system too when the change
 touches PHP code (32-bit PHP handles large numbers differently).
 
+Two checks run without booting the ISO:
+
+* `php tests/php/run.php` runs the unit tests (also on every pull request).
+* `sudo tools/e2e-loop.sh` backs up, wipes, restores and verifies a disk made
+  of loop devices, using the app's real PHP code and Redo monitor. It needs
+  root on a Debian machine or a privileged container with `php-cli`,
+  `partclone`, `pigz`, `fdisk`, `parted` and `curl`. It is not part of CI.
+
 ## Checks
 
 The same checks run on every pull request:
 
-    shellcheck --severity=error make overlay/rootdir/root/enable-ssh overlay/rootdir/root/redo-monitor
-    find overlay -name '*.php' -exec php -l {} \;
+    shellcheck --severity=warning make overlay/rootdir/root/enable-ssh overlay/rootdir/root/redo-monitor tools/*.sh
+    find overlay tests -name '*.php' -exec php -l {} \;
+    php tests/php/run.php
     python3 tools/i18n-check.py
     python3 branding/src/build.py branding && git diff --exit-code branding
 

@@ -13,8 +13,39 @@ See [HERITAGE.md](HERITAGE.md) for the background.
     backend runs as root without a login, so anyone on the network could
     run a backup or restore. Remote helpers still reach it through VNC
   * Use an 8-character VNC password instead of 4 characters
+  * Close IPv6 as well: `rules.v6` drops incoming connections except SSH and
+    VNC, like the IPv4 firewall
+  * Quote every value the app puts in a mount command, and pass CIFS
+    passwords through `PASSWD`, so quotes, commas and shell characters in
+    passwords, folders and paths are safe; the mount command in the log no
+    longer contains the password
+  * Read partition types from `fdisk` when its columns are one space apart,
+    as in Debian 13; the type was missing from backups and PHP warned for
+    each partition
+  * Tell old Redo Backup 1.0.x images (`.backup` files) from newer ones by
+    their format, not their version number: with Backtrail's numbers starting
+    again at 1.0.0, its own backups were taken for old ones, and verifying or
+    restoring them looked for files that do not exist
+  * Fix a full restore to eMMC, SD card, loop and NBD drives (`mmcblk0p1`
+    style names) going to partitions such as `mmcblk01` that do not exist
+  * Check the target drive's size again right before a full restore changes
+    anything on it, and wait between its steps for the half second that was
+    intended (PHP 8 rounded it down to none)
   * List each live system's packages and their Debian source packages in
     `/live-ARCH/filesystem.packages` on the ISO
+  * Add unit tests for the app's helpers and mount commands
+    (`tests/php/run.php`), a backup, verify and restore test on loop devices
+    (`tools/e2e-loop.sh`) and a QEMU launcher (`tools/qemu-boot.sh`); CI runs
+    the unit tests and shellcheck at warning level
+  * `make` checks the build tools (debootstrap, squashfs-tools, xorriso,
+    mtools, dosfstools, rsync, perl, GRUB and shim) before every build,
+    `changes` and `boot` run, and installs the missing ones with `apt-get`;
+    before, they were installed only when no debootstrap archive existed
+  * `make` exits with an error status when it stops, no longer builds
+    Debian 11 and older, and names the live user `LIVE_USER` instead of
+    `USER`
+  * Remove the unused Font Awesome brand, regular and JavaScript files
+    (about 7 MB in the source tree)
   * New name, Backtrail, with a new logo; images keep the `.redo` format,
     so backups from Redo Rescue restore unchanged
   * Replace every original Redo Rescue graphic with Backtrail artwork that is
