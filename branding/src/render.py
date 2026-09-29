@@ -176,8 +176,31 @@ def web():
         print(f"{os.path.relpath(os.path.join(WEB, 'images', name), ROOT):70s} (copied)")
 
 
+def social():
+    """Repository preview image for GitHub (Settings > Social preview), 1280x640."""
+    w, h = 1280, 640
+    lock = build.lockup("dark", 64)
+    lw = float(lock.split('viewBox="0 0 ')[1].split(" ")[0])
+    inner = lock.split(">", 1)[1].rsplit("</svg>", 1)[0].split("</title>", 1)[1]
+    k = 2.6
+    # the summit sits right of the lockup, so its dot does not touch the wordmark
+    cx, cy = w * 0.9, h * 0.16
+    body = (
+        '<defs><radialGradient id="g" cx="0.2" cy="0" r="1.1">'
+        f'<stop offset="0" stop-color="{NAVY_LIGHT}"/><stop offset="0.6" stop-color="{NAVY}"/>'
+        f'<stop offset="1" stop-color="{NAVY_DEEP}"/></radialGradient></defs>'
+        f'<rect width="{w}" height="{h}" fill="url(#g)"/>'
+        + contours(cx, cy, 22, h * 0.05)
+        + f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{h * 0.012:.1f}" fill="{CONTOUR}" opacity=".5"/>'
+    )
+    body += (f'<svg x="{(w - lw * k) / 2:.1f}" y="{(h - 64 * k) / 2:.1f}" width="{lw * k:.1f}" '
+             f'height="{64 * k:.1f}" viewBox="0 0 {lw:.2f} 64">{inner}</svg>')
+    png(doc(w, h, body), os.path.join(ROOT, "branding/backtrail-social.png"))
+
+
 if __name__ == "__main__":
     grub_theme()
     plymouth_theme()
     desktop()
     web()
+    social()

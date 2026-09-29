@@ -19,6 +19,7 @@ the way back.
 | `backtrail-mark-small*.svg` | Simplified mark for 16–24 px (favicon, panel icons) |
 | `backtrail-app-icon.svg` | Mark on a rounded navy tile, 32 px and larger |
 | `backtrail-app-icon-small.svg` | Tile with the simplified mark, 16–24 px |
+| `backtrail-social.png` | Repository social preview, 1280x640 (rendered by `src/render.py`) |
 
 ## Colors
 
@@ -69,7 +70,8 @@ Sora is licensed under the SIL Open Font License 1.1.
 `src/render.py` renders the PNG files used outside the web app from the same
 geometry: the GRUB theme (background, logo, selection boxes, countdown ring
 and menu icons), the Plymouth `backtrail` splash, the desktop wallpapers and
-app icon, and the web app favicon. There is one wallpaper per screen shape
+app icon, the web app favicon, and the repository social preview
+(`backtrail-social.png`). There is one wallpaper per screen shape
 (`background-16x9.png`, `-16x10`, `-4x3`, `-5x4`, `-21x9`); the Openbox
 autostart picks the closest one, and `background.png` is the fallback. It needs `cairosvg`:
 
