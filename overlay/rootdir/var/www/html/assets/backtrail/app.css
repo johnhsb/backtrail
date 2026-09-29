@@ -27,7 +27,7 @@
   --bt-log-bg: #07131f;
   --bt-log-ink: #b7c9d6;
 
-  --bs-font-sans-serif: "Pretendard", "Noto Sans CJK KR", "Noto Sans CJK JP", "Noto Sans CJK SC", sans-serif;
+  --bs-font-sans-serif: "Noto Sans CJK KR", "Noto Sans CJK JP", "Noto Sans CJK SC", sans-serif;
   --bs-font-monospace: "DejaVu Sans Mono", "Noto Sans Mono CJK KR", monospace;
   --bs-body-bg: var(--bt-bg);
   --bs-body-color: var(--bt-ink);
@@ -192,10 +192,9 @@ code { color: inherit; font-size: .9em; }
 .bt-lang-menu .dropdown-item.active { font-weight: 600; box-shadow: inset 3px 0 0 var(--bt-accent); }
 .bt-lang-menu .bt-lang-en { margin-left: auto; font-size: .75rem; color: var(--bt-muted); font-weight: 400; }
 
-/* Han characters in the regional form of the interface language
-   (Pretendard covers Latin and Hangul) */
-html:lang(ja) { --bs-font-sans-serif: "Pretendard", "Noto Sans CJK JP", "Noto Sans CJK KR", sans-serif; }
-html:lang(zh-CN) { --bs-font-sans-serif: "Pretendard", "Noto Sans CJK SC", "Noto Sans CJK KR", sans-serif; }
+/* Han characters in the regional form of the interface language */
+html:lang(ja) { --bs-font-sans-serif: "Noto Sans CJK JP", "Noto Sans CJK KR", sans-serif; }
+html:lang(zh-CN) { --bs-font-sans-serif: "Noto Sans CJK SC", "Noto Sans CJK KR", sans-serif; }
 /* Korean wraps between words; CJK labels need no tracking or capitals */
 html:lang(ko) body { word-break: keep-all; overflow-wrap: anywhere; }
 html:lang(ko) .bt-op, html:lang(ko) .bt-label,

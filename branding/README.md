@@ -43,10 +43,12 @@ The web app, boot menu, splash screen and desktop use the same palette:
 
 ## Typeface
 
-Interface text uses **Pretendard** (SIL OFL 1.1, Debian package
-`fonts-pretendard`), which covers Latin and all Hangul syllables. Noto Sans
-CJK covers Chinese and Japanese, and `overlay/rootdir/etc/fonts/local.conf`
-selects the regional Noto Sans CJK face for text tagged `ja` or `zh`.
+Interface text uses **Noto Sans CJK** (SIL OFL 1.1, Debian package
+`fonts-noto-cjk`) for Latin, Korean, Japanese and Chinese, in its Regular and
+Bold weights, the ones the package installs. Korean is the default face, and
+`overlay/rootdir/etc/fonts/local.conf` selects the regional face for text
+tagged `ja` or `zh`. Desktop settings name the generic `Sans` family, so the
+font is chosen in that one file.
 Monospace text (device names, logs) uses DejaVu Sans Mono.
 
 ## Regenerating
@@ -77,14 +79,14 @@ autostart picks the closest one, and `background.png` is the fallback. It needs 
 
     python3 branding/src/render.py
 
-`src/grub-fonts.sh` builds the GRUB bitmap fonts (`backtrail-sans-*.pf2`)
-from Pretendard. Pretendard's license (SIL OFL 1.1) reserves the name
-"Pretendard", and a converted subset is a Modified Version that may not use
-it, so `src/pf2-rename.py` names them "Backtrail Sans"; the license is copied
-next to them as `OFL-Pretendard.txt`. It needs `grub-mkfont` from
-`grub-common`:
+`src/grub-fonts.py` builds the GRUB bitmap fonts (`backtrail-sans-*.pf2`)
+from Noto Sans CJK Regular and Medium, named "Backtrail Sans" so the theme
+does not depend on the source font's name; the font license is copied next
+to them as `OFL-NotoSansCJK.txt`. It writes PF2 files the way `grub-mkfont`
+does, so it runs anywhere with `freetype-py`. Download the collections from
+[noto-cjk](https://github.com/notofonts/noto-cjk/tree/main/Sans/OTC):
 
-    branding/src/grub-fonts.sh /usr/share/fonts/opentype/pretendard
+    python3 branding/src/grub-fonts.py NotoSansCJK-Regular.ttc NotoSansCJK-Medium.ttc
 
 `src/flags.py` draws the flag icons of the web app language menu
 (`images/flags/*.svg`) in one 3:2 size, simplified for 14–20 px:

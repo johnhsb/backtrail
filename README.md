@@ -154,9 +154,9 @@ is based.
 
 Redo Rescue's distinctive logos and graphics are not released under the GNU
 GPLv3 and require derived projects to use their own. Backtrail replaces all of them with
-its own artwork in `branding/`. The Pretendard and Sora typefaces are licensed
-under the SIL Open Font License 1.1; the boot menu uses subsets of Pretendard
-renamed "Backtrail Sans", as its license requires.
+its own artwork in `branding/`. The Noto Sans CJK and Sora typefaces are
+licensed under the SIL Open Font License 1.1; the boot menu uses subsets of
+Noto Sans CJK, named "Backtrail Sans".
 
 ### Source code
 

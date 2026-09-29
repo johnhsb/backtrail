@@ -177,7 +177,7 @@ script_build() {
 		# Trixie-specific PHP version and packages
 		# (hfsutils and reiser4progs were removed from Debian 13)
 		PHPV="8.4"
-		PKGS="volumeicon-alsa exfatprogs fonts-pretendard"
+		PKGS="volumeicon-alsa exfatprogs"
 	elif [ "$BASE" == "bookworm" ]; then
 		# Bookworm-specific PHP version and packages
 		PHPV="8.2"
@@ -290,24 +290,6 @@ apt install --no-install-recommends --yes \
 	\
 	nginx php-fpm php-cli python3-gi gir1.2-webkit2-4.1 $PKGS
 EOL
-	if [ "$BASE" != "trixie" ]; then
-		cat >> $ROOT/$FILE <<'EOL'
-
-# Pretendard (UI font) is packaged from Debian 13 on. It has no dependencies,
-# so take only that package from trixie; the low pin keeps everything else
-# on the base release.
-echo 'deb http://deb.debian.org/debian trixie main' > /etc/apt/sources.list.d/trixie.list
-cat > /etc/apt/preferences.d/trixie <<END
-Package: *
-Pin: release n=trixie
-Pin-Priority: 100
-END
-apt update --yes
-apt install --no-install-recommends --yes fonts-pretendard/trixie
-rm -f /etc/apt/sources.list.d/trixie.list /etc/apt/preferences.d/trixie
-apt update --yes
-EOL
-	fi
 	cat >> $ROOT/$FILE <<EOL
 
 # Modify /etc/issue banner

@@ -15,9 +15,6 @@ See [HERITAGE.md](HERITAGE.md) for the background.
   * Use an 8-character VNC password instead of 4 characters
   * List each live system's packages and their Debian source packages in
     `/live-ARCH/filesystem.packages` on the ISO
-  * Name the boot menu's Pretendard subsets "Backtrail Sans", since
-    Pretendard's license reserves its name for the original fonts, and
-    include the license next to them
   * New name, Backtrail, with a new logo; images keep the `.redo` format,
     so backups from Redo Rescue restore unchanged
   * Replace every original Redo Rescue graphic with Backtrail artwork that is
@@ -31,10 +28,9 @@ See [HERITAGE.md](HERITAGE.md) for the background.
   * One theme for the boot menu, splash screen, desktop and wallpaper:
     new GRUB theme with a countdown ring, Plymouth `backtrail` theme,
     Openbox `Backtrail` theme, tint2 colors and GTK Adwaita
-  * Use Pretendard for Latin and Korean text, with Noto Sans CJK for
-    Chinese and Japanese (fontconfig, GRUB fonts and web app); the 32-bit
-    system installs `fonts-pretendard` from trixie because bookworm lacks it
-  * Replace Lato and the Numix GTK theme with Pretendard and Adwaita
+  * Replace Lato and the Numix GTK theme with Adwaita and Noto Sans CJK,
+    which is used for all interface text in every language: desktop, web
+    app and boot menu (bitmap fonts built by `branding/src/grub-fonts.py`)
   * Set the hostname to `backtrail` and name the ISO `backtrail-VERSION.iso`
   * Keep downloaded packages in `cache/` between builds, so a rebuild only
     downloads packages that changed

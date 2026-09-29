@@ -123,21 +123,22 @@ are unchanged, so existing backups and scripts keep working.
 | Area | Redo Rescue | Backtrail |
 |---|---|---|
 | Logo | Redo Rescue logo | Contour-line mark generated from source (`branding/src`); see [branding/README.md](branding/README.md) |
-| Boot menu | GRUB theme with Redo artwork and Helvetica bitmap fonts, and a "Choose language" submenu that only offered English | Navy contour background, Backtrail logo, Pretendard fonts, countdown ring; the language submenu is removed because the web app has its own language menu |
+| Boot menu | GRUB theme with Redo artwork and Helvetica bitmap fonts, and a "Choose language" submenu that only offered English | Navy contour background, Backtrail logo, Noto Sans CJK fonts, countdown ring; the language submenu is removed because the web app has its own language menu |
 | Boot splash | Plymouth `redo` theme | Plymouth `backtrail` theme in the same colors |
-| Desktop | Numix GTK and Openbox theme, Adwaita icons, Lato font | `Backtrail` Openbox theme, matching tint2 panel, GTK Adwaita with Papirus icons, Pretendard, new wallpaper and app icon |
+| Desktop | Numix GTK and Openbox theme, Adwaita icons, Lato font | `Backtrail` Openbox theme, matching tint2 panel, GTK Adwaita with Papirus icons, Noto Sans CJK, new wallpaper and app icon |
 | Web framework | Bootstrap 3.4, jQuery 1.12, Bootbox 5, plus bootstrap-notify, jquery-validation and animate.css | **Bootstrap 5.3, jQuery 3.7, Bootbox 6**; unused libraries removed |
 | Application | Separate page layouts | Step indicator, drive list on the welcome screen, partition map with selected size, shared location, progress and image-detail views, light and dark modes |
 | Names | Redo Rescue, `redorescue` hostname, `redorescue-VERSION.iso` | Backtrail, `backtrail` hostname, `backtrail-VERSION.iso` |
 
-**Fonts.** Interface text uses Pretendard, which covers Latin and all Hangul
-syllables, with Noto Sans CJK for Chinese and Japanese. Debian 12 has no
-Pretendard package, so the 32-bit build installs `fonts-pretendard` alone
-from trixie; the package has no dependencies, and a low apt pin keeps every
-other package on bookworm. Because Pretendard lacks the archaic jamo that
-fontconfig requires for Korean, text tagged `ko` would otherwise fall back
-to Noto Sans CJK KR; `local.conf` keeps it on Pretendard and gives text
-tagged `ja` or `zh` the matching regional Noto Sans CJK face.
+**Fonts.** Interface text uses Noto Sans CJK, which covers Latin, Korean,
+Japanese and Chinese in one family and is packaged for both Debian 12 and 13.
+The Korean face is the default, and `local.conf` gives text tagged `ja` or
+`zh` the matching regional face, so Han characters take the right forms.
+Desktop settings name the generic `Sans` family and the boot menu uses
+bitmap subsets built from the same font. An earlier version used Pretendard
+for Latin and Korean; it was dropped because the 32-bit system had to take
+it from Debian 13, fontconfig needed an exception for Korean, and its
+license reserves its name, so the boot menu subsets had to be renamed.
 
 **Fixes found during the rewrite:**
 
