@@ -12,7 +12,7 @@ jobs:
     name: Shell and Python scripts
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: shellcheck
         run: shellcheck --severity=error make overlay/rootdir/root/enable-ssh overlay/rootdir/root/redo-monitor
       - name: Python syntax
@@ -31,7 +31,7 @@ jobs:
         # 8.2: 32-bit system (Debian 12); 8.4: 64-bit system (Debian 13)
         php: ['8.2', '8.4']
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
