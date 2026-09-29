@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: shellcheck
-        run: shellcheck --severity=error make overlay/rootdir/root/enable-ssh overlay/rootdir/root/redo-monitor
+        run: shellcheck --severity=warning make overlay/rootdir/root/enable-ssh overlay/rootdir/root/redo-monitor tools/*.sh
       - name: Python syntax
         # parse only, so no __pycache__ lands in the overlay
         run: python3 -c 'import ast, sys; [ast.parse(open(f).read(), f) for f in sys.argv[1:]]' overlay/rootdir/usr/local/bin/backtrail-app tools/*.py branding/src/*.py
@@ -38,7 +38,9 @@ jobs:
           coverage: none
       - name: Syntax
         run: |
-          find overlay -name '*.php' -print0 | xargs -0 -n1 php -l > lint.log || { grep -v '^No syntax errors' lint.log; exit 1; }
+          find overlay tests -name '*.php' -print0 | xargs -0 -n1 php -l > lint.log || { grep -v '^No syntax errors' lint.log; exit 1; }
           echo "$(wc -l < lint.log) files checked"
+      - name: Unit tests
+        run: php tests/php/run.php
       - name: Translations
         run: python3 tools/i18n-check.py
