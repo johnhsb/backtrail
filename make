@@ -24,7 +24,7 @@ VER=1.0.0
 # the boot menu picks the one matching the CPU. Debian 13 has no i386 kernel.
 TARGETS="amd64:trixie i386:bookworm"
 FILE=setup.sh
-USER=redo
+LIVE_USER=redo
 NONFREE=true
 
 # Set colored output codes
@@ -42,13 +42,13 @@ echo -e "---------------------------\n"
 # Check: Must be root
 if [ "$EUID" -ne 0 ]
 	then echo -e "$red* ERROR: Must be run as root.$off\n"
-	exit
+	exit 1
 fi
 
 # Check: No spaces in cwd
 if [[ `pwd` == *" "* ]]
 	then echo -e "$red* ERROR: Current absolute pathname contains a space.$off\n"
-	exit
+	exit 1
 fi
 
 # Get requested action
@@ -63,6 +63,45 @@ unmount_chroot() {
 
 # Never leave host filesystems mounted inside a build root
 trap unmount_chroot EXIT
+
+check_host() {
+	#
+	# Make sure this machine has everything the build runs, installing what
+	# is missing (Debian or Ubuntu). Each item is a command or a file, and
+	# the package that provides it.
+	#
+	local item what pkg need=()
+	for item in \
+		debootstrap:debootstrap /usr/share/keyrings/debian-archive-keyring.gpg:debian-archive-keyring \
+		mksquashfs:squashfs-tools rsync:rsync perl:perl setarch:util-linux \
+		mkfs.vfat:dosfstools mcopy:mtools xorriso:xorriso \
+		grub-mkstandalone:grub-common /usr/share/grub/ascii.pf2:grub-common \
+		/usr/lib/grub/i386-pc/cdboot.img:grub-pc-bin \
+		/usr/lib/grub/i386-pc/boot_hybrid.img:grub-pc-bin \
+		/usr/lib/grub/x86_64-efi:grub-efi-amd64-bin \
+		/usr/lib/grub/x86_64-efi-signed/grubx64.efi.signed:grub-efi-amd64-signed \
+		/usr/lib/shim/shimx64.efi.signed:shim-signed; do
+		what=${item%%:*}
+		pkg=${item#*:}
+		if [[ $what == /* ]]; then
+			[ -e "$what" ] && continue
+		else
+			command -v "$what" >/dev/null && continue
+		fi
+		[[ " ${need[*]-} " == *" $pkg "* ]] || need+=("$pkg")
+	done
+	[ ${#need[@]} -gt 0 ] || return 0
+
+	echo -e "$yel* Installing build dependencies: ${need[*]}$off"
+	if ! command -v apt-get >/dev/null; then
+		echo -e "$red* ERROR: apt-get not found. Install these packages first: ${need[*]}$off\n"
+		exit 1
+	fi
+	if ! { apt-get update && apt-get install --yes --no-install-recommends "${need[@]}"; }; then
+		echo -e "$red* ERROR: Could not install: ${need[*]}$off\n"
+		exit 1
+	fi
+}
 
 set_target() {
 	#
@@ -105,9 +144,6 @@ prepare() {
 	else
 		echo -e "$yel* $CACHE does not exist, running debootstrap...$off"
 		sleep 2
-		apt-get install debootstrap squashfs-tools grub-pc-bin \
-			grub-efi-amd64-signed shim-signed mtools xorriso \
-			rsync dosfstools
 		mkdir -p $ROOT
 		if ! debootstrap \
 			--arch=$ARCH \
@@ -182,24 +218,13 @@ script_build() {
 		# Bookworm-specific PHP version and packages
 		PHPV="8.2"
 		PKGS="volumeicon-alsa exfatprogs hfsutils reiser4progs"
-	elif [ "$BASE" == "bullseye" ]; then
-		# Bullseye-specific PHP version and packages
-		PHPV="7.4"
-		PKGS="volumeicon-alsa curlftpfs exfat-utils hfsutils reiser4progs"
-	elif [ "$BASE" == "buster" ]; then
-		# Buster uses PHP 7.3
-		PHPV="7.3"
-		PKGS="volti obmenu curlftpfs exfat-utils hfsutils reiser4progs"
 	else
-		# Stretch uses PHP 7.0
-		PHPV="7.0"
-		PKGS="volti obmenu curlftpfs exfat-utils hfsutils reiser4progs"
+		# The app, its window (WebKitGTK 4.1) and the package lists here need
+		# Debian 12 or later
+		echo -e "$red* ERROR: Unsupported base '$BASE' (use trixie or bookworm).$off\n"
+		exit 1
 	fi
-	if [ "$BASE" == "buster" ] || [ "$BASE" == "stretch" ]; then
-		SECSUITE="$BASE/updates"
-	else
-		SECSUITE="$BASE-security"
-	fi
+	SECSUITE="$BASE-security"
 	cat >> $ROOT/$FILE <<'EOL'
 # Keep files the live system never uses out of the image: program
 # translations (the session runs in C.UTF-8 and the web app has its own)
@@ -309,12 +334,12 @@ systemctl disable ssh
 rm -f /etc/ssh/ssh_host_*
 
 # Add regular user
-useradd --create-home $USER --shell /bin/bash
-adduser $USER sudo
-echo '$USER:$USER' | chpasswd
+useradd --create-home $LIVE_USER --shell /bin/bash
+adduser $LIVE_USER sudo
+echo '$LIVE_USER:$LIVE_USER' | chpasswd
 
 # Prepare single-user system
-echo 'root:$USER' | chpasswd
+echo 'root:$LIVE_USER' | chpasswd
 echo 'default_user root' >> /etc/slim.conf
 echo 'auto_login yes' >> /etc/slim.conf
 echo "Setting default plymouth theme..."
@@ -628,6 +653,9 @@ if [ "$ACTION" == "clean" ]; then
 	# Clean all build files
 	clean
 fi
+
+# Everything else needs the build tools
+check_host
 
 if [ "$ACTION" == "" ]; then
 	# Build new ISO image with a live system for every target
