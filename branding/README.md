@@ -77,8 +77,12 @@ autostart picks the closest one, and `background.png` is the fallback. It needs 
 
     python3 branding/src/render.py
 
-`src/grub-fonts.sh` builds the GRUB bitmap fonts (`pretendard-*.pf2`) from
-Pretendard. It needs `grub-mkfont` from `grub-common`:
+`src/grub-fonts.sh` builds the GRUB bitmap fonts (`backtrail-sans-*.pf2`)
+from Pretendard. Pretendard's license (SIL OFL 1.1) reserves the name
+"Pretendard", and a converted subset is a Modified Version that may not use
+it, so `src/pf2-rename.py` names them "Backtrail Sans"; the license is copied
+next to them as `OFL-Pretendard.txt`. It needs `grub-mkfont` from
+`grub-common`:
 
     branding/src/grub-fonts.sh /usr/share/fonts/opentype/pretendard
 

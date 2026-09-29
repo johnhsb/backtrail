@@ -24,7 +24,7 @@ terminal-border: "4"
   top = 34%
   width = 46%
   height = 300
-  item_font = "Pretendard SemiBold Regular 22"
+  item_font = "Backtrail Sans SemiBold Regular 22"
   item_color = "#C3D4E0"
   selected_item_color = "#0E2A47"
   icon_width = 32
@@ -60,7 +60,7 @@ terminal-border: "4"
   height = 24
   align = "center"
   color = "#E4EEF4"
-  font = "Pretendard Regular 16"
+  font = "Backtrail Sans Regular 16"
 }
 
 + label {
@@ -70,6 +70,6 @@ terminal-border: "4"
   width = 84%
   height = 24
   color = "#8FA7BB"
-  font = "Pretendard Regular 16"
+  font = "Backtrail Sans Regular 16"
   text = @KEYMAP_SHORT@
 }
