@@ -39,13 +39,13 @@ network you trust. It needs full access to the disks, so:
   `redo`, as documented in the README, so anyone with the password and
   network access can log in once SSH is enabled.
 * SSH is off until `/root/enable-ssh` is run from the desktop.
-* A VNC server starts with the desktop, protected by a short random
-  password shown in the app bar, for remote assistance.
-* The backup and restore app is served by nginx on port 80 and its PHP
-  backend runs as `root`. It has no login, so anyone who can reach the
-  machine on port 80 can use it, including restoring over a disk.
-* The firewall drops incoming connections except SSH (22), HTTP (80) and
-  VNC (5900).
+* A VNC server starts with the desktop, for remote assistance. It is
+  protected by a random 8-character password shown in the app bar; VNC
+  sends its traffic unencrypted.
+* The backup and restore app's PHP backend runs as `root` and has no login.
+  nginx serves it only on the loopback address (`127.0.0.1:80`), so it can
+  be used only from the machine itself, or through VNC.
+* The firewall drops incoming connections except SSH (22) and VNC (5900).
 
-Until these are tightened, run Backtrail only on a trusted network, or
-disconnect the network cable when you back up to a local disk.
+Run Backtrail on a network you trust, or disconnect the network cable when
+you back up to a local disk.

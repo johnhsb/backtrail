@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# Show the Backtrail web app (served by nginx on localhost) in its own
+# Show the Backtrail web app (served by nginx on 127.0.0.1 only) in its own
 # window, using the WebKitGTK engine
 import os
 import sys
@@ -13,7 +13,7 @@ gi.require_version('Gtk', '3.0')
 gi.require_version('WebKit2', '4.1')
 from gi.repository import GLib, Gtk, Gdk, WebKit2
 
-URL = sys.argv[1] if len(sys.argv) > 1 else 'http://localhost'
+URL = sys.argv[1] if len(sys.argv) > 1 else 'http://127.0.0.1'
 ZOOM_STEPS = [0.67, 0.75, 0.8, 0.9, 1.0, 1.1, 1.25, 1.5, 1.75, 2.0]
 
 GLib.set_prgname('backtrail')

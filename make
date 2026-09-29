@@ -361,9 +361,11 @@ perl -p -i -e 's/^group = .*$/group = root/g' /etc/php/$PHPV/fpm/pool.d/www.conf
 # Workers start with a cleared environment; commands they run need UTF-8
 echo 'env[LANG] = C.UTF-8' >> /etc/php/$PHPV/fpm/pool.d/www.conf
 perl -p -i -e 's/^ExecStart=(.*)$/ExecStart=\$1 -R/g' /lib/systemd/system/php$PHPV-fpm.service
+# The app runs commands as root and has no login, so it only answers on the
+# loopback address (IPv4, which is always configured); remote helpers use VNC
 cat > /etc/nginx/sites-available/redo <<'END'
 server {
-	listen		80 default_server;
+	listen		127.0.0.1:80 default_server;
 	server_name	localhost;
 	root		/var/www/html;
 	index		index.php;

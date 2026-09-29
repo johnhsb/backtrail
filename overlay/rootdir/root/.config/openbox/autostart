@@ -10,8 +10,9 @@ volumeicon &
 # Launch power manager daemon
 xfce4-power-manager &
 
-# Launch X11 VNC server with random password
-( pwgen -A 4 > /tmp/vncpasswd && x11vnc -bg -forever -quiet -display :0 -passwdfile /tmp/vncpasswd ) &
+# Launch X11 VNC server with a random 8-character password (the most VNC
+# authentication uses), without capitals or look-alike characters
+( pwgen -A -B 8 1 > /tmp/vncpasswd && x11vnc -bg -forever -quiet -display :0 -passwdfile /tmp/vncpasswd ) &
 
 # Set the wallpaper drawn for this screen's shape, so the logo is neither
 # cropped nor stretched (background.png, the saved nitrogen setting, is the

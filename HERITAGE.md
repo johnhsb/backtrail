@@ -56,6 +56,8 @@ tool, and so that existing `.redo` backups stay restorable.
 | Boot selection | 64-bit only | **Automatic by CPU**: GRUB `cpuid -l` on BIOS; 64-bit on UEFI | One USB stick for all PCs; UEFI Secure Boot kept |
 | Manual fallback | — | 32-bit menu entry on 64-bit BIOS machines | Recovery option if the 64-bit system fails |
 | Security updates | Packages from the base release only | **`-updates` and `-security` repositories, plus a full upgrade** | The app's web engine (WebKitGTK), kernel and PHP ship with current security fixes |
+| App access | nginx listened on every address and the firewall allowed port 80; the app's backend runs as root with no login, so anyone on the network could start a backup or restore | **Served on `127.0.0.1` only**, port 80 closed | Only the person at the machine, or a helper connected through VNC, can use the app |
+| VNC password | 4 random lowercase letters | **8 characters** (the VNC maximum), no capitals or look-alike characters | Much harder to guess on a shared network |
 
 Debian 13 no longer provides an i386 kernel, so the 32-bit system uses
 Debian 12. The ISO contains two independent live systems (`/live-amd64` and

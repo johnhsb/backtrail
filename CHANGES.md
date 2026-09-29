@@ -9,6 +9,10 @@ See [HERITAGE.md](HERITAGE.md) for the background.
 ## Version 1.0.0 (pending)
   * First Backtrail release, based on Redo Rescue 4.0.0 and the unreleased
     5.0.0 changes listed under Redo Rescue below
+  * Serve the app only on 127.0.0.1 and close port 80 in the firewall: its
+    backend runs as root without a login, so anyone on the network could
+    run a backup or restore. Remote helpers still reach it through VNC
+  * Use an 8-character VNC password instead of 4 characters
   * List each live system's packages and their Debian source packages in
     `/live-ARCH/filesystem.packages` on the ISO
   * Name the boot menu's Pretendard subsets "Backtrail Sans", since
