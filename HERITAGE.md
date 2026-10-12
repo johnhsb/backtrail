@@ -72,6 +72,7 @@ by the version number.
 | Manual fallback | — | 32-bit menu entry on 64-bit BIOS machines | Recovery option if the 64-bit system fails |
 | Security updates | Packages from the base release only | **`-updates` and `-security` repositories, plus a full upgrade** | The app's web engine (WebKitGTK), kernel and PHP ship with current security fixes |
 | App access | nginx listened on every address and the firewall allowed port 80; the app's backend runs as root with no login, so anyone on the network could start a backup or restore | **Served on `127.0.0.1` only**, port 80 closed | Only the person at the machine, or a helper connected through VNC, can use the app |
+| Web browser | Chromium, which could also open the app's backend | **`backtrail-browser`** (WebKitGTK); it blocks requests to this machine's loopback addresses, and nginx refuses requests to the backend that are not the app's own `X-Requested-With` calls, or that name another host | A web page cannot start a backup or restore |
 | VNC password | 4 random lowercase letters | **8 characters** (the VNC maximum), no capitals or look-alike characters | Much harder to guess on a shared network |
 
 Debian 13 no longer provides an i386 kernel, so the 32-bit system uses
@@ -301,8 +302,9 @@ named explicitly because `firmware-misc-nonfree` only recommends them.
 
 * **ISO size**: the ISO carries two systems, so it is larger than a
   single-system image (about 1.4 GB).
-* **No web browser**: the app runs in its own window, which cannot open
-  other sites, so the desktop has no general web browser.
+* **Simple web browser**: the web browser (`backtrail-browser`) has the
+  basic controls only: no tabs, bookmarks, history, password storage or
+  extensions, and it cannot open pages on this machine.
 * **Boot splash**: AMD, NVIDIA and Intel graphics drivers load after the
   live filesystem is mounted, so on those GPUs the splash screen starts on
   the firmware framebuffer and may appear later, or as text when booting

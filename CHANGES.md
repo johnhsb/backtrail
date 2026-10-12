@@ -91,8 +91,15 @@ includes the Redo Rescue 5.0.0 changes listed below. See
     Wired connections remain recommended for backup and restore
   * Show the app in its own WebKitGTK window (`/usr/local/bin/backtrail-app`)
     instead of Chromium. The image is smaller, and the 32-bit system now
-    also runs the app on CPUs without SSE3 (Pentium III and M, Athlon XP).
-    The desktop no longer has a general web browser
+    also runs the app on CPUs without SSE3 (Pentium III and M, Athlon XP)
+  * Add a small web browser on the same engine (`backtrail-browser`, "Web
+    Browser" in the menu and panel): back, forward, reload or stop, home,
+    an address bar that also searches, downloads to `~/Downloads`, and
+    nothing kept after it closes
+  * Keep web pages away from the app: the browser blocks every request to
+    this machine's loopback addresses, and nginx refuses other host names
+    and requests to `action.php` and `ajax/` that are not the app's own
+    (`tests/nginx/run.sh` and `tests/browser/run.sh` check both in CI)
   * Make the ISO about 500 MB smaller: name `lxpolkit` as the polkit agent
     (trixie otherwise picks `ukui-polkit`, which pulls in Qt, OpenCV and
     GDAL), leave program translations and the Noto CJK serif faces out of

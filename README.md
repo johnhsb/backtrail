@@ -74,6 +74,7 @@ the release history of both.
   * Detailed logs can be copied to clipboard
   * Restores images made with Redo Rescue and Redo Backup 1.0.4
   * Web application with PHP backend, shown in its own window (WebKitGTK)
+  * Simple web browser for looking up documentation or downloading drivers
   * Displays Chinese, Japanese and Korean partition labels and file names
   * Interface with light and dark modes
   * Interface in English, Korean, Japanese, Simplified Chinese, Spanish,

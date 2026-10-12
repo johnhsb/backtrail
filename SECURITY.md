@@ -44,7 +44,12 @@ network you trust. It needs full access to the disks, so:
   sends its traffic unencrypted.
 * The backup and restore app's PHP backend runs as `root` and has no login.
   nginx serves it only on the loopback address (`127.0.0.1:80`), so it can
-  be used only from the machine itself, or through VNC.
+  be used only from the machine itself, or through VNC. nginx also refuses
+  other host names and backend requests that are not the app's own
+  (`X-Requested-With`), so web pages cannot drive it.
+* The web browser (`backtrail-browser`) runs as the unprivileged `redo` user,
+  keeps no data after it closes, and blocks every request to this machine's
+  loopback addresses.
 * The firewall (IPv4 and IPv6) drops incoming connections except SSH (22)
   and VNC (5900).
 
