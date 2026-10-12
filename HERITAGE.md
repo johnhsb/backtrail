@@ -3,7 +3,7 @@
 Backtrail continues [Redo Rescue](https://github.com/redorescue/redorescue),
 the backup and recovery live system by Zebradots Software. It starts from Redo
 Rescue's last commit, `ec1f4f2` ("Update for PHP8", 2023-10-30), and keeps its
-full history. This document describes what Backtrail 1.0 changed from Redo
+full history. This document describes what Backtrail 5.0 changed from Redo
 Rescue and why. For the per-release changelog of both projects, see
 [CHANGES.md](CHANGES.md).
 
@@ -43,6 +43,21 @@ tool, and so that existing `.redo` backups stay restorable.
 6. **Own identity**: Redo Rescue's logos and graphics are not licensed for
    derived projects, so Backtrail has its own name, artwork and a consistent
    look from the boot menu to the application.
+
+
+## Version numbers
+
+Backtrail continues Redo Rescue's version numbers. Redo Rescue 5.0.0 was in
+development but never released, so Backtrail's first release is 5.0.0, and
+the Redo Rescue 5.0.0 changes are part of it.
+
+Continuing the numbers also avoids a trap in image compatibility. Each image
+records the version of the program that made it, and Redo Rescue 2.0 to 4.0
+treat an image with a version below 2.0 as an old Redo Backup 1.0.x image,
+whose files are named differently. Redo Rescue would look for the wrong files
+in a Backtrail image marked 1.0.0; one marked 5.0.0 is read as a current
+image. Backtrail itself tells old images apart by their `.backup` format, not
+by the version number.
 
 
 ## Changes from Redo Rescue

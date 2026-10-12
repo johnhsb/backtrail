@@ -104,7 +104,7 @@ checksums() { (cd "$1" && find . -type f -print0 | sort -z | xargs -0 sha256sum)
 step "Preparing the app and the loop disks"
 # The app reads its version from a file that the ISO build writes
 cp -r "$WEB" "$WORK/www"
-echo 1.0.0 > "$WORK/www/VERSION"
+echo 5.0.0 > "$WORK/www/VERSION"
 rm -f /tmp/status.json /tmp/disks.json /tmp/redo.log
 echo '{}' > /tmp/status.json
 

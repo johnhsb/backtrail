@@ -10,8 +10,8 @@
 your system. Restore the image, even to a new blank drive, and recover in
 minutes from ransomware and viruses, deletions, hardware damage, and hackers.
 
-Backtrail is an independent open source project. Version 1.0 is its first
-release.
+Backtrail is an independent open source project. Its first release is
+5.0, continuing Redo Rescue's version numbers.
 
 
 ## Heritage
@@ -24,7 +24,10 @@ point, with Redo Rescue's full commit history, and carries the work forward:
 
   * **Compatible images**: Backtrail keeps the `.redo` image format, so
     backups made with Redo Rescue, and with Redo Backup 1.0.4, restore with
-    Backtrail.
+    Backtrail. Backtrail's own backups are numbered so that Redo Rescue 2.0
+    and later read them as current images, not as Redo Backup 1.0.x ones.
+  * **Continued versions**: Backtrail 5.0 is the release Redo Rescue 5.0
+    never made, and later releases go on from there.
   * **Same approach**: a live system with a simple step-by-step app on top of
     `sfdisk` and `partclone`, for bare-metal backup and recovery.
   * **Maintained**: a current Debian base with security updates, 32-bit PC
@@ -84,7 +87,7 @@ the release history of both.
 
 ## Download
 
-Backtrail 1.0 is in preparation and has no published ISO yet; build one as
+Backtrail 5.0 is in preparation and has no published ISO yet; build one as
 described under [Build](#build). Releases will be published on the
 [Releases](https://github.com/johnhsb/backtrail/releases) page.
 
@@ -122,7 +125,7 @@ To build an ISO image from within Debian Linux:
   2. `cd backtrail`
   3. `sudo ./make`
 
-The result is `backtrail-VERSION.iso`, for example `backtrail-1.0.0.iso`.
+The result is `backtrail-VERSION.iso`, for example `backtrail-5.0.0.iso`.
 
 The build needs a Debian or Ubuntu machine with internet access. `./make`
 first checks the tools it uses (`debootstrap`, `squashfs-tools`, `xorriso`,

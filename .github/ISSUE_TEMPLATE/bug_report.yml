@@ -11,7 +11,7 @@ body:
     id: version
     attributes:
       label: Backtrail version
-      description: Shown on the boot menu, e.g. 1.0.0
+      description: Shown on the boot menu, e.g. 5.0.0
     validations:
       required: true
   - type: dropdown

@@ -1,14 +1,17 @@
 # Changes
 
-Backtrail continues Redo Rescue, whose last commit is part of the unreleased
-Redo Rescue 5.0.0 below. Backtrail's version numbers start again at 1.0.0.
-See [HERITAGE.md](HERITAGE.md) for the background.
+Backtrail continues Redo Rescue and its version numbers. Redo Rescue 5.0.0
+was never released; Backtrail 5.0.0 is that release under the new name, and
+includes the Redo Rescue 5.0.0 changes listed below. See
+[HERITAGE.md](HERITAGE.md) for the background.
 
 # Backtrail
 
-## Version 1.0.0 (pending)
+## Version 5.0.0 (pending)
   * First Backtrail release, based on Redo Rescue 4.0.0 and the unreleased
-    5.0.0 changes listed under Redo Rescue below
+    5.0.0 changes listed under Redo Rescue below. The version continues
+    Redo Rescue's, so Redo Rescue 2.0 and later read Backtrail images as
+    current ones (they take versions below 2.0 for Redo Backup 1.0.x)
   * Serve the app only on 127.0.0.1 and close port 80 in the firewall: its
     backend runs as root without a login, so anyone on the network could
     run a backup or restore. Remote helpers still reach it through VNC
@@ -23,9 +26,9 @@ See [HERITAGE.md](HERITAGE.md) for the background.
     as in Debian 13; the type was missing from backups and PHP warned for
     each partition
   * Tell old Redo Backup 1.0.x images (`.backup` files) from newer ones by
-    their format, not their version number: with Backtrail's numbers starting
-    again at 1.0.0, its own backups were taken for old ones, and verifying or
-    restoring them looked for files that do not exist
+    their format, not by a version number below 2.0, so an image's recorded
+    version can never send verification or restore to files that do not
+    exist
   * Fix a full restore to eMMC, SD card, loop and NBD drives (`mmcblk0p1`
     style names) going to partitions such as `mmcblk01` that do not exist
   * Check the target drive's size again right before a full restore changes
@@ -128,7 +131,7 @@ See [HERITAGE.md](HERITAGE.md) for the background.
 
 Releases by Zebradots Software, kept here for reference.
 
-## Version 5.0.0 (unreleased; development stopped 2023-10-30)
+## Version 5.0.0 (never released; development stopped 2023-10-30, continued as Backtrail 5.0.0)
   * Update base to Debian 12 (bookworm) for improved hardware support
   * Remove wireless non-free firmware packages
   * Fix bug that prevented selecting a new disk once one is chosen

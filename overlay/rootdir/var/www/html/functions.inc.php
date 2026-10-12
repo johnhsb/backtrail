@@ -983,8 +983,9 @@ function verify_part($src) {
 
 //
 // Determine if the image file is in the old Redo Backup 1.0.x format (a
-// .backup file with separate .size, .mbr and .sfdisk files). The version
-// number can't tell: Backtrail's own numbers start again at 1.0.0.
+// .backup file with separate .size, .mbr and .sfdisk files). The format
+// decides, not the version recorded in the image, which only says which
+// program made it.
 //
 function is_legacy($file) {
 	return (bool) preg_match('/\.backup$/', (string) $file);

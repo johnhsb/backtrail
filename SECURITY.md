@@ -7,7 +7,7 @@ new release rather than as updates to a running system.
 
 | Version | Supported |
 |---|---|
-| Latest 1.x release | Yes |
+| Latest 5.x release | Yes |
 | Earlier releases | No; use the latest release |
 | Redo Rescue (any version) | No; Redo Rescue is no longer maintained |
 
