@@ -14,10 +14,10 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: shellcheck
-        run: shellcheck --severity=warning make overlay/rootdir/root/enable-ssh overlay/rootdir/root/redo-monitor tools/*.sh
+        run: shellcheck --severity=warning make overlay/rootdir/root/enable-ssh overlay/rootdir/root/redo-monitor tools/*.sh tests/*/*.sh
       - name: Python syntax
         # parse only, so no __pycache__ lands in the overlay
-        run: python3 -c 'import ast, sys; [ast.parse(open(f).read(), f) for f in sys.argv[1:]]' overlay/rootdir/usr/local/bin/backtrail-app tools/*.py branding/src/*.py
+        run: python3 -c 'import ast, sys; [ast.parse(open(f).read(), f) for f in sys.argv[1:]]' overlay/rootdir/usr/local/bin/backtrail-app overlay/rootdir/usr/local/bin/backtrail-browser tools/*.py branding/src/*.py
       - name: Logos match their generator
         run: |
           python3 branding/src/build.py branding
@@ -44,3 +44,26 @@ jobs:
         run: php tests/php/run.php
       - name: Translations
         run: python3 tools/i18n-check.py
+
+  nginx:
+    name: App web server rules
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install nginx
+        run: command -v nginx || { sudo apt-get update && sudo apt-get install -y nginx-light; }
+      - name: Refuse other hosts and requests that are not the app's own
+        run: tests/nginx/run.sh
+
+  browser:
+    name: Web browser blocks this machine
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install WebKitGTK
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends python3-gi gir1.2-gtk-3.0 gir1.2-webkit2-4.1 xvfb xauth
+      - name: Pages cannot reach loopback addresses
+        # The runner restricts the user namespaces of WebKit's sandbox
+        env:
+          WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS: '1'
+        run: xvfb-run -a tests/browser/run.sh

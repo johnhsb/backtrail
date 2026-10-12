@@ -369,13 +369,30 @@ perl -p -i -e 's/^group = .*$/group = root/g' /etc/php/$PHPV/fpm/pool.d/www.conf
 echo 'env[LANG] = C.UTF-8' >> /etc/php/$PHPV/fpm/pool.d/www.conf
 perl -p -i -e 's/^ExecStart=(.*)$/ExecStart=\$1 -R/g' /lib/systemd/system/php$PHPV-fpm.service
 # The app runs commands as root and has no login, so it only answers on the
-# loopback address (IPv4, which is always configured); remote helpers use VNC
+# loopback address (IPv4, which is always configured); remote helpers use VNC.
+# Pages from other sites (in the web browser) must not drive it either: other
+# host names are refused (DNS rebinding), and so are requests to action.php
+# and ajax/ without the X-Requested-With header that the app's own jQuery
+# calls send, which another site cannot add without a CORS preflight.
 cat > /etc/nginx/sites-available/redo <<'END'
 server {
 	listen		127.0.0.1:80 default_server;
 	server_name	localhost;
 	root		/var/www/html;
 	index		index.php;
+	if (\$host !~ "^(127\.0\.0\.1|localhost)\$") {
+		return 403;
+	}
+	set \$xhr_check "";
+	if (\$uri ~* "^/(action\.php|ajax/)") {
+		set \$xhr_check "app";
+	}
+	if (\$http_x_requested_with != "XMLHttpRequest") {
+		set \$xhr_check "\${xhr_check}-plain";
+	}
+	if (\$xhr_check = "app-plain") {
+		return 403;
+	}
 	location ~* \.php$ {
 		fastcgi_pass	unix:/run/php/php$PHPV-fpm.sock;
 		include		fastcgi_params;
@@ -532,7 +549,7 @@ create_livefs() {
 	# Fix permissions
 	$PERS chroot $ROOT/ /bin/bash -c "chown -R root: /etc /root"
 	$PERS chroot $ROOT/ /bin/bash -c "chown -R www-data: /var/www/html"
-	$PERS chroot $ROOT/ /bin/bash -c "chown root: /usr/local/bin/backtrail-app /usr/share/icons/hicolor/*/apps/backtrail.*"
+	$PERS chroot $ROOT/ /bin/bash -c "chown root: /usr/local/bin/backtrail-app /usr/local/bin/backtrail-browser /usr/share/icons/hicolor/*/apps/backtrail.*"
 
 	# List the app icon in the icon theme cache
 	$PERS chroot $ROOT/ /bin/bash -c "gtk-update-icon-cache -q -f /usr/share/icons/hicolor"

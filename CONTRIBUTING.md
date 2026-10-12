@@ -63,10 +63,12 @@ Two checks run without booting the ISO:
 
 The same checks run on every pull request:
 
-    shellcheck --severity=warning make overlay/rootdir/root/enable-ssh overlay/rootdir/root/redo-monitor tools/*.sh
+    shellcheck --severity=warning make overlay/rootdir/root/enable-ssh overlay/rootdir/root/redo-monitor tools/*.sh tests/*/*.sh
     find overlay tests -name '*.php' -exec php -l {} \;
     php tests/php/run.php
     python3 tools/i18n-check.py
+    tests/nginx/run.sh
+    xvfb-run -a tests/browser/run.sh
     python3 branding/src/build.py branding && git diff --exit-code branding
 
 ## Translations

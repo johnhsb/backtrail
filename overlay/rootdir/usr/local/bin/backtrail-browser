@@ -1,0 +1,279 @@
+#!/usr/bin/python3
+# A small web browser for the live system (WebKitGTK), for looking up
+# documentation or downloading drivers: back, forward, reload or stop, home
+# and an address bar that also searches. Pages cannot reach the Backtrail
+# app on this machine (127.0.0.1, localhost): those requests are blocked
+# here, and nginx refuses requests that are not the app's own.
+#
+#     backtrail-browser [URL]
+#
+import os
+import sys
+from urllib.parse import quote_plus, urlsplit
+
+# No accessibility bus runs in the live session; skip the warning about it
+os.environ.setdefault('NO_AT_BRIDGE', '1')
+
+import gi
+gi.require_version('Gtk', '3.0')
+gi.require_version('WebKit2', '4.1')
+from gi.repository import GLib, Gtk, Gdk, Pango, WebKit2
+
+HOME = 'https://duckduckgo.com/'
+SEARCH = 'https://duckduckgo.com/?q='
+NAME = 'Web Browser'
+ZOOM_STEPS = [0.67, 0.75, 0.8, 0.9, 1.0, 1.1, 1.25, 1.5, 1.75, 2.0]
+DOWNLOADS = os.path.join(GLib.get_home_dir(), 'Downloads')
+
+# Content blocker rules for every address of this machine. The rule syntax
+# has no alternation, so there is one rule per form.
+LOCAL = [r'^[a-z]+://127\.', r'^[a-z]+://localhost[:/]', r'^[a-z]+://\[::1\]',
+         r'^[a-z]+://0\.0\.0\.0[:/]', r'^[a-z]+://\[::\]']
+FILTER_JSON = '[' + ','.join(
+    '{"trigger":{"url-filter":"%s"},"action":{"type":"block"}}' % r.replace('\\', '\\\\')
+    for r in LOCAL) + ']'
+
+GLib.set_prgname('backtrail-browser')
+GLib.set_application_name(NAME)
+
+# Nothing is kept after the browser closes: no history, cookies or cache
+context = WebKit2.WebContext.new_ephemeral()
+content = WebKit2.UserContentManager()
+windows = []
+
+
+def is_local(uri):
+    host = (urlsplit(uri).hostname or '').lower()
+    return host in ('localhost', '::1', '0.0.0.0', '::') or host.startswith('127.')
+
+
+def to_uri(text):
+    """Address bar text as a URL: an address, or else a search."""
+    text = text.strip()
+    if not text:
+        return HOME
+    if '://' in text or text.startswith('about:'):
+        return text
+    if ' ' not in text and ('.' in text or ':' in text):
+        return 'https://' + text
+    return SEARCH + quote_plus(text)
+
+
+class Browser:
+    def __init__(self, view=None):
+        self.view = view or WebKit2.WebView(web_context=context, user_content_manager=content)
+        settings = self.view.get_settings()
+        settings.set_enable_developer_extras(False)
+        settings.set_enable_back_forward_navigation_gestures(True)
+
+        self.back = self.button('go-previous-symbolic', 'Back (Alt+Left)', lambda *_: self.view.go_back())
+        self.forward = self.button('go-next-symbolic', 'Forward (Alt+Right)', lambda *_: self.view.go_forward())
+        self.reload = self.button('view-refresh-symbolic', 'Reload (F5)', self.on_reload)
+        home = self.button('go-home-symbolic', 'Home', lambda *_: self.load(HOME))
+        self.entry = Gtk.Entry(hexpand=True, placeholder_text='Search or enter an address')
+        self.entry.set_input_purpose(Gtk.InputPurpose.URL)
+        self.entry.connect('activate', lambda e: self.load(to_uri(e.get_text())))
+
+        bar = Gtk.Box(spacing=4, margin=4)
+        for widget in (self.back, self.forward, self.reload, home, self.entry):
+            bar.pack_start(widget, widget is self.entry, True, 0)
+        self.status = Gtk.Label(xalign=0, margin=4, ellipsize=Pango.EllipsizeMode.MIDDLE)
+        self.status.set_no_show_all(True)
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        box.pack_start(bar, False, False, 0)
+        box.pack_start(self.view, True, True, 0)
+        box.pack_start(self.status, False, False, 0)
+
+        self.window = Gtk.Window(title=NAME)
+        self.window.set_icon_name('web-browser')
+        self.window.set_default_size(1100, 760)
+        self.window.add(box)
+        self.window.connect('key-press-event', self.on_key)
+        self.window.connect('destroy', self.on_destroy)
+
+        self.view.connect('notify::title', self.on_title)
+        self.view.connect('notify::uri', self.on_uri)
+        self.view.connect('notify::estimated-load-progress', self.on_progress)
+        self.view.connect('notify::is-loading', self.on_loading)
+        self.view.connect('load-changed', lambda *_: self.update_buttons())
+        self.view.connect('decide-policy', self.on_policy)
+        self.view.connect('create', self.on_create)
+        self.view.connect('ready-to-show', lambda *_: self.window.show_all())
+        self.view.connect('mouse-target-changed', self.on_hover)
+        windows.append(self)
+        self.update_buttons()
+
+    @staticmethod
+    def button(icon, tip, handler):
+        b = Gtk.Button.new_from_icon_name(icon, Gtk.IconSize.BUTTON)
+        b.set_tooltip_text(tip)
+        b.set_relief(Gtk.ReliefStyle.NONE)
+        b.connect('clicked', handler)
+        return b
+
+    def load(self, uri):
+        if is_local(uri):
+            self.show_status('Addresses of this computer are blocked in the web browser; use the Backtrail app')
+            return
+        self.view.load_uri(uri)
+        self.view.grab_focus()
+
+    def show_status(self, text):
+        self.status.set_text(text)
+        self.status.set_visible(bool(text))
+
+    def update_buttons(self):
+        self.back.set_sensitive(self.view.can_go_back())
+        self.forward.set_sensitive(self.view.can_go_forward())
+
+    def on_reload(self, *_):
+        if self.view.is_loading():
+            self.view.stop_loading()
+        else:
+            self.view.reload()
+
+    def on_title(self, view, _param):
+        title = view.get_title()
+        self.window.set_title(f'{title} — {NAME}' if title else NAME)
+
+    def on_uri(self, view, _param):
+        if not self.entry.has_focus():
+            self.entry.set_text(view.get_uri() or '')
+        self.update_buttons()
+
+    def on_progress(self, view, _param):
+        progress = view.get_estimated_load_progress()
+        self.entry.set_progress_fraction(0 if progress >= 1 else progress)
+
+    def on_loading(self, view, _param):
+        loading = view.is_loading()
+        self.reload.set_image(Gtk.Image.new_from_icon_name(
+            'process-stop-symbolic' if loading else 'view-refresh-symbolic', Gtk.IconSize.BUTTON))
+        self.reload.set_tooltip_text('Stop (Esc)' if loading else 'Reload (F5)')
+        if not loading:
+            self.entry.set_progress_fraction(0)
+
+    def on_hover(self, _view, hit, _modifiers):
+        if hit.context_is_link():
+            self.show_status(hit.get_link_uri())
+        elif self.status.get_text().startswith(('http', 'mailto', 'ftp')):
+            self.show_status('')
+
+    def on_policy(self, _view, decision, kind):
+        if kind in (WebKit2.PolicyDecisionType.NAVIGATION_ACTION,
+                    WebKit2.PolicyDecisionType.NEW_WINDOW_ACTION):
+            uri = decision.get_navigation_action().get_request().get_uri()
+            if is_local(uri):
+                decision.ignore()
+                self.show_status('Addresses of this computer are blocked in the web browser; use the Backtrail app')
+                return True
+        elif kind == WebKit2.PolicyDecisionType.RESPONSE:
+            if not decision.is_mime_type_supported():
+                decision.download()
+                return True
+        return False
+
+    def on_create(self, view, _action):
+        # Links that open a new window get a new browser window
+        return Browser(WebKit2.WebView.new_with_related_view(view)).view
+
+    def zoom(self, step):
+        level = self.view.get_zoom_level()
+        if step == 0:
+            self.view.set_zoom_level(1.0)
+            return
+        near = min(range(len(ZOOM_STEPS)), key=lambda i: abs(ZOOM_STEPS[i] - level))
+        self.view.set_zoom_level(ZOOM_STEPS[max(0, min(len(ZOOM_STEPS) - 1, near + step))])
+
+    def on_key(self, _window, event):
+        ctrl = event.state & Gdk.ModifierType.CONTROL_MASK
+        alt = event.state & Gdk.ModifierType.MOD1_MASK
+        key = Gdk.keyval_name(event.keyval)
+        if (alt and key == 'Left') or key == 'XF86Back':
+            self.view.go_back()
+        elif (alt and key == 'Right') or key == 'XF86Forward':
+            self.view.go_forward()
+        elif key == 'F5' or (ctrl and key == 'r'):
+            self.view.reload()
+        elif key == 'Escape' and self.view.is_loading():
+            self.view.stop_loading()
+        elif (ctrl and key == 'l') or key == 'F6':
+            self.entry.grab_focus()
+            self.entry.select_region(0, -1)
+        elif alt and key == 'Home':
+            self.load(HOME)
+        elif ctrl and key == 'n':
+            Browser().open(HOME)
+        elif ctrl and key == 'w':
+            self.window.destroy()
+        elif ctrl and key in ('plus', 'equal', 'KP_Add'):
+            self.zoom(1)
+        elif ctrl and key in ('minus', 'KP_Subtract'):
+            self.zoom(-1)
+        elif ctrl and key in ('0', 'KP_0'):
+            self.zoom(0)
+        else:
+            return False
+        return True
+
+    def on_destroy(self, _window):
+        windows.remove(self)
+        if not windows:
+            Gtk.main_quit()
+
+    def open(self, uri):
+        self.window.show_all()
+        self.load(uri)
+        if uri == HOME:
+            self.entry.grab_focus()
+
+
+def on_download(_context, download):
+    browser = windows[-1] if windows else None
+
+    def destination(dl, suggested):
+        os.makedirs(DOWNLOADS, exist_ok=True)
+        name = os.path.basename(suggested) or 'download'
+        base, ext = os.path.splitext(name)
+        path, n = os.path.join(DOWNLOADS, name), 1
+        while os.path.exists(path):
+            path, n = os.path.join(DOWNLOADS, f'{base} ({n}){ext}'), n + 1
+        dl.set_destination(GLib.filename_to_uri(path, None))
+        return True
+
+    def progress(dl, _param):
+        if browser:
+            browser.show_status(f'Downloading {os.path.basename(dl.get_destination() or "")} '
+                                f'({int(dl.get_estimated_progress() * 100)}%)')
+
+    def finished(dl):
+        if browser:
+            path = GLib.filename_from_uri(dl.get_destination())[0] if dl.get_destination() else ''
+            browser.show_status(f'Saved to {path}')
+
+    def failed(_dl, error):
+        if browser:
+            browser.show_status(f'Download failed: {error.message}')
+
+    download.connect('decide-destination', destination)
+    download.connect('notify::estimated-progress', progress)
+    download.connect('finished', finished)
+    download.connect('failed', failed)
+
+
+def start(store, result, uri):
+    # Pages load only once the block list is in place
+    try:
+        content.add_filter(store.save_finish(result))
+    except GLib.Error as e:
+        print(f'backtrail-browser: cannot block local addresses: {e.message}', file=sys.stderr)
+        Gtk.main_quit()
+        return
+    Browser().open(uri)
+
+
+context.connect('download-started', on_download)
+target = to_uri(' '.join(sys.argv[1:])) if len(sys.argv) > 1 else HOME
+filters = WebKit2.UserContentFilterStore.new(os.path.join(GLib.get_user_cache_dir(), 'backtrail-browser'))
+filters.save('local', GLib.Bytes.new(FILTER_JSON.encode()), None, start, target)
+Gtk.main()

@@ -1,5 +1,11 @@
 [Added Associations]
-application/pdf=firefox-esr.desktop;
+text/html=backtrail-browser.desktop;
+application/xhtml+xml=backtrail-browser.desktop;
+x-scheme-handler/http=backtrail-browser.desktop;
+x-scheme-handler/https=backtrail-browser.desktop;
 
 [Default Applications]
-application/pdf=firefox-esr.desktop
+text/html=backtrail-browser.desktop
+application/xhtml+xml=backtrail-browser.desktop
+x-scheme-handler/http=backtrail-browser.desktop
+x-scheme-handler/https=backtrail-browser.desktop
