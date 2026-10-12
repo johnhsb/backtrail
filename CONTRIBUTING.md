@@ -45,7 +45,11 @@ system):
 
 For changes to backup, restore or verification, run a backup and a full
 restore of a test disk, and check the 32-bit system too when the change
-touches PHP code (32-bit PHP handles large numbers differently).
+touches PHP code (32-bit PHP handles large numbers differently). Changes
+that affect the image format should also pass
+[docs/testing/redo-rescue-compat.md](docs/testing/redo-rescue-compat.md),
+which restores a Backtrail image with Redo Rescue 4.0; it is run before
+every release.
 
 Two checks run without booting the ISO:
 
