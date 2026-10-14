@@ -8,7 +8,7 @@
 
 ## 소개
 
-**Backtrail**은 시스템의 스냅숏을 만들고 복원하는 라이브 CD/USB 시스템입니다.
+**Backtrail**은 시스템의 스냅샷을 만들고 복원하는 라이브 CD/USB 시스템입니다.
 새로 산 빈 드라이브에도 이미지를 복원할 수 있어서, 랜섬웨어와 바이러스,
 실수로 지운 파일, 하드웨어 고장, 해킹 피해에서 몇 분 만에 복구할 수 있습니다.
 
@@ -42,7 +42,7 @@ Backtrail은 자체 이름과 아트워크를 씁니다. Backtrail은 Zebradots 
 [CHANGES.md](CHANGES.md)에 있습니다(영문).
 
 
-## 스크린숏
+## 스크린샷
 
 <p align="center">
   <a href="docs/screenshots/boot-menu.png"><img width="49%" src="docs/screenshots/boot-menu.png" alt="부팅 메뉴"></a>
@@ -116,7 +116,7 @@ Backtrail은 장애 복구, 시스템 복제, 이전 상태로 되돌리기 등 
   고장 날 때를 대비해 Backtrail로 USB 메모리에 백업 이미지를 저장해 둡니다.
 
 * 교실에 같은 Linux 기반 운영체제를 쓰는 컴퓨터가 수십 대 있습니다. 잘 동작하는
-  시스템의 스냅숏을 Backtrail로 만들어 두면, 학생의 시스템이 망가져도 몇 분 만에
+  시스템의 스냅샷을 Backtrail로 만들어 두면, 학생의 시스템이 망가져도 몇 분 만에
   정상 상태로 되돌릴 수 있습니다.
 
 * 회사 노트북에 설정이 까다로운 소프트웨어가 많이 깔려 있고, 사용자가 악성 링크를

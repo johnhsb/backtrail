@@ -339,7 +339,7 @@ return array(
 	'Saves used space only · .redo image' =>
 		'사용 중인 공간만 저장 · .redo 이미지',
 	'Saving a snapshot of the selected partitions to the destination drive.' =>
-		'선택한 파티션의 스냅숏을 저장 드라이브에 저장하는 중입니다.',
+		'선택한 파티션의 스냅샷을 저장 드라이브에 저장하는 중입니다.',
 	'Saving image of device %1$s... Total time elapsed: %2$s' =>
 		'%1$s 장치의 이미지를 저장하는 중... 총 경과 시간: %2$s',
 	'Scanning network for shared drives...' =>
@@ -499,7 +499,7 @@ return array(
 	'Write a saved image back to a drive.' =>
 		'저장된 이미지를 드라이브에 다시 씁니다.',
 	'Writing the saved snapshot to the target drive.' =>
-		'저장된 스냅숏을 대상 드라이브에 쓰는 중입니다.',
+		'저장된 스냅샷을 대상 드라이브에 쓰는 중입니다.',
 	'You can change the language when the operation has finished.' =>
 		'작업이 끝난 후 언어를 바꿀 수 있습니다.',
 );
