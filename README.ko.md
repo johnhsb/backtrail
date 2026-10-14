@@ -89,6 +89,12 @@ Backtrail은 자체 이름과 아트워크를 씁니다. Backtrail은 Zebradots 
   * VMware 가상 머신에서는 화면 크기 맞춤, 마우스 동기화, 클립보드 공유
 
 
+## 사용 설명서
+
+화면과 함께 백업, 검증, 복원 방법을 차례로 설명한
+[사용 설명서(PDF)](docs/guide/ko/backtrail-guide-ko.pdf)를 참고하세요.
+
+
 ## 다운로드
 
 [Releases](https://github.com/johnhsb/backtrail/releases/latest) 페이지에서

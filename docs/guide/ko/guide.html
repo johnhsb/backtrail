@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>Backtrail 사용 설명서</title>
+<style>
+  @page { size: A4; margin: 18mm 17mm 20mm; }
+  :root { --navy: #0E2A47; --ink: #1f2933; --muted: #5b6b7a; --accent: #1D8FA5; --line: #d9e2ea; --soft: #eef4f8; --danger: #C62F3A; }
+  * { box-sizing: border-box; }
+  body { font-family: "Apple SD Gothic Neo", "Noto Sans CJK KR", "Malgun Gothic", sans-serif; color: var(--ink); font-size: 10.5pt; line-height: 1.65; margin: 0; }
+  h1, h2, h3 { color: var(--navy); line-height: 1.3; }
+  h2 { font-size: 17pt; margin: 0 0 4mm; padding-bottom: 2mm; border-bottom: 2px solid var(--accent); }
+  h3 { font-size: 12.5pt; margin: 6mm 0 2mm; }
+  p { margin: 0 0 2.5mm; }
+  ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+  li { margin-bottom: 1mm; }
+  code, .key { font-family: "SF Mono", Menlo, monospace; font-size: 9.5pt; background: var(--soft); border: 1px solid var(--line); border-radius: 3px; padding: 0 1.2mm; }
+  .page { page-break-after: always; }
+  .page:last-child { page-break-after: auto; }
+
+  /* cover */
+  .cover { height: 255mm; display: flex; flex-direction: column; justify-content: space-between; }
+  .cover .band { background: var(--navy); color: #fff; border-radius: 4mm; padding: 22mm 16mm 18mm; }
+  .cover .band img { width: 78mm; display: block; margin-bottom: 14mm; }
+  .cover .band h1 { color: #fff; font-size: 30pt; margin: 0 0 3mm; }
+  .cover .band .sub { font-size: 14pt; color: #b9d7e1; margin: 0; }
+  .cover .meta { color: var(--muted); font-size: 10pt; }
+  .cover .meta b { color: var(--ink); }
+
+  .lead { font-size: 11.5pt; color: var(--ink); }
+  .figure { margin: 3mm 0 4mm; text-align: center; page-break-inside: avoid; }
+  .figure img { max-width: 100%; border: 1px solid var(--line); border-radius: 2mm; }
+  .figure.small img { max-width: 66%; }
+  .figure.mid img { max-width: 72%; }
+  .figure.tiny img { max-width: 45%; }
+  .figure .cap { font-size: 9pt; color: var(--muted); margin-top: 1.5mm; }
+
+  .step { display: flex; gap: 4mm; align-items: flex-start; margin: 4mm 0 1.5mm; page-break-inside: avoid; }
+  .step .n { flex: 0 0 8mm; height: 8mm; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 11pt; }
+  .step .t { flex: 1; }
+  .step .t b.h { display: block; color: var(--navy); font-size: 11.5pt; }
+
+  .box { border-radius: 2mm; padding: 3mm 4mm; margin: 3mm 0 4mm; page-break-inside: avoid; }
+  .box.tip { background: #e8f4f7; border-left: 1.2mm solid var(--accent); }
+  .box.warn { background: #fdecee; border-left: 1.2mm solid var(--danger); }
+  .box b.h { display: block; margin-bottom: 1mm; color: var(--navy); }
+  .box.warn b.h { color: var(--danger); }
+
+  table { width: 100%; border-collapse: collapse; margin: 2mm 0 4mm; font-size: 10pt; page-break-inside: avoid; }
+  th, td { border: 1px solid var(--line); padding: 2mm 3mm; text-align: left; vertical-align: top; }
+  th { background: var(--soft); color: var(--navy); }
+  .two { display: flex; gap: 6mm; align-items: flex-start; }
+  .two > div { flex: 1; }
+  .toc li { margin-bottom: 1.5mm; }
+  .faq dt { font-weight: 700; color: var(--navy); margin-top: 3mm; }
+  .faq dd { margin: 1mm 0 0 0; }
+</style>
+</head>
+<body>
+
+<section class="page cover">
+  <div class="band">
+    <img src="../../../branding/backtrail-logo-dark.svg" alt="Backtrail">
+    <h1>Backtrail 사용 설명서</h1>
+    <p class="sub">컴퓨터를 통째로 백업하고, 그대로 되살리기</p>
+  </div>
+  <div>
+    <h3>이 설명서에서 다루는 내용</h3>
+    <ol class="toc">
+      <li>Backtrail이란? · 준비물</li>
+      <li>부팅 USB 만들기</li>
+      <li>USB로 컴퓨터 시작하기</li>
+      <li>백업하기</li>
+      <li>백업 검증하기</li>
+      <li>복원하기</li>
+      <li>원격 지원 받기 · 언어 바꾸기 · 끄기</li>
+      <li>자주 묻는 질문</li>
+    </ol>
+  </div>
+  <p class="meta"><b>Backtrail 5.0.1</b> 기준 · 2026년 10월 · https://github.com/johnhsb/backtrail<br>
+  화면은 테스트용 가상 머신에서 찍은 것이라 드라이브 이름(VMware Virtual …)이 실제 컴퓨터와 다릅니다.</p>
+</section>
+
+<section class="page">
+  <h2>1. Backtrail이란?</h2>
+  <p class="lead">Backtrail은 <b>USB 메모리로 부팅해서</b> 컴퓨터의 디스크를 이미지 파일로 저장(백업)하고, 문제가 생기면 그 이미지로 디스크를 <b>그대로 되돌리는(복원)</b> 프로그램입니다.</p>
+  <ul>
+    <li>Windows, Linux 등 어떤 운영체제든 디스크 단위로 백업합니다. 운영체제가 망가져 부팅되지 않는 컴퓨터에서도 쓸 수 있습니다.</li>
+    <li>새로 산 빈 디스크에도 복원할 수 있어서, 디스크 고장·랜섬웨어·실수로 지운 파일에서 빠르게 회복할 수 있습니다.</li>
+    <li>사용 중인 공간만 저장하므로 이미지가 디스크 전체 크기보다 훨씬 작습니다.</li>
+    <li>Redo Rescue로 만든 백업(<code>.redo</code>)도 그대로 복원할 수 있습니다.</li>
+  </ul>
+
+  <h3>준비물</h3>
+  <table>
+    <tr><th style="width:32%">준비물</th><th>설명</th></tr>
+    <tr><td>USB 메모리 (2 GB 이상)</td><td>Backtrail을 넣어 부팅에 쓸 USB입니다. <b>안의 내용은 모두 지워집니다.</b></td></tr>
+    <tr><td>백업을 저장할 곳</td><td>외장 하드디스크나 큰 USB 메모리, 또는 네트워크 공유 폴더(NAS 등). 백업할 디스크의 <b>사용 중인 용량</b>보다 여유 공간이 커야 합니다.</td></tr>
+    <tr><td>다른 컴퓨터 한 대</td><td>Backtrail 파일(ISO)을 내려받아 USB에 기록할 때만 필요합니다.</td></tr>
+  </table>
+
+  <div class="box warn"><b class="h">꼭 알아 두세요</b>
+  백업 이미지는 <b>원래 백업한 그 컴퓨터</b>에 복원하는 용도입니다. 하드웨어가 다른 컴퓨터에 복원하면 운영체제가 부팅되지 않을 수 있습니다. 컴퓨터 구성을 바꿨다면 새로 백업해 두세요.</div>
+
+  <h2 style="margin-top:8mm">2. 부팅 USB 만들기</h2>
+  <div class="step"><div class="n">1</div><div class="t"><b class="h">ISO 파일 내려받기</b>
+  github.com/johnhsb/backtrail 의 <b>Releases</b>에서 <code>backtrail-5.0.1.iso</code>와 <code>SHA256SUMS</code>를 내려받습니다.</div></div>
+  <div class="step"><div class="n">2</div><div class="t"><b class="h">(선택) 파일이 온전한지 확인</b>
+  macOS·Linux 터미널에서 <code>sha256sum -c SHA256SUMS --ignore-missing</code> 를 실행해 <code>OK</code>가 나오면 정상입니다.</div></div>
+  <div class="step"><div class="n">3</div><div class="t"><b class="h">USB에 기록</b>
+  <b>balenaEtcher</b>(Windows·macOS·Linux)나 <b>Rufus</b>(Windows)를 열고, ISO 파일과 USB 메모리를 고른 뒤 기록(Flash/시작)을 누릅니다. 파일을 USB에 그냥 복사하면 부팅되지 않습니다.</div></div>
+</section>
+
+<section class="page">
+  <h2>3. USB로 컴퓨터 시작하기</h2>
+  <div class="step"><div class="n">1</div><div class="t"><b class="h">USB를 꽂고 컴퓨터를 켭니다</b>
+  켜자마자 <b>부팅 메뉴 키</b>를 여러 번 누릅니다. 제조사마다 달라서 보통 <span class="key">F12</span>, <span class="key">F11</span>, <span class="key">F9</span>, <span class="key">F8</span>, <span class="key">Esc</span> 중 하나입니다.</div></div>
+  <div class="step"><div class="n">2</div><div class="t"><b class="h">목록에서 USB 메모리를 고릅니다</b>
+  UEFI 보안 부팅(Secure Boot)을 켠 상태로도 부팅됩니다. 끌 필요가 없습니다.</div></div>
+  <div class="step"><div class="n">3</div><div class="t"><b class="h">Backtrail 부팅 메뉴가 나타납니다</b>
+  첫 항목이 선택된 상태로 잠시 기다리면 자동으로 시작합니다. 64비트·32비트 중 컴퓨터에 맞는 쪽이 자동으로 선택됩니다. 화면이 깨지거나 검게 나오면 다시 켜서 <b>Safe video mode</b>를 고르세요.</div></div>
+  <div class="figure small"><img src="images/00-boot-menu.jpg" alt="부팅 메뉴"><div class="cap">Backtrail 부팅 메뉴. 아래 원 안의 숫자가 0이 되면 자동으로 시작합니다.</div></div>
+
+  <div class="step"><div class="n">4</div><div class="t"><b class="h">첫 화면에서 할 일을 고릅니다</b>
+  데스크톱이 뜨면 Backtrail 앱이 자동으로 열립니다. <b>백업</b>, <b>검증</b>, <b>복원</b> 중 하나를 누르세요. 아래에는 이 컴퓨터에서 찾은 드라이브가 보입니다.</div></div>
+  <div class="figure mid"><img src="images/01-welcome.jpg" alt="첫 화면"><div class="cap">첫 화면. 실제로 무언가를 바꾸기 전에는 디스크의 어떤 것도 바뀌지 않습니다.</div></div>
+</section>
+
+<section class="page">
+  <h2>4. 백업하기</h2>
+  <p>첫 화면에서 <b>백업</b>을 누르면 다섯 단계로 진행합니다. 화면 위쪽에 지금 몇 단계인지 표시됩니다.</p>
+
+  <div class="step"><div class="n">1</div><div class="t"><b class="h">원본: 백업할 드라이브 선택</b>
+  백업할 디스크(보통 Windows가 설치된 디스크)를 고르고 <b>다음</b>을 누릅니다.</div></div>
+  <div class="figure small"><img src="images/02-backup-drive.jpg" alt="백업할 드라이브 선택"></div>
+
+  <div class="step"><div class="n">2</div><div class="t"><b class="h">파티션: 저장할 파티션 선택</b>
+  기본으로 모든 파티션이 선택되어 있으니 그대로 두면 됩니다. 오른쪽에 선택한 크기가 보입니다. 파티션 테이블과 부트 레코드는 항상 함께 저장됩니다.</div></div>
+  <div class="figure small"><img src="images/03-backup-partitions.jpg" alt="파티션 선택"></div>
+</section>
+
+<section class="page">
+  <div class="step"><div class="n">3</div><div class="t"><b class="h">저장 위치: 백업을 저장할 곳 선택</b>
+  <b>이 컴퓨터</b> 탭에서 외장 디스크를 고르거나, <b>네트워크 드라이브</b>(Windows 공유 폴더·NAS), <b>NFS</b>, <b>SSH</b> 탭에서 네트워크 위치를 입력합니다. 백업하려고 고른 파티션은 저장 위치 목록에 나오지 않습니다.</div></div>
+  <div class="figure small"><img src="images/04-backup-location.jpg" alt="저장 위치 선택"></div>
+  <div class="box tip"><b class="h">네트워크로 저장할 때</b>보안상 <b>SSH</b>가 가장 안전합니다(전송이 암호화됨). NFS는 암호화와 인증이 없으니 믿을 수 있는 네트워크에서만 쓰세요.</div>
+
+  <div class="step"><div class="n">4</div><div class="t"><b class="h">폴더: 저장할 폴더 선택</b>
+  고른 드라이브의 여유 공간이 표시됩니다. <b>선택</b>을 눌러 폴더를 고르거나, 그대로 두면 드라이브의 맨 위 폴더(<code>/</code>)에 저장합니다.</div></div>
+  <div class="figure small"><img src="images/05-backup-folder.jpg" alt="폴더 선택"></div>
+</section>
+
+<section class="page">
+  <div class="step"><div class="n">5</div><div class="t"><b class="h">이름: 백업 이름 정하고 시작</b>
+  기본 이름은 오늘 날짜입니다. 영문자, 숫자, <code>-</code>, <code>_</code>만 쓸 수 있습니다. 메모에 무엇을 왜 백업했는지 적어 두면 나중에 찾기 쉽습니다. <b>백업 시작</b>을 누르면 시작합니다.</div></div>
+  <div class="figure small"><img src="images/06-backup-name.jpg" alt="백업 이름"></div>
+
+  <h3>백업하는 동안</h3>
+  <ul>
+    <li>진행률(%), 걸린 시간, 남은 시간, 속도가 표시됩니다. 시간은 사용 중인 용량에 비례합니다.</li>
+    <li><b>상세 로그</b>를 펼치면 자세한 진행 기록을 볼 수 있고, 클립보드로 복사할 수 있습니다.</li>
+    <li>끝날 때까지 화면을 그대로 두세요. 필요하면 <b>취소</b>할 수 있습니다.</li>
+  </ul>
+  <p>저장 위치에는 <code>이름.redo</code> 파일 하나와 파티션별 <code>.img</code> 파일들이 생깁니다. <b>모두 한 폴더에 함께 보관하세요.</b></p>
+  <div class="box tip"><b class="h">백업이 끝나면</b>바로 다음 장의 <b>검증</b>을 한 번 실행해 두면, 나중에 복원할 때 이미지가 온전하다는 것을 미리 확인할 수 있습니다.</div>
+
+  <h2 style="margin-top:8mm">5. 백업 검증하기</h2>
+  <p>검증은 백업 이미지에 오류가 없는지 확인합니다. <b>디스크에 아무것도 쓰지 않는 읽기 전용 작업</b>이라 안심하고 실행해도 됩니다.</p>
+  <table>
+    <tr><th style="width:10%">단계</th><th style="width:30%">화면</th><th>할 일</th></tr>
+    <tr><td>1</td><td>백업 이미지는 어디에 있나요?</td><td>백업을 저장한 드라이브나 네트워크 위치를 고릅니다.</td></tr>
+    <tr><td>2</td><td>백업 이미지 선택</td><td>검증할 <code>.redo</code> 파일을 고릅니다.</td></tr>
+    <tr><td>3</td><td>검증할 파티션 선택</td><td>파티션을 고르고 <b>검증 시작</b>을 누릅니다.</td></tr>
+  </table>
+  <p>원시(raw) 모드로 저장한 파티션은 복원은 되지만 검증은 할 수 없습니다.</p>
+</section>
+
+<section class="page">
+  <h2>6. 복원하기</h2>
+  <div class="box warn"><b class="h">복원은 대상 드라이브를 덮어씁니다</b>복원할 드라이브에 있던 내용은 지워지고 백업한 시점의 내용으로 바뀝니다. 드라이브를 잘못 고르지 않도록, 드라이브 이름과 크기를 꼭 확인하세요. 중요한 자료가 남아 있다면 먼저 따로 복사해 두세요.</div>
+  <table>
+    <tr><th style="width:10%">단계</th><th style="width:30%">화면</th><th>할 일</th></tr>
+    <tr><td>1</td><td>백업 이미지는 어디에 있나요?</td><td>백업을 저장한 드라이브나 네트워크 위치를 고릅니다.</td></tr>
+    <tr><td>2</td><td>백업 이미지 선택</td><td>복원할 <code>.redo</code> 파일을 고릅니다. 이미지 정보(날짜, 메모, 파티션)가 표시됩니다.</td></tr>
+    <tr><td>3</td><td>복원할 드라이브 선택</td><td>이미지를 쓸 디스크를 고릅니다. 원래 디스크보다 작으면 경고가 나옵니다.</td></tr>
+    <tr><td>4</td><td>복원할 항목 선택</td><td>
+      <b>전체 시스템 복구</b>: 디스크 전체를 백업 당시 그대로 되돌립니다. 새 디스크로 교체했을 때나 컴퓨터를 통째로 되돌릴 때 고릅니다.<br>
+      <b>데이터만 복원</b>: 지금의 파티션 구성은 그대로 두고, 고른 파티션에만 데이터를 씁니다.<br>
+      확인한 뒤 빨간 <b>복원</b> 버튼을 누르고, 마지막 확인 창에서 한 번 더 확인합니다.</td></tr>
+  </table>
+  <p>복원이 끝나면 USB를 빼고 컴퓨터를 다시 켜면 백업한 시점의 상태로 시작합니다. 대상 디스크가 원래보다 크면, 남는 공간은 시작 메뉴의 <b>GParted</b>로 파티션을 늘려 쓸 수 있습니다.</p>
+
+</section>
+
+<section class="page">
+  <h2>7. 원격 지원 받기 · 언어 바꾸기 · 끄기</h2>
+  <div class="two">
+    <div>
+      <h3 style="margin-top:0">원격 지원 받기</h3>
+      <p>멀리 있는 사람에게 도움을 받으려면 화면 오른쪽 위의 <b>원격 지원 허용</b>을 누릅니다. 그러면 <b>주소와 비밀번호</b>가 표시되고, 도와줄 사람은 VNC 뷰어로 이 주소에 접속해 화면을 보고 조작할 수 있습니다.</p>
+      <p>도움이 끝나면 비밀번호 옆의 <b>×</b>를 눌러 끕니다. 누를 때마다 새 비밀번호가 만들어집니다.</p>
+      <div class="figure"><img src="images/07-remote-button.jpg" alt="원격 지원 허용 버튼"></div>
+    </div>
+    <div>
+      <h3 style="margin-top:0">언어 바꾸기</h3>
+      <p>오른쪽 위의 언어 메뉴(국기)에서 고릅니다. 한국어, 영어, 일본어, 중국어, 스페인어, 독일어, 프랑스어, 포르투갈어를 지원합니다. 옆의 달 모양 버튼은 어두운 화면(다크 모드)으로 바꿉니다.</p>
+      <div class="figure tiny" style="text-align:left"><img style="max-width:62%" src="images/08-language-menu.jpg" alt="언어 메뉴"></div>
+    </div>
+  </div>
+  <h3>끄기</h3>
+  <p>화면 왼쪽 아래 작업 표시줄의 <b>빨간 전원 버튼</b>을 눌러 끄거나 다시 시작합니다. 꺼진 뒤 USB를 빼세요. Backtrail은 USB에서만 실행되어서, 끄면 작업 중에 만든 설정은 남지 않습니다(백업 파일은 저장 위치에 남습니다).</p>
+</section>
+
+<section class="page">
+  <h2>8. 자주 묻는 질문</h2>
+  <dl class="faq">
+    <dt>디스크나 USB가 목록에 보이지 않아요.</dt>
+    <dd>Backtrail을 시작한 뒤에 연결했다면, 첫 화면으로 돌아갔다가 다시 들어가면 드라이브를 새로 찾습니다.</dd>
+
+    <dt>"이 드라이브에는 백업할 파티션이 없습니다"라고 나와요.</dt>
+    <dd>비어 있는 디스크를 골랐습니다. 이전 단계로 돌아가 데이터가 있는 디스크를 고르세요.</dd>
+
+    <dt>"저장할 수 있는 로컬 파티션이 없습니다"라고 나와요.</dt>
+    <dd>백업을 저장할 외장 디스크나 USB를 연결하세요. 새 디스크라면 시작 메뉴의 <b>GParted</b>로 파티션을 만든 뒤, 이전 단계로 돌아갔다가 다시 오면 목록에 나타납니다.</dd>
+
+    <dt>백업 파일이 너무 커요. 디스크 전체 크기만큼 필요한가요?</dt>
+    <dd>아닙니다. 대부분의 파일 시스템(Windows의 NTFS, Linux의 ext4 등)은 사용 중인 공간만 저장하고 압축까지 합니다. 일부 특수한 파일 시스템만 파티션 전체를 저장합니다(화면에 안내 아이콘이 표시됨).</dd>
+
+    <dt>다른 컴퓨터에 복원했더니 부팅되지 않아요.</dt>
+    <dd>하드웨어가 다른 컴퓨터에 복원하면 운영체제가 부팅되지 않을 수 있습니다. 이것은 백업 프로그램의 문제가 아니라 시스템 구성이 달라졌기 때문입니다. 원래 컴퓨터에 복원하는 것이 원칙입니다.</dd>
+
+    <dt>인터넷에서 드라이버나 설명서를 찾고 싶어요.</dt>
+    <dd>작업 표시줄의 지구본 아이콘으로 <b>웹 브라우저</b>를 열 수 있습니다. 내려받은 파일은 <code>Downloads</code> 폴더에 저장됩니다.</dd>
+
+    <dt>비밀번호를 물어봐요.</dt>
+    <dd>Backtrail은 자동으로 로그인합니다. 데스크톱을 로그아웃해서 로그인 창이 나오면 사용자 <code>root</code>, 비밀번호 <code>redo</code>를 입력하세요. SSH 원격 접속을 켜면(<code>/root/enable-ssh</code>) 새 비밀번호가 만들어져 화면에 표시되고, 그때부터는 그 비밀번호를 씁니다.</dd>
+
+    <dt>백업 이미지는 안전한가요?</dt>
+    <dd>백업 이미지에는 디스크의 모든 내용이 들어 있고, 이미지 자체는 암호화되지 않습니다. 다른 사람이 열어 볼 수 없는 곳(내 외장 디스크, 접근이 제한된 공유 폴더)에 보관하세요.</dd>
+  </dl>
+
+  <div class="box tip" style="margin-top:8mm"><b class="h">더 알아보기</b>
+  프로젝트 홈페이지: github.com/johnhsb/backtrail · 한국어 안내: README.ko.md · 문제 신고: GitHub Issues</div>
+</section>
+
+</body>
+</html>
