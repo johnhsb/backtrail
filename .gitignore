@@ -16,3 +16,6 @@ __pycache__/
 
 # Disks for tools/qemu-boot.sh
 /test-disks/
+
+# macOS Finder metadata
+.DS_Store
