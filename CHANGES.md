@@ -7,7 +7,7 @@ includes the Redo Rescue 5.0.0 changes listed below. See
 
 # Backtrail
 
-## Version 5.0.0 (pending)
+## Version 5.0.0 (2026-10-14)
   * First Backtrail release, based on Redo Rescue 4.0.0 and the unreleased
     5.0.0 changes listed under Redo Rescue below. The version continues
     Redo Rescue's, so Redo Rescue 2.0 and later read Backtrail images as

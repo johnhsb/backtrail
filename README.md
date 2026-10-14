@@ -1,5 +1,7 @@
 # Backtrail
 
+**English** | [한국어](README.ko.md)
+
 <p align="center">
   <img width="480" src="branding/backtrail-logo.svg" alt="Backtrail">
 </p>
@@ -84,13 +86,24 @@ the release history of both.
   * Shared network drive search and detection
   * Support for various block devices
   * Read/write support for Samba/CIFS shares, NFS shares, and SSH filesystems
+  * In VMware virtual machines, the screen follows the window size, the
+    pointer stays in step and the clipboard is shared
 
 
 ## Download
 
-Backtrail 5.0 is in preparation and has no published ISO yet; build one as
-described under [Build](#build). Releases will be published on the
-[Releases](https://github.com/johnhsb/backtrail/releases) page.
+Download the latest ISO (`backtrail-VERSION.iso`) and `SHA256SUMS` from the
+[Releases](https://github.com/johnhsb/backtrail/releases/latest) page, and
+check the download with:
+
+    sha256sum -c SHA256SUMS --ignore-missing
+
+Burn the ISO to a CD or write it to a USB stick with a tool that copies the
+image as is, such as [balenaEtcher](https://etcher.balena.io/) or
+[Rufus](https://rufus.ie/) on Windows. On Linux (`/dev/sdX` is the USB
+stick, and everything on it is erased):
+
+    sudo dd if=backtrail-5.0.0.iso of=/dev/sdX bs=4M status=progress conv=fsync
 
 
 ## Examples
@@ -110,7 +123,7 @@ Backtrail can be used in countless ways to recover from disaster, replicate a sy
 
 **Backtrail is designed to restore a backup image to the same system it was taken from.** Even a byte-for-byte clone of a Windows drive to a target system that is nearly identical may fail to boot, regardless of the backup software used. Certain system changes can easily render a Windows, Mac, or Linux machine unbootable: changing hardware components, adding/removing/swapping disks, making significant configuration changes, or restoring to a different machine are all likely to cause boot issues. Similarly, swapping, moving, resizing, or reordering partitions will almost certainly render most operating systems unbootable. After such changes, an entire backup can be restored successfully (and all files are safely stored on the drive), yet the operating system may fail to boot. _This is not a limitation of the backup solution, but the result of changes to the system configuration. We strongly recommend creating a new backup image after changes are made to your system._
 
-Backtrail relies on [sfdisk](https://manpages.debian.org/stretch/util-linux/sfdisk.8.en.html) to backup and restore partition tables, and [partclone](https://manpages.debian.org/stretch/partclone/partclone.8.en.html) to create and restore backups of the data on each partition. Both are considered very reliable but could contain unknown bugs.
+Backtrail relies on [sfdisk](https://manpages.debian.org/util-linux/sfdisk.8.en.html) to backup and restore partition tables, and [partclone](https://manpages.debian.org/partclone/partclone.8.en.html) to create and restore backups of the data on each partition. Both are considered very reliable but could contain unknown bugs.
 
 
 ## Notes
