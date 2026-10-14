@@ -88,6 +88,8 @@ return array(
 		'选择要还原的内容',
 	'Choose where to save the backup' =>
 		'选择备份的保存位置',
+	'Connect a USB drive, or create a partition with GParted from the start menu, then go back and come to this step again.' =>
+		'请连接 USB 驱动器，或使用开始菜单中的 GParted 创建分区，然后返回并重新进入此步骤。',
 	'Connect with a VNC viewer for remote assistance' =>
 		'使用 VNC 查看器连接以获得远程协助',
 	'Copy to clipboard' =>
@@ -432,6 +434,8 @@ return array(
 		'所选目标驱动器只剩 %s 可用空间。',
 	'This computer' =>
 		'此计算机',
+	'This drive has no partitions to back up. Go back and choose another drive.' =>
+		'此驱动器上没有可备份的分区。请返回并选择其他驱动器。',
 	'This filesystem requires imaging the entire partition, rather than simply the saved data on it.' =>
 		'此文件系统需要备份整个分区，而不只是其中的数据。',
 	'This partition is encrypted.' =>

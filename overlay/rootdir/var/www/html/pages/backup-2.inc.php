@@ -77,6 +77,9 @@ page_header('backup', 2, t('Choose partitions to save'), t('The partition table 
           <?php } ?>
           </tbody>
         </table>
+        <?php if (!$parts) { ?>
+        <p class="text-muted fst-italic px-3"><?php print t('This drive has no partitions to back up. Go back and choose another drive.'); ?></p>
+        <?php } ?>
       </div>
     </div>
     <div class="bt-card bt-summary">
@@ -90,7 +93,7 @@ page_header('backup', 2, t('Choose partitions to save'), t('The partition table 
 
   <div class="bt-actions">
     <button type="button" class="btn btn-outline-secondary" onClick="BT.show('backup-1');"><i class="fas fa-arrow-left me-1"></i> <?php print t('Back'); ?></button>
-    <button type="submit" class="btn btn-primary"><?php print t('Next'); ?> <i class="fas fa-arrow-right ms-1"></i></button>
+    <button type="submit" class="btn btn-primary"<?php if (!$parts) print ' disabled'; ?>><?php print t('Next'); ?> <i class="fas fa-arrow-right ms-1"></i></button>
   </div>
 </form>
 

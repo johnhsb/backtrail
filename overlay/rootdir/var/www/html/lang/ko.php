@@ -88,6 +88,8 @@ return array(
 		'복원할 항목 선택',
 	'Choose where to save the backup' =>
 		'백업을 저장할 위치 선택',
+	'Connect a USB drive, or create a partition with GParted from the start menu, then go back and come to this step again.' =>
+		'USB 드라이브를 연결하거나 시작 메뉴의 GParted로 파티션을 만든 다음, 이전 단계로 돌아갔다가 다시 이 단계로 오세요.',
 	'Connect with a VNC viewer for remote assistance' =>
 		'VNC 뷰어로 접속하면 원격 지원을 받을 수 있습니다',
 	'Copy to clipboard' =>
@@ -432,6 +434,8 @@ return array(
 		'선택한 저장 드라이브의 여유 공간이 %s뿐입니다.',
 	'This computer' =>
 		'이 컴퓨터',
+	'This drive has no partitions to back up. Go back and choose another drive.' =>
+		'이 드라이브에는 백업할 파티션이 없습니다. 이전 단계로 돌아가 다른 드라이브를 선택하세요.',
 	'This filesystem requires imaging the entire partition, rather than simply the saved data on it.' =>
 		'이 파일 시스템은 저장된 데이터만이 아니라 파티션 전체를 이미지로 저장해야 합니다.',
 	'This partition is encrypted.' =>

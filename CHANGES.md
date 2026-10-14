@@ -16,6 +16,9 @@ includes the Redo Rescue 5.0.0 changes listed below. See
     backend runs as root without a login, so anyone on the network could
     run a backup or restore. Remote helpers still reach it through VNC
   * Use an 8-character VNC password instead of 4 characters
+  * Say so when the drive chosen for a backup has no partitions, instead of
+    showing an empty list, and tell how to get a place to save to when no
+    local partition is available (connect a USB drive or use GParted)
   * Install `ca-certificates`, which no package pulled in, so the web browser
     and `wget` can verify HTTPS sites; the ISO build now fails if it or
     `fdisk` is missing from either system

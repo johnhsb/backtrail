@@ -88,6 +88,8 @@ return array(
 		'Auswählen, was wiederhergestellt wird',
 	'Choose where to save the backup' =>
 		'Speicherort der Sicherung auswählen',
+	'Connect a USB drive, or create a partition with GParted from the start menu, then go back and come to this step again.' =>
+		'Schließen Sie ein USB-Laufwerk an oder erstellen Sie mit GParted aus dem Startmenü eine Partition. Gehen Sie dann zurück und rufen Sie diesen Schritt erneut auf.',
 	'Connect with a VNC viewer for remote assistance' =>
 		'Mit einem VNC-Viewer verbinden, um Fernhilfe zu erhalten',
 	'Copy to clipboard' =>
@@ -432,6 +434,8 @@ return array(
 		'Auf dem ausgewählten Ziellaufwerk sind nur %s frei.',
 	'This computer' =>
 		'Dieser Computer',
+	'This drive has no partitions to back up. Go back and choose another drive.' =>
+		'Dieses Laufwerk hat keine Partitionen zum Sichern. Gehen Sie zurück und wählen Sie ein anderes Laufwerk.',
 	'This filesystem requires imaging the entire partition, rather than simply the saved data on it.' =>
 		'Bei diesem Dateisystem muss die gesamte Partition gesichert werden, nicht nur die belegten Daten.',
 	'This partition is encrypted.' =>

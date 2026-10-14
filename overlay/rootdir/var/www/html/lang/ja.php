@@ -88,6 +88,8 @@ return array(
 		'復元する内容を選択',
 	'Choose where to save the backup' =>
 		'バックアップの保存先を選択',
+	'Connect a USB drive, or create a partition with GParted from the start menu, then go back and come to this step again.' =>
+		'USB ドライブを接続するか、スタートメニューの GParted でパーティションを作成してから、前に戻ってもう一度この手順に進んでください。',
 	'Connect with a VNC viewer for remote assistance' =>
 		'VNC ビューアーで接続するとリモートサポートを受けられます',
 	'Copy to clipboard' =>
@@ -432,6 +434,8 @@ return array(
 		'選択した保存先ドライブの空き容量は %s しかありません。',
 	'This computer' =>
 		'このコンピューター',
+	'This drive has no partitions to back up. Go back and choose another drive.' =>
+		'このドライブにはバックアップするパーティションがありません。前に戻って別のドライブを選択してください。',
 	'This filesystem requires imaging the entire partition, rather than simply the saved data on it.' =>
 		'このファイルシステムは、保存されたデータだけでなくパーティション全体をイメージにする必要があります。',
 	'This partition is encrypted.' =>

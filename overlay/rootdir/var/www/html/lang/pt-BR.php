@@ -88,6 +88,8 @@ return array(
 		'Escolha o que restaurar',
 	'Choose where to save the backup' =>
 		'Escolha onde salvar o backup',
+	'Connect a USB drive, or create a partition with GParted from the start menu, then go back and come to this step again.' =>
+		'Conecte uma unidade USB ou crie uma partição com o GParted no menu Iniciar; depois volte e retorne a esta etapa.',
 	'Connect with a VNC viewer for remote assistance' =>
 		'Conecte-se com um visualizador VNC para assistência remota',
 	'Copy to clipboard' =>
@@ -432,6 +434,8 @@ return array(
 		'Há apenas %s livres na unidade de destino selecionada.',
 	'This computer' =>
 		'Este computador',
+	'This drive has no partitions to back up. Go back and choose another drive.' =>
+		'Esta unidade não tem partições para fazer backup. Volte e escolha outra unidade.',
 	'This filesystem requires imaging the entire partition, rather than simply the saved data on it.' =>
 		'Este sistema de arquivos exige copiar a partição inteira, não só os dados salvos nela.',
 	'This partition is encrypted.' =>

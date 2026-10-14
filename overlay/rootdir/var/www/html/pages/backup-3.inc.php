@@ -32,7 +32,7 @@ $options = get_part_options($disks, $status->parts);
 
 page_header('backup', 3, t('Choose where to save the backup'), t('Save to a drive connected to this computer or to a shared folder on your network.'));
 $local_tip = t('Save to a drive connected directly to this computer');
-$local_empty = t('There are no available local partitions to save to.');
+$local_empty = t('There are no available local partitions to save to.').' '.t('Connect a USB drive, or create a partition with GParted from the start menu, then go back and come to this step again.');
 ?>
 
 <form id="redo_form">
