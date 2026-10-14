@@ -20,7 +20,7 @@ format or the `partclone` version. It takes about 30 minutes.
 * QEMU: `apt install qemu-system-x86 qemu-utils` on Debian, or
   `brew install qemu` on macOS (replace `-enable-kvm` with `-accel hvf` in
   the commands below).
-* The Backtrail ISO to test, for example `backtrail-5.0.0.iso`, built with
+* The Backtrail ISO to test, for example `backtrail-5.0.1.iso`, built with
   `sudo ./make` or downloaded from a Build ISO run in GitHub Actions.
 * `redorescue-4.0.0.iso` from the
   [Redo Backup project on SourceForge](https://sourceforge.net/projects/redobackup/files/).
@@ -46,7 +46,7 @@ are `/dev/vda` (source) and `/dev/vdb` (backup).
 
 ```bash
 qemu-system-x86_64 -enable-kvm -m 2048 -smp 2 -boot d \
-    -cdrom backtrail-5.0.0.iso \
+    -cdrom backtrail-5.0.1.iso \
     -drive file=source.qcow2,if=virtio \
     -drive file=backup.qcow2,if=virtio \
     -nic user -vga std
@@ -107,8 +107,9 @@ qemu-system-x86_64 -enable-kvm -m 2048 -smp 2 -boot d \
 
 In the Redo Rescue app:
 
-1. **Verify** `compat.redo` on `vda1`. The image details must show version
-   5.0.0 and both partitions with their sizes, and the verification must
+1. **Verify** `compat.redo` on `vda1`. The image details must show the
+   Backtrail version (5.0.1 or later) and both partitions with their
+   sizes, and the verification must
    finish without errors.
 2. **Restore** the same image to `vdb`, restoring all partitions and the
    partition table.
@@ -162,7 +163,7 @@ partition images:
 
 ```bash
 mount /dev/vdb1 /mnt/b && cd /mnt/b
-sed 's/"version":"5.0.0"/"version":"1.0.0"/' compat.redo > compat-v1.redo
+sed 's/"version":"[^"]*"/"version":"1.0.0"/' compat.redo > compat-v1.redo
 for f in compat_*.img; do ln -s "$f" "compat-v1${f#compat}"; done
 cd / && umount /mnt/b
 ```

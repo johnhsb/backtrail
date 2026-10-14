@@ -1,13 +1,19 @@
 # Changes
 
 Backtrail continues Redo Rescue and its version numbers. Redo Rescue 5.0.0
-was never released; Backtrail 5.0.0 is that release under the new name, and
-includes the Redo Rescue 5.0.0 changes listed below. See
+was never released; Backtrail's first release, 5.0.1, takes its place under
+the new name and includes the Redo Rescue 5.0.0 changes listed below. See
 [HERITAGE.md](HERITAGE.md) for the background.
 
 # Backtrail
 
-## Version 5.0.1 (pending)
+## Version 5.0.1 (2026-10-14)
+  * First Backtrail release, based on Redo Rescue 4.0.0 and the unreleased
+    5.0.0 changes listed under Redo Rescue below. The version continues
+    Redo Rescue's, so Redo Rescue 2.0 and later read Backtrail images as
+    current ones (they take versions below 2.0 for Redo Backup 1.0.x)
+  * A 5.0.0 build was tagged but not published; 5.0.1 adds the security
+    changes below and is the first published release
   * Security: the `redo` user, which runs the app window and the web
     browser, no longer has sudo rights or a password, so a compromised
     browser cannot become root with the documented password
@@ -19,12 +25,6 @@ includes the Redo Rescue 5.0.0 changes listed below. See
     password and a button that stops it (`backtrail-vnc.service`)
   * Release files come with a signed build provenance attestation, checked
     with `gh attestation verify`
-
-## Version 5.0.0 (2026-10-14)
-  * First Backtrail release, based on Redo Rescue 4.0.0 and the unreleased
-    5.0.0 changes listed under Redo Rescue below. The version continues
-    Redo Rescue's, so Redo Rescue 2.0 and later read Backtrail images as
-    current ones (they take versions below 2.0 for Redo Backup 1.0.x)
   * Serve the app only on 127.0.0.1 and close port 80 in the firewall: its
     backend runs as root without a login, so anyone on the network could
     run a backup or restore. Remote helpers still reach it through VNC

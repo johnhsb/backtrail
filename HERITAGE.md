@@ -48,14 +48,15 @@ tool, and so that existing `.redo` backups stay restorable.
 ## Version numbers
 
 Backtrail continues Redo Rescue's version numbers. Redo Rescue 5.0.0 was in
-development but never released, so Backtrail's first release is 5.0.0, and
-the Redo Rescue 5.0.0 changes are part of it.
+development but never released, so Backtrail's numbers continue from 5.0
+and include the Redo Rescue 5.0.0 changes. The first published release is
+5.0.1 (a 5.0.0 build was tagged but not published).
 
 Continuing the numbers also avoids a trap in image compatibility. Each image
 records the version of the program that made it, and Redo Rescue 2.0 to 4.0
 treat an image with a version below 2.0 as an old Redo Backup 1.0.x image,
 whose files are named differently. Redo Rescue would look for the wrong files
-in a Backtrail image marked 1.0.0; one marked 5.0.0 is read as a current
+in a Backtrail image marked 1.0.0; one marked 5.0.1 is read as a current
 image. Backtrail itself tells old images apart by their `.backup` format, not
 by the version number.
 

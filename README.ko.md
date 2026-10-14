@@ -13,7 +13,7 @@
 실수로 지운 파일, 하드웨어 고장, 해킹 피해에서 몇 분 만에 복구할 수 있습니다.
 
 Backtrail은 독립 오픈 소스 프로젝트입니다. 첫 릴리스는 Redo Rescue의 버전
-번호를 이어받은 5.0입니다.
+번호를 이어받은 5.0.1입니다.
 
 
 ## 내력
@@ -97,7 +97,7 @@ Backtrail은 자체 이름과 아트워크를 씁니다. Backtrail은 Zebradots 
 
     sha256sum -c SHA256SUMS --ignore-missing
 
-5.0.1부터는 ISO가 이 저장소의 릴리스 워크플로로 빌드됐는지도
+ISO가 이 저장소의 릴리스 워크플로로 빌드됐는지도
 [GitHub CLI](https://cli.github.com/)로 확인할 수 있습니다.
 
     gh attestation verify backtrail-5.0.1.iso --repo johnhsb/backtrail
@@ -108,7 +108,7 @@ ISO는 CD에 굽거나 USB 메모리에 기록해서 씁니다. USB에 기록할
 Linux에서는 다음처럼 기록할 수 있습니다(`/dev/sdX`는 USB 메모리 장치이며,
 그 안의 내용은 모두 지워집니다).
 
-    sudo dd if=backtrail-5.0.0.iso of=/dev/sdX bs=4M status=progress conv=fsync
+    sudo dd if=backtrail-5.0.1.iso of=/dev/sdX bs=4M status=progress conv=fsync
 
 
 ## 사용 예
@@ -171,7 +171,7 @@ Debian Linux에서 ISO 이미지를 만드는 방법입니다.
   2. `cd backtrail`
   3. `sudo ./make`
 
-결과물은 `backtrail-VERSION.iso`입니다(예: `backtrail-5.0.0.iso`).
+결과물은 `backtrail-VERSION.iso`입니다(예: `backtrail-5.0.1.iso`).
 
 인터넷에 연결된 Debian이나 Ubuntu 컴퓨터가 필요합니다. `./make`는 먼저 필요한
 도구(`debootstrap`, `squashfs-tools`, `xorriso`, `mtools`, `dosfstools`,
