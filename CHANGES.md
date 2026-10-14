@@ -20,8 +20,11 @@ includes the Redo Rescue 5.0.0 changes listed below. See
     showing an empty list, and tell how to get a place to save to when no
     local partition is available (connect a USB drive or use GParted)
   * Install `ca-certificates`, which no package pulled in, so the web browser
-    and `wget` can verify HTTPS sites; the ISO build now fails if it or
-    `fdisk` is missing from either system
+    and `wget` can verify HTTPS sites, and `e2fsprogs`, which Debian 13 no
+    longer includes in a minimal system, so the 64-bit system has
+    `mkfs.ext4`, `e2fsck` and `resize2fs` again (GParted needs them for ext2,
+    ext3 and ext4); the ISO build now fails if one of these or `fdisk` is
+    missing from either system
   * Close IPv6 as well: `rules.v6` drops incoming connections except SSH and
     VNC, like the IPv4 firewall
   * Quote every value the app puts in a mount command, and pass CIFS

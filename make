@@ -293,7 +293,9 @@ apt upgrade --yes
 # is the polkit agent network-manager-gnome needs: apt would otherwise pick
 # ukui-polkit on Debian 13, which pulls in Qt, OpenCV and GDAL (about 190 MB).
 # ca-certificates is only recommended by the TLS libraries; without it the web
-# browser and wget reject every HTTPS certificate.
+# browser and wget reject every HTTPS certificate. e2fsprogs (mkfs.ext4,
+# e2fsck, resize2fs, which GParted needs) is no longer part of a minimal
+# Debian 13 system.
 apt install --no-install-recommends --yes \
 	\
 	linux-image-$KERN live-boot systemd-sysv firmware-linux-free sudo \
@@ -309,7 +311,7 @@ apt install --no-install-recommends --yes \
 	xvkbd librsvg2-common zstd \
 	papirus-icon-theme adwaita-icon-theme gtk-update-icon-cache \
 	\
-	beep laptop-detect os-prober discover lshw-gtk hdparm smartmontools fdisk \
+	beep laptop-detect os-prober discover lshw-gtk hdparm smartmontools fdisk e2fsprogs \
 	nmap time lvm2 gparted gnome-disk-utility baobab gddrescue testdisk \
 	dosfstools ntfs-3g reiserfsprogs jfsutils \
 	smbclient cifs-utils nfs-common sshfs partclone pigz yad f2fs-tools \
