@@ -16,6 +16,9 @@ includes the Redo Rescue 5.0.0 changes listed below. See
     backend runs as root without a login, so anyone on the network could
     run a backup or restore. Remote helpers still reach it through VNC
   * Use an 8-character VNC password instead of 4 characters
+  * Install `ca-certificates`, which no package pulled in, so the web browser
+    and `wget` can verify HTTPS sites; the ISO build now fails if it or
+    `fdisk` is missing from either system
   * Close IPv6 as well: `rules.v6` drops incoming connections except SSH and
     VNC, like the IPv4 firewall
   * Quote every value the app puts in a mount command, and pass CIFS

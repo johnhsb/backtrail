@@ -65,6 +65,12 @@ jobs:
           mv "backtrail-$VER.iso" dist/
           for A in amd64 i386; do
             cp "image/live-$A/filesystem.packages" "dist/backtrail-$VER-$A.packages"
+            # Packages the live system cannot work without, but that only
+            # come as recommendations
+            for P in ca-certificates fdisk; do
+              grep -q "^$P\b" "image/live-$A/filesystem.packages" \
+                || { echo "::error::$P is missing from the $A system"; exit 1; }
+            done
           done
           (cd dist && sha256sum -- * > SHA256SUMS)
           cat dist/SHA256SUMS

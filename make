@@ -292,11 +292,13 @@ apt upgrade --yes
 # (/usr/local/bin/backtrail-app, WebKitGTK). lxpolkit is named so that it
 # is the polkit agent network-manager-gnome needs: apt would otherwise pick
 # ukui-polkit on Debian 13, which pulls in Qt, OpenCV and GDAL (about 190 MB).
+# ca-certificates is only recommended by the TLS libraries; without it the web
+# browser and wget reject every HTTPS certificate.
 apt install --no-install-recommends --yes \
 	\
 	linux-image-$KERN live-boot systemd-sysv firmware-linux-free sudo \
         vim-tiny pm-utils iptables-persistent iputils-ping net-tools wget \
-	openssh-client openssh-server rsync less \
+	openssh-client openssh-server rsync less ca-certificates \
 	\
 	xserver-xorg x11-xserver-utils xinit openbox obconf slim \
 	plymouth plymouth-themes compton dbus-x11 libnotify-bin xfce4-notifyd \
