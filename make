@@ -295,7 +295,9 @@ apt upgrade --yes
 # ca-certificates is only recommended by the TLS libraries; without it the web
 # browser and wget reject every HTTPS certificate. e2fsprogs (mkfs.ext4,
 # e2fsck, resize2fs, which GParted needs) is no longer part of a minimal
-# Debian 13 system.
+# Debian 13 system. open-vm-tools-desktop fits the screen to the window,
+# keeps the pointer in step and shares the clipboard when Backtrail runs in
+# VMware; its service only starts in a VMware virtual machine.
 apt install --no-install-recommends --yes \
 	\
 	linux-image-$KERN live-boot systemd-sysv firmware-linux-free sudo \
@@ -308,7 +310,7 @@ apt install --no-install-recommends --yes \
 	gsettings-desktop-schemas lxrandr lxmenu-data lxterminal lxappearance \
 	network-manager-gnome lxpolkit wpasupplicant gtk2-engines gnome-themes-extra gtk-theme-switch \
 	fonts-noto-cjk pcmanfm libfm-modules gpicview mousepad x11vnc pwgen \
-	xvkbd librsvg2-common zstd \
+	xvkbd librsvg2-common zstd open-vm-tools-desktop \
 	papirus-icon-theme adwaita-icon-theme gtk-update-icon-cache \
 	\
 	beep laptop-detect os-prober discover lshw-gtk hdparm smartmontools fdisk e2fsprogs \

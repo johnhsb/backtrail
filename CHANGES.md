@@ -19,6 +19,9 @@ includes the Redo Rescue 5.0.0 changes listed below. See
   * Say so when the drive chosen for a backup has no partitions, instead of
     showing an empty list, and tell how to get a place to save to when no
     local partition is available (connect a USB drive or use GParted)
+  * Install VMware Tools (`open-vm-tools-desktop`): in a VMware virtual
+    machine the screen follows the window size, the pointer stays in step
+    and the clipboard is shared; nothing runs on real hardware
   * Install `ca-certificates`, which no package pulled in, so the web browser
     and `wget` can verify HTTPS sites, and `e2fsprogs`, which Debian 13 no
     longer includes in a minimal system, so the 64-bit system has

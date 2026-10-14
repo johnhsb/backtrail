@@ -35,6 +35,13 @@ xfce4-power-manager &
 	if [ -f "$FILE" ]; then nitrogen --set-zoom-fill "$FILE"; else nitrogen --restore; fi
 ) &
 
+# In a VMware virtual machine, start the VMware Tools user service: it fits
+# the screen to the window, keeps the pointer in step and shares the
+# clipboard. Nothing happens on real hardware or other hypervisors.
+if [ "$(systemd-detect-virt 2>/dev/null)" = vmware ]; then
+	( sleep 2; pgrep -f 'vmtoolsd -n vmusr' >/dev/null || vmware-user-suid-wrapper ) &
+fi
+
 # Start X11 compositor
 compton &
 
