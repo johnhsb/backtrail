@@ -19,7 +19,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-VER=5.0.0
+VER=5.0.1
 # Each target (ARCH:BASE) becomes a separate live system in the same ISO;
 # the boot menu picks the one matching the CPU. Debian 13 has no i386 kernel.
 TARGETS="amd64:trixie i386:bookworm"
@@ -339,10 +339,12 @@ fi
 systemctl disable ssh
 rm -f /etc/ssh/ssh_host_*
 
-# Add regular user
+# Add the unprivileged user that runs the app window and the web browser.
+# It gets no sudo rights and no password: root starts its programs with
+# "sudo -u", so a compromised browser cannot become root with a known
+# password.
 useradd --create-home $LIVE_USER --shell /bin/bash
-adduser $LIVE_USER sudo
-echo '$LIVE_USER:$LIVE_USER' | chpasswd
+passwd --lock $LIVE_USER
 
 # Prepare single-user system
 echo 'root:$LIVE_USER' | chpasswd

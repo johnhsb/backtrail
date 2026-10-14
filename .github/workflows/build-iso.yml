@@ -2,7 +2,10 @@ name: Build ISO
 
 # Manual runs build a test ISO (kept as a workflow artifact for 7 days).
 # Pushing a tag vX.Y.Z builds the release ISO and attaches it, its checksum
-# and the package lists to a draft release, to be reviewed and published.
+# and the package lists to a draft release, to be reviewed and published,
+# with a signed build provenance attestation for each file, so anyone can
+# check that a download was built by this workflow from this repository:
+#     gh attestation verify backtrail-X.Y.Z.iso --repo johnhsb/backtrail
 on:
   workflow_dispatch:
   push:
@@ -10,6 +13,9 @@ on:
 
 permissions:
   contents: write
+  # Build provenance attestations (Sigstore) for release files
+  id-token: write
+  attestations: write
 
 concurrency:
   group: build-iso-${{ github.ref }}
@@ -89,6 +95,12 @@ jobs:
           name: build-log
           path: build.log
           retention-days: 7
+
+      - name: Attest build provenance
+        if: github.ref_type == 'tag'
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: 'dist/*'
 
       - name: Draft release
         if: github.ref_type == 'tag'

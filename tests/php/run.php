@@ -176,6 +176,20 @@ check('open_pipe_command failure raises no warning', array(), $w);
 check('open_pipe_command failure returns stderr', 'oops', trim((string) $result));
 check('open_pipe_command success returns nothing', NULL, open_pipe_command('cat >/dev/null', 'data'));
 
+// Remote access part of the app bar: a start button until the VNC service
+// has written its password, then the address, the password and a stop button
+@unlink(VNCPASS_FILE);
+check('remote_html without a network address', '', remote_html(''));
+$html = remote_html('192.0.2.7');
+check('remote_html offers to start remote assistance', TRUE, strpos($html, "id='remote-on'") !== FALSE);
+check('remote_html shows no address before it starts', FALSE, strpos($html, '192.0.2.7'));
+file_put_contents(VNCPASS_FILE, "abc<def\n");
+$html = remote_html('192.0.2.7');
+check('remote_html shows the address while running', TRUE, strpos($html, '<code>192.0.2.7</code>') !== FALSE);
+check('remote_html escapes the password', TRUE, strpos($html, '<code>abc&lt;def</code>') !== FALSE);
+check('remote_html offers to stop remote assistance', TRUE, strpos($html, "id='remote-off'") !== FALSE);
+unlink(VNCPASS_FILE);
+
 // Clean up
 array_map('unlink', glob("$bin/*"));
 rmdir($bin);

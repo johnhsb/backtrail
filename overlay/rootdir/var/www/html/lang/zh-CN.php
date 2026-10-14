@@ -26,6 +26,8 @@ return array(
 		'已为您选择了一个有效的文件夹。',
 	'Additional tools can be found through the start menu' =>
 		'可以从开始菜单找到更多工具',
+	'Allow remote assistance' =>
+		'允许远程协助',
 	'Back' =>
 		'上一步',
 	'Back up' =>
@@ -210,6 +212,8 @@ return array(
 		'卷标',
 	'Language' =>
 		'语言',
+	'Let a helper see and control this computer with a VNC viewer' =>
+		'允许协助者使用 VNC 查看器查看并控制此计算机',
 	'Loading' =>
 		'正在加载',
 	'Local disk' =>
@@ -390,6 +394,8 @@ return array(
 		'开始验证',
 	'Steps' =>
 		'步骤',
+	'Stop remote assistance' =>
+		'停止远程协助',
 	'Switch between light and dark mode' =>
 		'切换浅色和深色模式',
 	'Target' =>
@@ -456,6 +462,8 @@ return array(
 		'无法打开旧格式映像的 sfdisk 数据',
 	'Unable to read information for selected drive.' =>
 		'无法读取所选驱动器的信息。',
+	'Unable to start remote assistance' =>
+		'无法启动远程协助',
 	'Unable to start the restore' =>
 		'无法开始还原',
 	'Unable to start verification' =>

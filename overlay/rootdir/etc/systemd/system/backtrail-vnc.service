@@ -1,0 +1,10 @@
+[Unit]
+Description=Backtrail remote assistance (VNC server)
+# Not enabled: the app's "Allow remote assistance" button starts it, with a
+# new password each time, and stops it again
+
+[Service]
+Type=simple
+ExecStartPre=/bin/sh -c 'umask 077 && pwgen -A -B 8 1 > /tmp/vncpasswd'
+ExecStart=/usr/bin/x11vnc -display :0 -auth guess -forever -quiet -rfbport 5900 -passwdfile /tmp/vncpasswd
+ExecStopPost=/bin/rm -f /tmp/vncpasswd

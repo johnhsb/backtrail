@@ -1,8 +1,24 @@
 #!/bin/bash
-perl -p -i -e 's/^#PermitRootLogin .*/PermitRootLogin yes/g' /etc/ssh/sshd_config
-dpkg-reconfigure openssh-server
-systemctl start ssh
-ip=`ifconfig | grep -E "([0-9]{1,3}\.){3}[0-9]{1,3}" | grep -v 127.0.0.1 | awk '{ print $2 }' | cut -f2 -d: | head -n1`
+#
+# Allow SSH logins as root for remote assistance. root gets a new random
+# password, shown below, so the live system's documented password does not
+# work over the network. Compare the host key fingerprint with the one your
+# SSH client shows before you enter the password.
+#
+[ "$EUID" -eq 0 ] || { echo "Run this as root." >&2; exit 1; }
+
+PASS=$(pwgen -A -B 10 1)
+echo "root:$PASS" | chpasswd
+perl -p -i -e 's/^#?PermitRootLogin .*/PermitRootLogin yes/' /etc/ssh/sshd_config
+# Host keys are removed from the image, so each live session gets its own
+dpkg-reconfigure openssh-server >/dev/null 2>&1
+systemctl restart ssh
+
+IP=$(hostname -I | awk '{print $1}')
 echo
-echo "SSH enabled. You may now connect to 'root@$ip'."
+echo "SSH is enabled. Connect with:  ssh root@${IP:-<address of this computer>}"
+echo "Password:                      $PASS"
+echo
+echo "Host key fingerprints (check that your SSH client shows one of these):"
+for k in /etc/ssh/ssh_host_*_key.pub; do ssh-keygen -lf "$k"; done
 echo

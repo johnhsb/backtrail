@@ -97,6 +97,11 @@ Backtrail은 자체 이름과 아트워크를 씁니다. Backtrail은 Zebradots 
 
     sha256sum -c SHA256SUMS --ignore-missing
 
+5.0.1부터는 ISO가 이 저장소의 릴리스 워크플로로 빌드됐는지도
+[GitHub CLI](https://cli.github.com/)로 확인할 수 있습니다.
+
+    gh attestation verify backtrail-5.0.1.iso --repo johnhsb/backtrail
+
 ISO는 CD에 굽거나 USB 메모리에 기록해서 씁니다. USB에 기록할 때는
 [balenaEtcher](https://etcher.balena.io/)나
 [Rufus](https://rufus.ie/)(Windows)처럼 이미지를 그대로 쓰는 도구를 쓰고,
@@ -151,9 +156,11 @@ Backtrail은 파티션 테이블의 백업과 복원에
 ## 참고
 
 * 시스템은 기본적으로 `root` 사용자로 자동 로그인하며, 비밀번호는 `redo`입니다.
-* 백업 앱은 이 컴퓨터 안에서만(`127.0.0.1`) 열리고, 원격 지원은 화면 상단에
-  표시되는 주소와 비밀번호로 VNC를 통해 받습니다. 보안 모델은
-  [SECURITY.md](SECURITY.md)(영문)를 참고하세요.
+* 백업 앱은 이 컴퓨터 안에서만(`127.0.0.1`) 열립니다.
+* 원격 지원이 필요하면 앱 상단의 "원격 지원 허용"을 누르고, 그때 표시되는
+  주소와 비밀번호를 도와줄 사람에게 알려 주세요(VNC). SSH로 받으려면
+  `/root/enable-ssh`를 실행하세요. 새 root 비밀번호를 만들어 보여 줍니다.
+* 보안 모델은 [SECURITY.md](SECURITY.md)(영문)를 참고하세요.
 
 
 ## 빌드

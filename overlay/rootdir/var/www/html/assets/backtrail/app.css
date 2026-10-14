@@ -170,6 +170,10 @@ code { color: inherit; font-size: .9em; }
 .bt-bar .bt-spacer { flex: 1; }
 .bt-bar .bt-remote { font-size: .8rem; opacity: .85; display: flex; align-items: center; gap: .4rem; }
 .bt-bar .bt-remote code { color: var(--bt-bar-ink); }
+.bt-bar #bt-remote { display: flex; align-items: center; }
+.bt-bar .bt-remote-btn { font-size: .8rem; color: var(--bt-bar-ink); background: transparent; border: 1px solid rgba(255, 255, 255, .28); border-radius: .375rem; padding: .2rem .6rem; display: inline-flex; align-items: center; gap: .4rem; }
+.bt-bar .bt-remote-btn:hover { background: rgba(255, 255, 255, .1); }
+.bt-bar .bt-remote-btn.bt-remote-stop { border: 0; padding: .1rem .35rem; }
 .bt-bar .bt-icon-btn { background: transparent; border: 0; color: var(--bt-bar-ink); width: 36px; height: 36px; border-radius: 8px; opacity: .8; }
 .bt-bar .bt-icon-btn:hover, .bt-bar .bt-icon-btn:focus-visible { background: rgba(255, 255, 255, .1); opacity: 1; }
 

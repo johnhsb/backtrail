@@ -630,6 +630,24 @@ function crash($message=NULL, $page=NULL) {
 }
 
 //
+// Remote access part of the app bar: a button that starts remote assistance,
+// or, while the VNC server runs, its address and password and a button that
+// stops it. Nothing without a network address.
+//
+function remote_html($ip) {
+	if ($ip === '') return '';
+	$pass = is_readable(VNCPASS_FILE) ? trim(file_get_contents(VNCPASS_FILE)) : '';
+	if ($pass === '') {
+		return "<button type='button' class='bt-remote-btn' id='remote-on' title='".h(t('Let a helper see and control this computer with a VNC viewer'))."'>"
+			."<i class='fas fa-desktop'></i> ".t('Allow remote assistance')."</button>";
+	}
+	return "<span class='bt-remote' title='".h(t('Connect with a VNC viewer for remote assistance'))."'>"
+		."<i class='fas fa-desktop'></i> ".t('Remote access')." <code>".h($ip)."</code> · ".t('password')." <code>".h($pass)."</code>"
+		." <button type='button' class='bt-remote-btn bt-remote-stop' id='remote-off' title='".h(t('Stop remote assistance'))."' aria-label='".h(t('Stop remote assistance'))."'><i class='fas fa-times'></i></button>"
+		."</span>";
+}
+
+//
 // Show debug information for development
 //
 function debug() {

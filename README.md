@@ -98,6 +98,11 @@ check the download with:
 
     sha256sum -c SHA256SUMS --ignore-missing
 
+From 5.0.1 on, you can also check that the ISO was built by this
+repository's release workflow, with the [GitHub CLI](https://cli.github.com/):
+
+    gh attestation verify backtrail-5.0.1.iso --repo johnhsb/backtrail
+
 Burn the ISO to a CD or write it to a USB stick with a tool that copies the
 image as is, such as [balenaEtcher](https://etcher.balena.io/) or
 [Rufus](https://rufus.ie/) on Windows. On Linux (`/dev/sdX` is the USB
@@ -129,6 +134,9 @@ Backtrail relies on [sfdisk](https://manpages.debian.org/util-linux/sfdisk.8.en.
 ## Notes
 
 * By default the system logs in as the `root` user with password `redo`.
+* For remote assistance, press "Allow remote assistance" in the app bar and
+  give the helper the address and password shown there (VNC). To allow SSH
+  instead, run `/root/enable-ssh`, which sets and shows a new root password.
 
 
 ## Build

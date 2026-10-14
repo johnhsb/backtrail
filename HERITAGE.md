@@ -73,7 +73,7 @@ by the version number.
 | Security updates | Packages from the base release only | **`-updates` and `-security` repositories, plus a full upgrade** | The app's web engine (WebKitGTK), kernel and PHP ship with current security fixes |
 | App access | nginx listened on every address and the firewall allowed port 80; the app's backend runs as root with no login, so anyone on the network could start a backup or restore | **Served on `127.0.0.1` only**, port 80 closed | Only the person at the machine, or a helper connected through VNC, can use the app |
 | Web browser | Chromium, which could also open the app's backend | **`backtrail-browser`** (WebKitGTK); it blocks requests to this machine's loopback addresses, and nginx refuses requests to the backend that are not the app's own `X-Requested-With` calls, or that name another host | A web page cannot start a backup or restore |
-| VNC password | 4 random lowercase letters | **8 characters** (the VNC maximum), no capitals or look-alike characters | Much harder to guess on a shared network |
+| VNC server | Started with the desktop; 4 random lowercase letters as password | **Off until "Allow remote assistance" is pressed** in the app bar; a new 8-character password (the VNC maximum) each time, without capitals or look-alike characters; stopped from the app bar | Nothing listens for remote control unless help is needed, and the password is hard to guess |
 
 Debian 13 no longer provides an i386 kernel, so the 32-bit system uses
 Debian 12. The ISO contains two independent live systems (`/live-amd64` and

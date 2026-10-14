@@ -7,6 +7,19 @@ includes the Redo Rescue 5.0.0 changes listed below. See
 
 # Backtrail
 
+## Version 5.0.1 (pending)
+  * Security: the `redo` user, which runs the app window and the web
+    browser, no longer has sudo rights or a password, so a compromised
+    browser cannot become root with the documented password
+  * Security: `/root/enable-ssh` sets a new random root password and shows
+    it with the host key fingerprints, so the documented password does not
+    work over SSH
+  * Security: the VNC server no longer starts with the desktop. The app bar
+    has an "Allow remote assistance" button that starts it with a new
+    password and a button that stops it (`backtrail-vnc.service`)
+  * Release files come with a signed build provenance attestation, checked
+    with `gh attestation verify`
+
 ## Version 5.0.0 (2026-10-14)
   * First Backtrail release, based on Redo Rescue 4.0.0 and the unreleased
     5.0.0 changes listed under Redo Rescue below. The version continues

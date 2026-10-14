@@ -26,6 +26,8 @@ return array(
 		'Uma pasta válida foi selecionada no lugar.',
 	'Additional tools can be found through the start menu' =>
 		'Outras ferramentas estão no menu Iniciar',
+	'Allow remote assistance' =>
+		'Permitir assistência remota',
 	'Back' =>
 		'Voltar',
 	'Back up' =>
@@ -210,6 +212,8 @@ return array(
 		'Rótulo',
 	'Language' =>
 		'Idioma',
+	'Let a helper see and control this computer with a VNC viewer' =>
+		'Permite que outra pessoa veja e controle este computador com um visualizador VNC',
 	'Loading' =>
 		'Carregando',
 	'Local disk' =>
@@ -390,6 +394,8 @@ return array(
 		'Iniciar a verificação',
 	'Steps' =>
 		'Etapas',
+	'Stop remote assistance' =>
+		'Parar a assistência remota',
 	'Switch between light and dark mode' =>
 		'Alternar entre modo claro e escuro',
 	'Target' =>
@@ -456,6 +462,8 @@ return array(
 		'Não foi possível abrir os dados sfdisk da imagem antiga',
 	'Unable to read information for selected drive.' =>
 		'Não foi possível ler as informações da unidade selecionada.',
+	'Unable to start remote assistance' =>
+		'Não foi possível iniciar a assistência remota',
 	'Unable to start the restore' =>
 		'Não foi possível iniciar a restauração',
 	'Unable to start verification' =>

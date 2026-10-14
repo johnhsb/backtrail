@@ -50,7 +50,6 @@ $status->hostname = $host_info['name'];
 // Save status
 set_status($status);
 
-$vnc_pass = is_readable(VNCPASS_FILE) ? trim(file_get_contents(VNCPASS_FILE)) : '';
 $bits = (PHP_INT_SIZE == 8) ? t('64-bit') : t('32-bit');
 $languages = languages();
 $current = $languages[lang()];
@@ -82,12 +81,7 @@ $current = $languages[lang()];
       <img class="bt-logo" src="/images/backtrail-logo-dark.svg" alt="Backtrail">
       <span class="bt-pill"><?php print h(get_version()); ?> · <?php print $bits; ?></span>
       <span class="bt-spacer"></span>
-      <?php if (!empty($status->ip)) { ?>
-      <span class="bt-remote" title="<?php print h(t('Connect with a VNC viewer for remote assistance')); ?>">
-        <i class="fas fa-desktop"></i> <?php print t('Remote access'); ?> <code><?php print h($status->ip); ?></code>
-        <?php if ($vnc_pass !== '') { ?>· <?php print t('password'); ?> <code><?php print h($vnc_pass); ?></code><?php } ?>
-      </span>
-      <?php } ?>
+      <span id="bt-remote"><?php print remote_html($status->ip ?? ''); ?></span>
       <div class="dropdown">
         <button type="button" id="lang-menu" class="bt-lang-btn" data-bs-toggle="dropdown" aria-expanded="false" aria-label="<?php print h(t('Language').': '.$current['name']); ?>">
           <img class="bt-flag" src="/images/flags/<?php print h($current['flag']); ?>.svg" alt=""><span><?php print h($current['name']); ?></span><i class="fas fa-chevron-down"></i>

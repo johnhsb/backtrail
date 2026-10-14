@@ -26,6 +26,8 @@ return array(
 		'Stattdessen wurde ein gültiger Ordner ausgewählt.',
 	'Additional tools can be found through the start menu' =>
 		'Weitere Werkzeuge finden Sie im Startmenü',
+	'Allow remote assistance' =>
+		'Fernhilfe erlauben',
 	'Back' =>
 		'Zurück',
 	'Back up' =>
@@ -210,6 +212,8 @@ return array(
 		'Bezeichnung',
 	'Language' =>
 		'Sprache',
+	'Let a helper see and control this computer with a VNC viewer' =>
+		'Einer helfenden Person erlauben, diesen Computer mit einem VNC-Viewer zu sehen und zu steuern',
 	'Loading' =>
 		'Wird geladen',
 	'Local disk' =>
@@ -390,6 +394,8 @@ return array(
 		'Prüfung starten',
 	'Steps' =>
 		'Schritte',
+	'Stop remote assistance' =>
+		'Fernhilfe beenden',
 	'Switch between light and dark mode' =>
 		'Zwischen hellem und dunklem Modus wechseln',
 	'Target' =>
@@ -456,6 +462,8 @@ return array(
 		'Die sfdisk-Daten des alten Abbilds können nicht geöffnet werden',
 	'Unable to read information for selected drive.' =>
 		'Die Informationen zum ausgewählten Laufwerk können nicht gelesen werden.',
+	'Unable to start remote assistance' =>
+		'Die Fernhilfe konnte nicht gestartet werden',
 	'Unable to start the restore' =>
 		'Die Wiederherstellung kann nicht gestartet werden',
 	'Unable to start verification' =>

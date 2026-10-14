@@ -285,6 +285,17 @@ var BT = (function ($) {
 		location.replace('/?page=' + encodeURIComponent(current));
 	}
 
+	// Remote assistance: start or stop the VNC server from the app bar
+	$(document).on('click', '#remote-on, #remote-off', function () {
+		var start = this.id === 'remote-on';
+		$(this).prop('disabled', true);
+		$.post('/ajax/remote.php', { action: start ? 'start' : 'stop' }).done(function (d) {
+			var r = parse(d);
+			if (r.status) $('#bt-remote').html(r.html);
+			else fail(t('Unable to start remote assistance'), escapeHtml(r.error));
+		}).always(function () { $('#remote-on, #remote-off').prop('disabled', false); });
+	});
+
 	$(document).on('click', '[data-lang]', function () {
 		setLanguage($(this).attr('data-lang'));
 	});

@@ -26,6 +26,8 @@ return array(
 		'대신 사용할 수 있는 폴더를 선택해 두었습니다.',
 	'Additional tools can be found through the start menu' =>
 		'시작 메뉴에서 다른 도구도 사용할 수 있습니다',
+	'Allow remote assistance' =>
+		'원격 지원 허용',
 	'Back' =>
 		'이전',
 	'Back up' =>
@@ -210,6 +212,8 @@ return array(
 		'레이블',
 	'Language' =>
 		'언어',
+	'Let a helper see and control this computer with a VNC viewer' =>
+		'도우미가 VNC 뷰어로 이 컴퓨터의 화면을 보고 조작할 수 있게 합니다',
 	'Loading' =>
 		'불러오는 중',
 	'Local disk' =>
@@ -390,6 +394,8 @@ return array(
 		'검증 시작',
 	'Steps' =>
 		'단계',
+	'Stop remote assistance' =>
+		'원격 지원 중지',
 	'Switch between light and dark mode' =>
 		'밝은 모드와 어두운 모드 전환',
 	'Target' =>
@@ -456,6 +462,8 @@ return array(
 		'이전 형식 이미지의 sfdisk 데이터를 열 수 없습니다',
 	'Unable to read information for selected drive.' =>
 		'선택한 드라이브의 정보를 읽을 수 없습니다.',
+	'Unable to start remote assistance' =>
+		'원격 지원을 시작할 수 없습니다',
 	'Unable to start the restore' =>
 		'복원을 시작할 수 없습니다',
 	'Unable to start verification' =>

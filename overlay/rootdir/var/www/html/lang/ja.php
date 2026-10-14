@@ -26,6 +26,8 @@ return array(
 		'有効なフォルダーを代わりに選択しました。',
 	'Additional tools can be found through the start menu' =>
 		'その他のツールはスタートメニューから使えます',
+	'Allow remote assistance' =>
+		'リモートサポートを許可',
 	'Back' =>
 		'戻る',
 	'Back up' =>
@@ -210,6 +212,8 @@ return array(
 		'ラベル',
 	'Language' =>
 		'言語',
+	'Let a helper see and control this computer with a VNC viewer' =>
+		'サポート担当者が VNC ビューアーでこのコンピューターを表示・操作できるようにします',
 	'Loading' =>
 		'読み込み中',
 	'Local disk' =>
@@ -390,6 +394,8 @@ return array(
 		'検証を開始',
 	'Steps' =>
 		'手順',
+	'Stop remote assistance' =>
+		'リモートサポートを停止',
 	'Switch between light and dark mode' =>
 		'ライトモードとダークモードを切り替え',
 	'Target' =>
@@ -456,6 +462,8 @@ return array(
 		'旧形式のイメージの sfdisk データを開けません',
 	'Unable to read information for selected drive.' =>
 		'選択したドライブの情報を読み込めません。',
+	'Unable to start remote assistance' =>
+		'リモートサポートを開始できません',
 	'Unable to start the restore' =>
 		'復元を開始できません',
 	'Unable to start verification' =>

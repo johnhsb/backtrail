@@ -14,6 +14,14 @@ new release rather than as updates to a running system.
 The 32-bit system is based on Debian 12 and can receive security fixes only
 until Debian 12 LTS ends (expected mid-2028).
 
+## Verifying a download
+
+Each release file has a signed build provenance attestation. With the
+[GitHub CLI](https://cli.github.com/), check that an ISO was built by this
+repository's release workflow:
+
+    gh attestation verify backtrail-5.0.1.iso --repo johnhsb/backtrail
+
 ## Reporting a vulnerability
 
 Please report vulnerabilities privately through GitHub:
@@ -36,20 +44,23 @@ Backtrail is meant to run for a short time on a machine you control, on a
 network you trust. It needs full access to the disks, so:
 
 * The desktop logs in automatically as `root`. The `root` password is
-  `redo`, as documented in the README, so anyone with the password and
-  network access can log in once SSH is enabled.
-* SSH is off until `/root/enable-ssh` is run from the desktop.
-* A VNC server starts with the desktop, for remote assistance. It is
-  protected by a random 8-character password shown in the app bar; VNC
-  sends its traffic unencrypted.
+  `redo`, as documented in the README, for logging in at the machine.
+* SSH is off until `/root/enable-ssh` is run from the desktop. It sets a new
+  random root password, so the documented one does not work over the
+  network, and shows the host key fingerprints to compare with the client.
+* The VNC server for remote assistance is off until "Allow remote
+  assistance" is pressed in the app bar. It then gets a new random
+  8-character password, shown in the app bar, and stops again with the
+  button next to it. VNC sends its traffic unencrypted.
 * The backup and restore app's PHP backend runs as `root` and has no login.
   nginx serves it only on the loopback address (`127.0.0.1:80`), so it can
   be used only from the machine itself, or through VNC. nginx also refuses
   other host names and backend requests that are not the app's own
   (`X-Requested-With`), so web pages cannot drive it.
-* The web browser (`backtrail-browser`) runs as the unprivileged `redo` user,
-  keeps no data after it closes, and blocks every request to this machine's
-  loopback addresses.
+* The web browser (`backtrail-browser`) and the app window run as the
+  unprivileged `redo` user, which has no password and no sudo rights. The
+  browser keeps no data after it closes and blocks every request to this
+  machine's loopback addresses.
 * The firewall (IPv4 and IPv6) drops incoming connections except SSH (22)
   and VNC (5900).
 
