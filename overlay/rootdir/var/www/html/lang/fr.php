@@ -22,6 +22,8 @@ return array(
 		'32 bits',
 	'64-bit' =>
 		'64 bits',
+	'A drive without partitions can be prepared for backups: it gets one exFAT partition, which Windows, macOS and Linux can read.' =>
+		'Un lecteur sans partition peut être préparé pour les sauvegardes : il reçoit une partition exFAT, lisible par Windows, macOS et Linux.',
 	'A valid folder has been selected for you.' =>
 		'Un dossier valide a été sélectionné à la place.',
 	'Additional tools can be found through the start menu' =>
@@ -42,6 +44,8 @@ return array(
 		'Échec de la sauvegarde',
 	'Backup file not found (%s)' =>
 		'Fichier de sauvegarde introuvable (%s)',
+	'Backup images' =>
+		'Images de sauvegarde',
 	'Backups made by Backtrail and Redo Rescue (.redo), or by Redo Backup 1.0 (.backup)' =>
 		'Sauvegardes créées par Backtrail et Redo Rescue (.redo) ou par Redo Backup 1.0 (.backup)',
 	'Based on Redo Rescue by Zebradots Software' =>
@@ -124,10 +128,14 @@ return array(
 		'Écoulé',
 	'Enter the network share details manually.' =>
 		'Saisissez manuellement les informations du partage réseau.',
+	'Erase and prepare' =>
+		'Effacer et préparer',
 	'Error reading image: Source drive may have disconnected' =>
 		'Erreur de lecture de l’image : le lecteur source a peut-être été déconnecté',
 	'Error saving backup: Target drive or network may have disconnected' =>
 		'Erreur d’enregistrement de la sauvegarde : le lecteur cible ou le réseau a peut-être été déconnecté',
+	'Everything on %s will be erased, and one exFAT partition named Backtrail will be created on it.' =>
+		'Tout le contenu de %s sera effacé, et une partition exFAT nommée Backtrail y sera créée.',
 	'Everything runs from this USB drive. Nothing on your disks changes until you confirm.' =>
 		'Tout fonctionne depuis cette clé USB. Rien ne change sur vos disques tant que vous n’avez pas confirmé.',
 	'Existing data on the selected target partitions of %s will be permanently overwritten.' =>
@@ -294,6 +302,12 @@ return array(
 		'Veuillez sélectionner une image de sauvegarde valide.',
 	'Please wait...' =>
 		'Veuillez patienter...',
+	'Prepare %s for backups?' =>
+		'Préparer %s pour les sauvegardes ?',
+	'Prepare for backups' =>
+		'Préparer pour les sauvegardes',
+	'Preparing the drive...' =>
+		'Préparation du lecteur...',
 	'Preparing to restore image of %1$s to %2$s' =>
 		'Préparation de la restauration de l’image de %1$s vers %2$s',
 	'Preparing to save image of %s' =>
@@ -442,6 +456,8 @@ return array(
 		'Cet ordinateur',
 	'This drive has no partitions to back up. Go back and choose another drive.' =>
 		'Ce lecteur ne contient aucune partition à sauvegarder. Revenez en arrière et choisissez un autre lecteur.',
+	'This drive is not empty' =>
+		'Ce lecteur n’est pas vide',
 	'This filesystem requires imaging the entire partition, rather than simply the saved data on it.' =>
 		'Ce système de fichiers impose de copier toute la partition, et pas seulement les données enregistrées.',
 	'This partition is encrypted.' =>
@@ -460,6 +476,8 @@ return array(
 		'Impossible d’ouvrir les données MBR de l’ancienne image',
 	'Unable to open sfdisk data of legacy image' =>
 		'Impossible d’ouvrir les données sfdisk de l’ancienne image',
+	'Unable to prepare the drive' =>
+		'Impossible de préparer le lecteur',
 	'Unable to read information for selected drive.' =>
 		'Impossible de lire les informations du lecteur sélectionné.',
 	'Unable to start remote assistance' =>

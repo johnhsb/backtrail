@@ -190,6 +190,40 @@ check('remote_html escapes the password', TRUE, strpos($html, '<code>abc&lt;def<
 check('remote_html offers to stop remote assistance', TRUE, strpos($html, "id='remote-off'") !== FALSE);
 unlink(VNCPASS_FILE);
 
+// Partition descriptions keep the whole model: only a vendor that starts it
+// is dropped ("ATA" used to be removed from inside "SATA")
+$desc = clean_part_desc(array('name' => 'sdb1', 'vendor' => 'ATA     ', 'model' => 'VMware Virtual SATA Hard Drive',
+	'size' => '8G', 'type' => 'part', 'tran' => 'sata', 'fstype' => 'ext4', 'ptdesc' => '', 'label' => 'data', 'os' => ''));
+check('clean_part_desc keeps SATA in the model', TRUE, strpos($desc, 'on ATA VMware Virtual SATA Hard Drive') !== FALSE);
+$desc = clean_part_desc(array('name' => 'sdc1', 'vendor' => 'WD', 'model' => 'WD Elements 25A3',
+	'size' => '931G', 'type' => 'part', 'tran' => 'usb', 'fstype' => 'exfat', 'ptdesc' => '', 'label' => '', 'os' => ''));
+check('clean_part_desc does not repeat the vendor', TRUE, strpos($desc, 'on WD Elements 25A3') !== FALSE);
+
+// Backup images are .redo files, or .backup files from Redo Backup 1.0
+check('is_backup_image .redo', TRUE, is_backup_image('/mnt/remote/pc.redo'));
+check('is_backup_image .backup', TRUE, is_backup_image('/mnt/remote/old.backup'));
+check('is_backup_image .img piece', FALSE, is_backup_image('/mnt/remote/pc_sda1_001.img'));
+
+// Blank drives: whole writable disks without partitions or a filesystem,
+// never the drive being backed up
+$disks = json_decode(json_encode(array('blockdevices' => array(
+	array('name' => 'sda', 'type' => 'disk', 'fstype' => NULL, 'ro' => FALSE, 'children' => array(array('name' => 'sda1'))),
+	array('name' => 'sdb', 'type' => 'disk', 'fstype' => NULL, 'ro' => FALSE),
+	array('name' => 'sdc', 'type' => 'disk', 'fstype' => 'exfat', 'ro' => FALSE),
+	array('name' => 'sdd', 'type' => 'disk', 'fstype' => NULL, 'ro' => TRUE),
+	array('name' => 'sr0', 'type' => 'rom', 'fstype' => NULL, 'ro' => FALSE),
+	array('name' => 'sde', 'type' => 'disk', 'fstype' => NULL, 'ro' => FALSE),
+))));
+check('blank_drives finds only empty writable disks', array('sdb', 'sde'), array_keys(blank_drives($disks)));
+check('blank_drives leaves out the source drive', array('sde'), array_keys(blank_drives($disks, array('sdb'))));
+
+// An empty partition table is not data; any other signature is
+check('data_signatures empty disk', array(), data_signatures(''));
+check('data_signatures empty GPT', array(), data_signatures("PMBR\ngpt\ngpt\n"));
+check('data_signatures empty MBR', array(), data_signatures("dos\n"));
+check('data_signatures filesystem', array('ntfs'), data_signatures("ntfs\n"));
+check('data_signatures LVM on a GPT disk', array('LVM2_member'), data_signatures("gpt\nLVM2_member\n"));
+
 // Clean up
 array_map('unlink', glob("$bin/*"));
 rmdir($bin);

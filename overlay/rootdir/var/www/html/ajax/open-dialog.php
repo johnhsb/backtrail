@@ -10,6 +10,11 @@ case 'dir':
 	$result = array('dir'=>'');
 	$dir = sane_path($_REQUEST['dir']);
 	$sel = trim(choose_dir($dir.'/'));
+	if ($sel === '') {
+		// Cancelled: keep the current value
+		$result = array('cancelled' => TRUE);
+		break;
+	}
 	if (strpos($sel, MOUNTPOINT)===FALSE) {
 		// Oops, a folder outside the mountpoint was selected
 		$result['error'] = t('Folder not located on destination drive');
@@ -23,6 +28,11 @@ case 'file':
 	$result = array('file'=>'');
 	$file = sane_path($_REQUEST['file']);
 	$sel = trim(choose_file($file));
+	if ($sel === '') {
+		// Cancelled: keep the current value
+		$result = array('cancelled' => TRUE);
+		break;
+	}
 	if (strpos($sel, MOUNTPOINT)===FALSE) {
 		// Oops, a folder outside the mountpoint was selected
 		$result['error'] = t('File not located on destination drive');

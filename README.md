@@ -86,6 +86,7 @@ the release history of both.
   * Shared network drive search and detection
   * Support for various block devices
   * Read/write support for Samba/CIFS shares, NFS shares, and SSH filesystems
+  * Prepares a blank drive for backups in one step (one exFAT partition)
   * In VMware virtual machines, the screen follows the window size, the
     pointer stays in step and the clipboard is shared
 

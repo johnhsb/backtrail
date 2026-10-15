@@ -22,6 +22,8 @@ return array(
 		'32 ビット',
 	'64-bit' =>
 		'64 ビット',
+	'A drive without partitions can be prepared for backups: it gets one exFAT partition, which Windows, macOS and Linux can read.' =>
+		'パーティションのないドライブはバックアップ用に準備できます。Windows、macOS、Linux で読める exFAT パーティションが 1 つ作成されます。',
 	'A valid folder has been selected for you.' =>
 		'有効なフォルダーを代わりに選択しました。',
 	'Additional tools can be found through the start menu' =>
@@ -42,6 +44,8 @@ return array(
 		'バックアップ失敗',
 	'Backup file not found (%s)' =>
 		'バックアップファイルが見つかりません（%s）',
+	'Backup images' =>
+		'バックアップイメージ',
 	'Backups made by Backtrail and Redo Rescue (.redo), or by Redo Backup 1.0 (.backup)' =>
 		'Backtrail と Redo Rescue のバックアップ（.redo）、または Redo Backup 1.0 のバックアップ（.backup）',
 	'Based on Redo Rescue by Zebradots Software' =>
@@ -124,10 +128,14 @@ return array(
 		'経過時間',
 	'Enter the network share details manually.' =>
 		'ネットワーク共有の情報を手動で入力してください。',
+	'Erase and prepare' =>
+		'消去して準備',
 	'Error reading image: Source drive may have disconnected' =>
 		'イメージの読み込みエラー：ソースドライブが切断された可能性があります',
 	'Error saving backup: Target drive or network may have disconnected' =>
 		'バックアップの保存エラー：保存先ドライブまたはネットワークが切断された可能性があります',
+	'Everything on %s will be erased, and one exFAT partition named Backtrail will be created on it.' =>
+		'%s の内容はすべて消去され、Backtrail という名前の exFAT パーティションが 1 つ作成されます。',
 	'Everything runs from this USB drive. Nothing on your disks changes until you confirm.' =>
 		'すべてこの USB ドライブから実行されます。確認するまでディスクの内容は変更されません。',
 	'Existing data on the selected target partitions of %s will be permanently overwritten.' =>
@@ -294,6 +302,12 @@ return array(
 		'有効なバックアップイメージを選択してください。',
 	'Please wait...' =>
 		'お待ちください...',
+	'Prepare %s for backups?' =>
+		'%s をバックアップ用に準備しますか?',
+	'Prepare for backups' =>
+		'バックアップ用に準備',
+	'Preparing the drive...' =>
+		'ドライブを準備しています...',
 	'Preparing to restore image of %1$s to %2$s' =>
 		'%1$s のイメージを %2$s に復元する準備をしています',
 	'Preparing to save image of %s' =>
@@ -442,6 +456,8 @@ return array(
 		'このコンピューター',
 	'This drive has no partitions to back up. Go back and choose another drive.' =>
 		'このドライブにはバックアップするパーティションがありません。前に戻って別のドライブを選択してください。',
+	'This drive is not empty' =>
+		'このドライブは空ではありません',
 	'This filesystem requires imaging the entire partition, rather than simply the saved data on it.' =>
 		'このファイルシステムは、保存されたデータだけでなくパーティション全体をイメージにする必要があります。',
 	'This partition is encrypted.' =>
@@ -460,6 +476,8 @@ return array(
 		'旧形式のイメージの MBR データを開けません',
 	'Unable to open sfdisk data of legacy image' =>
 		'旧形式のイメージの sfdisk データを開けません',
+	'Unable to prepare the drive' =>
+		'ドライブを準備できません',
 	'Unable to read information for selected drive.' =>
 		'選択したドライブの情報を読み込めません。',
 	'Unable to start remote assistance' =>

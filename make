@@ -19,7 +19,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-VER=5.0.1
+VER=5.0.2
 # Each target (ARCH:BASE) becomes a separate live system in the same ISO;
 # the boot menu picks the one matching the CPU. Debian 13 has no i386 kernel.
 TARGETS="amd64:trixie i386:bookworm"
@@ -313,7 +313,7 @@ apt install --no-install-recommends --yes \
 	xvkbd librsvg2-common zstd open-vm-tools-desktop \
 	papirus-icon-theme adwaita-icon-theme gtk-update-icon-cache \
 	\
-	beep laptop-detect os-prober discover lshw-gtk hdparm smartmontools fdisk e2fsprogs \
+	beep laptop-detect os-prober discover lshw-gtk hdparm smartmontools fdisk e2fsprogs parted \
 	nmap time lvm2 gparted gnome-disk-utility baobab gddrescue testdisk \
 	dosfstools ntfs-3g reiserfsprogs jfsutils \
 	smbclient cifs-utils nfs-common sshfs partclone pigz yad f2fs-tools \

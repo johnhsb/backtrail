@@ -126,6 +126,7 @@ var BT = (function ($) {
 		$.post('/ajax/open-dialog.php', data).done(function (d) {
 			bootbox.hideAll();
 			var r = parse(d);
+			if (r.cancelled) return;
 			$(input).val(r[type]);
 			if (r.error) bootbox.alert({ title: errorTitle, message: '<p class="mb-0">' + escapeHtml(r.error) + '. ' + errorHint + '</p>' });
 		});
@@ -284,6 +285,35 @@ var BT = (function ($) {
 		document.cookie = 'bt-lang=' + encodeURIComponent(lang) + '; path=/; max-age=31536000; SameSite=Lax';
 		location.replace('/?page=' + encodeURIComponent(current));
 	}
+
+	// Prepare a blank drive for backups (destination step of a backup),
+	// only after a warning that names the drive
+	$(document).on('click', '[data-prepare]', function () {
+		var drive = $(this).attr('data-prepare'), desc = $(this).attr('data-desc');
+		bootbox.confirm({
+			title: t('Prepare %s for backups?', escapeHtml(drive)),
+			message: '<div class="alert alert-danger d-flex gap-2 mb-0"><i class="fas fa-exclamation-triangle mt-1"></i><div>'
+				+ t('Everything on %s will be erased, and one exFAT partition named Backtrail will be created on it.', '<b>' + escapeHtml(desc) + '</b>')
+				+ '</div></div>',
+			buttons: {
+				confirm: { label: t('Erase and prepare'), className: 'btn-danger' },
+				cancel: { label: t('Cancel'), className: 'btn-outline-secondary' }
+			},
+			callback: function (yes) {
+				if (!yes) return;
+				busy(t('Preparing the drive...'));
+				$.post('/ajax/prepare-disk.php', { drive: drive }).done(function (d) {
+					bootbox.hideAll();
+					var r = parse(d);
+					if (r.status) show(current);
+					else fail(t('Unable to prepare the drive'), escapeHtml(r.error));
+				}).fail(function () {
+					bootbox.hideAll();
+					fail(t('Unable to prepare the drive'), '');
+				});
+			}
+		});
+	});
 
 	// Remote assistance: start or stop the VNC server from the app bar
 	$(document).on('click', '#remote-on, #remote-off', function () {

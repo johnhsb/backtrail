@@ -252,6 +252,8 @@ html:lang(zh-CN) .bt-op, html:lang(zh-CN) .bt-label { letter-spacing: 0; }
 .bt-drive { display: grid; grid-template-columns: 5rem 1fr auto; gap: 1rem; align-items: center; background: var(--bt-surface); border: 1px solid var(--bt-line); border-radius: .6rem; padding: .7rem 1rem; font-size: .9rem; }
 .bt-drive + .bt-drive { margin-top: .5rem; }
 .bt-dev { font-family: var(--bs-font-monospace); color: var(--bt-accent); font-weight: 500; }
+.bt-blank { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--bs-border-color); }
+.bt-blank-row { display: flex; align-items: center; gap: .75rem; padding: .5rem .75rem; border: 1px dashed var(--bs-border-color); border-radius: .5rem; margin-bottom: .5rem; }
 .bt-size { color: var(--bt-muted); font-variant-numeric: tabular-nums; }
 
 /* Disk and partition views */

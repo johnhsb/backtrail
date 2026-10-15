@@ -7,6 +7,24 @@ the new name and includes the Redo Rescue 5.0.0 changes listed below. See
 
 # Backtrail
 
+## Version 5.0.2 (pending)
+  * Prepare a blank drive for backups from the destination step: drives
+    without partitions or data are listed with a button that, after a
+    warning naming the drive, gives it one exFAT partition (readable by
+    Windows, macOS and Linux). The drive being backed up is never offered,
+    and wipefs checks the drive again right before it is erased
+  * Fix backups to FAT32 drives failing once an image piece reached 4 GiB:
+    pieces are now 4000 MiB, under FAT32's file size limit (from Redo
+    Rescue; restoring older images is not affected)
+  * Cancelling the file or folder chooser no longer shows "not a valid
+    image file" or clears the chosen path
+  * The backup file chooser keeps its .redo/.backup filter, also when it
+    is opened again after a partition image (.img) was picked by mistake
+  * Partition descriptions show the whole drive model: "ATA" was removed
+    from inside "SATA", giving names such as "VMware Virtual S Hard Drive"
+  * Install `parted` explicitly; the ISO build checks for it and
+    `exfatprogs`
+
 ## Version 5.0.1 (2026-10-14)
   * First Backtrail release, based on Redo Rescue 4.0.0 and the unreleased
     5.0.0 changes listed under Redo Rescue below. The version continues

@@ -244,6 +244,60 @@ function get_part_options($disks, $exclude=array(), $fstype_filter='/fat.*|exfat
 }
 
 //
+// Drives that hold nothing yet and can be prepared for backups: whole disks
+// without partitions or a filesystem, that are writable and are not
+// excluded (the drive being backed up)
+//
+function blank_drives($disks, $exclude=array()) {
+	$blank = array();
+	foreach ($disks->blockdevices as $d) {
+		if (($d->type ?? '') !== 'disk' || in_array($d->name, $exclude)) continue;
+		if (!empty($d->children) || !empty($d->fstype) || !empty($d->ro)) continue;
+		$blank[$d->name] = $d;
+	}
+	return $blank;
+}
+
+//
+// Signatures that wipefs finds on a device, other than an empty partition
+// table (gpt, the protective MBR, dos): any of these means it holds data
+//
+function data_signatures($wipefs_output) {
+	$found = array();
+	foreach (preg_split('/\s+/', trim((string) $wipefs_output)) as $type) {
+		if ($type !== '' && !in_array(strtolower($type), array('gpt', 'pmbr', 'dos'))) $found[] = $type;
+	}
+	return $found;
+}
+
+//
+// Erase a blank drive and give it one exFAT partition named Backtrail,
+// which Windows, macOS and Linux can read. Returns NULL, or an error.
+//
+function prepare_backup_drive($drive, $source) {
+	$drive = sane_dev($drive);
+	if ($drive === '' || $drive === $source) return t('This drive is not empty');
+	$blank = blank_drives(get_disks(TRUE), array($source));
+	if (!isset($blank[$drive])) return t('This drive is not empty');
+	$dev = escapeshellarg('/dev/'.$drive);
+	// lsblk may miss a signature; wipefs reads the drive itself
+	if (data_signatures(shell_exec("wipefs --no-act --noheadings --output TYPE $dev 2>/dev/null"))) return t('This drive is not empty');
+	$cmds = array(
+		"parted --script $dev mklabel gpt mkpart Backtrail 1MiB 100%",
+		"partprobe $dev",
+		'udevadm settle',
+		'mkfs.exfat -L Backtrail '.escapeshellarg('/dev/'.baremetal_target($drive, '1')),
+	);
+	foreach ($cmds as $cmd) {
+		$out = array();
+		exec("$cmd 2>&1", $out, $rc);
+		if ($rc !== 0) return trim(implode(' ', $out)) ?: t('Unable to prepare the drive');
+	}
+	get_disks(TRUE);
+	return NULL;
+}
+
+//
 // Return a well-formatted partition description
 //
 function clean_part_desc($d=array()) {
@@ -252,10 +306,11 @@ function clean_part_desc($d=array()) {
 	$desc .= (empty($d['type'])?"":" ".$d['type']);
 	$desc .= (empty($d['fstype'])?"":" (".$d['fstype'].")");
 	$desc .= (empty($d['ptdesc'])?"":" ".$d['ptdesc']);
-	$d['vendor'] = trim(preg_replace('/\s+/', ' ', (string) $d['vendor']));
-	$d['model'] = trim(preg_replace('/\s+/', ' ', (string) $d['model']));
-	if ($d['vendor'] !== '') $d['model'] = trim(str_replace($d['vendor'], '', $d['model']));
-	$vm = trim($d['vendor'].' '.$d['model']);
+	// Only a vendor that starts the model is dropped: removing it anywhere
+	// turned "ATA" + "VMware Virtual SATA Hard Drive" into "Virtual S Hard Drive"
+	$vm = disk_model((object) array(
+		'vendor' => preg_replace('/\s+/', ' ', (string) $d['vendor']),
+		'model'  => preg_replace('/\s+/', ' ', (string) $d['model'])));
 	$desc .= (empty($vm)?"":" on $vm");
 	$desc .= (empty($d['label'])?"":", ".$d['label']);
 	$desc .= (empty($d['os'])?"":", ".$d['os']);
@@ -423,8 +478,20 @@ function choose_dir($start=NULL, $message=NULL) {
 function choose_file($start=NULL, $message=NULL) {
 	if (is_null($message)) $message = t('Select backup file');
 	if (is_null($start)) $start = '/'.trim(MOUNTPOINT, '/').'/';
-	$file = shell_exec('yad --display=:0 --center --maximized --file-selection --file-filter="*.redo *.backup" --filename='.escapeshellarg($start).' --title='.escapeshellarg($message).' --window-icon=folder-documents --timeout=300 --close-on-unfocus');
+	// Starting on a file that the filter hides (a .img piece) made GTK drop
+	// the filter, so start in its folder unless it is a backup image
+	if (is_dir($start)) $start = rtrim($start, '/').'/';
+	elseif (!is_backup_image($start)) $start = rtrim(dirname($start), '/').'/';
+	$filter = t('Backup images').' | *.redo *.backup';
+	$file = shell_exec('yad --display=:0 --center --maximized --file-selection --file-filter='.escapeshellarg($filter).' --filename='.escapeshellarg($start).' --title='.escapeshellarg($message).' --window-icon=folder-documents --timeout=300 --close-on-unfocus');
 	return $file;
+}
+
+//
+// Whether a path names a backup image (.redo, or .backup from Redo Backup 1.0)
+//
+function is_backup_image($path) {
+	return (bool) preg_match('/\.(redo|backup)$/i', (string) $path);
 }
 
 //
@@ -936,7 +1003,7 @@ function backup_part($dev) {
 	$cmd = "partclone.$fs_tool $fs_mode --force --UI-fresh 1 --logfile ".TMP_DIR."$dev.log ";
 	$cmd .= " --source /dev/$dev --no_block_detail ";
 	$cmd .= " | pigz --stdout ";
-	$cmd .= " | split --numeric-suffixes=1 --suffix-length=3 --additional-suffix=.img --bytes=4096M - ";
+	$cmd .= " | split --numeric-suffixes=1 --suffix-length=3 --additional-suffix=.img --bytes=4000M - ";
 	$cmd .= escape_path(sane_path($status->dir)).'/'.$status->id.'_'.$dev.'_';
 	file_put_contents(CMD_FILE, $cmd);
 	return $cmd;

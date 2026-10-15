@@ -27,8 +27,10 @@ $disks = get_disks();
 foreach ($disks->blockdevices as $d) if ($d->name==$status->drive) $disk = $d;
 if (!isset($disk)) crash(t('Unable to read information for selected drive.'));
 
-// Get partition options
+// Get partition options, and blank drives that could be prepared to hold the
+// backup (never the drive being backed up)
 $options = get_part_options($disks, $status->parts);
+$blank_drives = blank_drives($disks, array($status->drive));
 
 page_header('backup', 3, t('Choose where to save the backup'), t('Save to a drive connected to this computer or to a shared folder on your network.'));
 $local_tip = t('Save to a drive connected directly to this computer');

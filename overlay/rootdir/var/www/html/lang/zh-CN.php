@@ -22,6 +22,8 @@ return array(
 		'32 位',
 	'64-bit' =>
 		'64 位',
+	'A drive without partitions can be prepared for backups: it gets one exFAT partition, which Windows, macOS and Linux can read.' =>
+		'没有分区的驱动器可以准备用于备份：将创建一个 Windows、macOS 和 Linux 都能读取的 exFAT 分区。',
 	'A valid folder has been selected for you.' =>
 		'已为您选择了一个有效的文件夹。',
 	'Additional tools can be found through the start menu' =>
@@ -42,6 +44,8 @@ return array(
 		'备份失败',
 	'Backup file not found (%s)' =>
 		'找不到备份文件（%s）',
+	'Backup images' =>
+		'备份映像',
 	'Backups made by Backtrail and Redo Rescue (.redo), or by Redo Backup 1.0 (.backup)' =>
 		'Backtrail 和 Redo Rescue 创建的备份（.redo），或 Redo Backup 1.0 创建的备份（.backup）',
 	'Based on Redo Rescue by Zebradots Software' =>
@@ -124,10 +128,14 @@ return array(
 		'已用时间',
 	'Enter the network share details manually.' =>
 		'请手动输入网络共享信息。',
+	'Erase and prepare' =>
+		'清除并准备',
 	'Error reading image: Source drive may have disconnected' =>
 		'读取映像出错：源驱动器可能已断开',
 	'Error saving backup: Target drive or network may have disconnected' =>
 		'保存备份出错：目标驱动器或网络可能已断开',
+	'Everything on %s will be erased, and one exFAT partition named Backtrail will be created on it.' =>
+		'%s 上的所有内容都将被清除，并创建一个名为 Backtrail 的 exFAT 分区。',
 	'Everything runs from this USB drive. Nothing on your disks changes until you confirm.' =>
 		'一切都从此 USB 驱动器运行。在您确认之前，磁盘上的任何内容都不会改变。',
 	'Existing data on the selected target partitions of %s will be permanently overwritten.' =>
@@ -294,6 +302,12 @@ return array(
 		'请选择有效的备份映像。',
 	'Please wait...' =>
 		'请稍候...',
+	'Prepare %s for backups?' =>
+		'要将 %s 准备用于备份吗？',
+	'Prepare for backups' =>
+		'准备用于备份',
+	'Preparing the drive...' =>
+		'正在准备驱动器...',
 	'Preparing to restore image of %1$s to %2$s' =>
 		'正在准备将 %1$s 的映像还原到 %2$s',
 	'Preparing to save image of %s' =>
@@ -442,6 +456,8 @@ return array(
 		'此计算机',
 	'This drive has no partitions to back up. Go back and choose another drive.' =>
 		'此驱动器上没有可备份的分区。请返回并选择其他驱动器。',
+	'This drive is not empty' =>
+		'此驱动器不是空的',
 	'This filesystem requires imaging the entire partition, rather than simply the saved data on it.' =>
 		'此文件系统需要备份整个分区，而不只是其中的数据。',
 	'This partition is encrypted.' =>
@@ -460,6 +476,8 @@ return array(
 		'无法打开旧格式映像的 MBR 数据',
 	'Unable to open sfdisk data of legacy image' =>
 		'无法打开旧格式映像的 sfdisk 数据',
+	'Unable to prepare the drive' =>
+		'无法准备驱动器',
 	'Unable to read information for selected drive.' =>
 		'无法读取所选驱动器的信息。',
 	'Unable to start remote assistance' =>

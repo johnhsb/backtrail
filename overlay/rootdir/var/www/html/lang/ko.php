@@ -22,6 +22,8 @@ return array(
 		'32비트',
 	'64-bit' =>
 		'64비트',
+	'A drive without partitions can be prepared for backups: it gets one exFAT partition, which Windows, macOS and Linux can read.' =>
+		'파티션이 없는 드라이브는 백업용으로 준비할 수 있습니다. Windows, macOS, Linux에서 모두 읽을 수 있는 exFAT 파티션 하나가 만들어집니다.',
 	'A valid folder has been selected for you.' =>
 		'대신 사용할 수 있는 폴더를 선택해 두었습니다.',
 	'Additional tools can be found through the start menu' =>
@@ -42,6 +44,8 @@ return array(
 		'백업 실패',
 	'Backup file not found (%s)' =>
 		'백업 파일을 찾을 수 없습니다 (%s)',
+	'Backup images' =>
+		'백업 이미지',
 	'Backups made by Backtrail and Redo Rescue (.redo), or by Redo Backup 1.0 (.backup)' =>
 		'Backtrail과 Redo Rescue로 만든 백업(.redo) 또는 Redo Backup 1.0으로 만든 백업(.backup)',
 	'Based on Redo Rescue by Zebradots Software' =>
@@ -124,10 +128,14 @@ return array(
 		'경과 시간',
 	'Enter the network share details manually.' =>
 		'네트워크 공유 정보를 직접 입력하세요.',
+	'Erase and prepare' =>
+		'지우고 준비',
 	'Error reading image: Source drive may have disconnected' =>
 		'이미지를 읽는 중 오류가 발생했습니다. 원본 드라이브의 연결이 끊어졌을 수 있습니다',
 	'Error saving backup: Target drive or network may have disconnected' =>
 		'백업을 저장하는 중 오류가 발생했습니다. 저장 드라이브나 네트워크의 연결이 끊어졌을 수 있습니다',
+	'Everything on %s will be erased, and one exFAT partition named Backtrail will be created on it.' =>
+		'%s의 모든 내용이 지워지고, Backtrail이라는 이름의 exFAT 파티션 하나가 만들어집니다.',
 	'Everything runs from this USB drive. Nothing on your disks changes until you confirm.' =>
 		'모든 작업은 이 USB 드라이브에서 실행됩니다. 직접 확인하기 전에는 디스크의 어떤 것도 바뀌지 않습니다.',
 	'Existing data on the selected target partitions of %s will be permanently overwritten.' =>
@@ -294,6 +302,12 @@ return array(
 		'올바른 백업 이미지를 선택하세요.',
 	'Please wait...' =>
 		'잠시 기다려 주세요...',
+	'Prepare %s for backups?' =>
+		'%s 드라이브를 백업용으로 준비할까요?',
+	'Prepare for backups' =>
+		'백업용으로 준비',
+	'Preparing the drive...' =>
+		'드라이브를 준비하는 중...',
 	'Preparing to restore image of %1$s to %2$s' =>
 		'%1$s 이미지를 %2$s에 복원할 준비 중',
 	'Preparing to save image of %s' =>
@@ -442,6 +456,8 @@ return array(
 		'이 컴퓨터',
 	'This drive has no partitions to back up. Go back and choose another drive.' =>
 		'이 드라이브에는 백업할 파티션이 없습니다. 이전 단계로 돌아가 다른 드라이브를 선택하세요.',
+	'This drive is not empty' =>
+		'이 드라이브는 비어 있지 않습니다',
 	'This filesystem requires imaging the entire partition, rather than simply the saved data on it.' =>
 		'이 파일 시스템은 저장된 데이터만이 아니라 파티션 전체를 이미지로 저장해야 합니다.',
 	'This partition is encrypted.' =>
@@ -460,6 +476,8 @@ return array(
 		'이전 형식 이미지의 MBR 데이터를 열 수 없습니다',
 	'Unable to open sfdisk data of legacy image' =>
 		'이전 형식 이미지의 sfdisk 데이터를 열 수 없습니다',
+	'Unable to prepare the drive' =>
+		'드라이브를 준비할 수 없습니다',
 	'Unable to read information for selected drive.' =>
 		'선택한 드라이브의 정보를 읽을 수 없습니다.',
 	'Unable to start remote assistance' =>

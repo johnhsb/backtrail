@@ -1,6 +1,7 @@
 <?php
 // Location tabs shared by backup, restore and verify.
-// Expects: $options (local partitions), $local_tip, $local_empty
+// Expects: $options (local partitions), $local_tip, $local_empty, and
+// optionally $blank_drives (drives that can be prepared for backups)
 // The underscore keeps action.php from loading this file as a page.
 
 function location_field($label, $tip, $input) {
@@ -27,6 +28,18 @@ function password_input($id) {
       location_field(t('Local disk'), $local_tip, $select."</select>");
     } else { ?>
       <p class="text-muted fst-italic"><?php print $local_empty; ?></p>
+    <?php } ?>
+    <?php if (!empty($blank_drives)) { ?>
+    <div class="bt-blank">
+      <p class="text-muted small mb-2"><?php print t('A drive without partitions can be prepared for backups: it gets one exFAT partition, which Windows, macOS and Linux can read.'); ?></p>
+      <?php foreach ($blank_drives as $bd) { $bdesc = trim($bd->size.' '.disk_model($bd)); ?>
+      <div class="bt-blank-row">
+        <span class="bt-dev"><?php print h($bd->name); ?></span>
+        <span class="flex-grow-1"><?php print h($bdesc); ?></span>
+        <button type="button" class="btn btn-outline-danger btn-sm" data-prepare="<?php print h($bd->name); ?>" data-desc="<?php print h($bd->name.' ('.$bdesc.')'); ?>"><i class="fas fa-eraser me-1"></i> <?php print t('Prepare for backups'); ?></button>
+      </div>
+      <?php } ?>
+    </div>
     <?php } ?>
   </div>
 
