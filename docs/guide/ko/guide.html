@@ -80,7 +80,7 @@
       <li>자주 묻는 질문</li>
     </ol>
   </div>
-  <p class="meta"><b>Backtrail 5.0.1</b> 기준 · 2026년 10월 · https://github.com/johnhsb/backtrail<br>
+  <p class="meta"><b>Backtrail 5.0.2</b> 기준 · 2026년 10월 · https://github.com/johnhsb/backtrail<br>
   화면은 테스트용 가상 머신에서 찍은 것이라 드라이브 이름(VMware Virtual …)이 실제 컴퓨터와 다릅니다.</p>
 </section>
 
@@ -146,15 +146,20 @@
   <div class="step"><div class="n">3</div><div class="t"><b class="h">저장 위치: 백업을 저장할 곳 선택</b>
   <b>이 컴퓨터</b> 탭에서 외장 디스크를 고르거나, <b>네트워크 드라이브</b>(Windows 공유 폴더·NAS), <b>NFS</b>, <b>SSH</b> 탭에서 네트워크 위치를 입력합니다. 백업하려고 고른 파티션은 저장 위치 목록에 나오지 않습니다.</div></div>
   <div class="figure small"><img src="images/04-backup-location.jpg" alt="저장 위치 선택"></div>
-  <div class="box tip"><b class="h">새로 산 빈 디스크에 저장할 때</b>파티션이 없는 빈 디스크를 연결하면, 이 화면 아래에 디스크 이름과 함께 <b>백업용으로 준비</b> 버튼이 나타납니다(5.0.2부터). 경고 창에서 디스크 이름과 크기를 확인하고 <b>지우고 준비</b>를 누르면, Windows·macOS·Linux에서 모두 읽을 수 있는 exFAT 파티션이 만들어져 목록에 나타납니다. 백업하려는 디스크와 이미 내용이 있는 디스크에는 이 버튼이 나오지 않습니다. FAT32로 포맷한 디스크는 5.0.1까지 4 GB가 넘는 백업에서 실패할 수 있으니 피하세요.</div>
+  <div class="box tip"><b class="h">새로 산 빈 디스크에 저장할 때 (5.0.2부터)</b>파티션이 없는 빈 디스크를 연결하면, 이 화면 아래에 디스크 이름과 함께 <b>백업용으로 준비</b> 버튼이 나타납니다. 누르면 경고 창에 디스크 이름·크기·모델이 표시됩니다. <b>지우려는 디스크가 맞는지 확인한 뒤</b> <b>지우고 준비</b>를 누르면, Windows·macOS·Linux에서 모두 읽을 수 있는 exFAT 파티션이 만들어져 목록에 나타납니다. 백업하려는 디스크와 이미 내용이 있는 디스크에는 이 버튼이 나오지 않습니다.</div>
+  <div class="pair">
+    <div class="figure"><img src="images/19-prepare-list.jpg" alt="빈 디스크와 백업용으로 준비 버튼"><div class="cap">빈 디스크(<code>sdd</code>)와 <b>백업용으로 준비</b> 버튼</div></div>
+    <div class="figure"><img src="images/20-prepare-confirm.jpg" alt="디스크 준비 경고 창"><div class="cap">경고 창: 디스크 이름과 크기를 확인합니다.</div></div>
+  </div>
   <div class="box tip"><b class="h">네트워크로 저장할 때</b>보안상 <b>SSH</b>가 가장 안전합니다(전송이 암호화됨). NFS는 암호화와 인증이 없으니 믿을 수 있는 네트워크에서만 쓰세요.</div>
 
-  <div class="step"><div class="n">4</div><div class="t"><b class="h">폴더: 저장할 폴더 선택</b>
-  고른 드라이브의 여유 공간이 표시됩니다. <b>선택</b>을 눌러 폴더를 고르거나, 그대로 두면 드라이브의 맨 위 폴더(<code>/</code>)에 저장합니다.</div></div>
-  <div class="figure small"><img src="images/05-backup-folder.jpg" alt="폴더 선택"></div>
+
 </section>
 
 <section class="page">
+  <div class="step"><div class="n">4</div><div class="t"><b class="h">폴더: 저장할 폴더 선택</b>
+  고른 드라이브의 여유 공간이 표시됩니다. <b>선택</b>을 눌러 폴더를 고르거나, 그대로 두면 드라이브의 맨 위 폴더(<code>/</code>)에 저장합니다.</div></div>
+  <div class="figure small"><img src="images/05-backup-folder.jpg" alt="폴더 선택"></div>
   <div class="step"><div class="n">5</div><div class="t"><b class="h">이름: 백업 이름 정하고 시작</b>
   기본 이름은 오늘 날짜입니다. 영문자, 숫자, <code>-</code>, <code>_</code>만 쓸 수 있습니다. 메모에 무엇을 왜 백업했는지 적어 두면 나중에 찾기 쉽습니다. <b>백업 시작</b>을 누르면 시작합니다.</div></div>
   <div class="figure small"><img src="images/06-backup-name.jpg" alt="백업 이름"></div>
@@ -229,6 +234,7 @@
   <div class="figure small"><img src="images/18-restore-options.jpg" alt="복원할 항목 선택"><div class="cap">빨간 <b>복원</b> 버튼을 누르기 전에 대상 드라이브(여기서는 <code>sda</code>)를 다시 확인하세요.</div></div>
 
   <h3>복원이 끝나면</h3>
+  <div class="figure small"><img src="images/21-restore-done.jpg" alt="복원 완료 화면"><div class="cap">복원이 끝난 화면</div></div>
   <p>진행 화면은 백업·검증과 같습니다. 끝나면 USB를 빼고 컴퓨터를 다시 켜세요. 백업한 시점의 상태로 시작합니다. 대상 디스크가 원래보다 크면, 남는 공간은 시작 메뉴의 <b>GParted</b>로 파티션을 늘려 쓸 수 있습니다.</p>
 </section>
 

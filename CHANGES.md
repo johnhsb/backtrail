@@ -10,9 +10,11 @@ the new name and includes the Redo Rescue 5.0.0 changes listed below. See
 ## Version 5.0.2 (pending)
   * Prepare a blank drive for backups from the destination step: drives
     without partitions or data are listed with a button that, after a
-    warning naming the drive, gives it one exFAT partition (readable by
-    Windows, macOS and Linux). The drive being backed up is never offered,
-    and wipefs checks the drive again right before it is erased
+    warning naming the drive, gives it one exFAT partition of the
+    Microsoft basic data type, so Windows, macOS and Linux can read it. The
+    drive being backed up is never offered, wipefs checks the drive again
+    right before it is erased, and the warning starts on Cancel so Enter
+    does not erase anything
   * Fix backups to FAT32 drives failing once an image piece reached 4 GiB:
     pieces are now 4000 MiB, under FAT32's file size limit (from Redo
     Rescue; restoring older images is not affected)

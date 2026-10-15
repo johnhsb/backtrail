@@ -299,6 +299,9 @@ var BT = (function ($) {
 				confirm: { label: t('Erase and prepare'), className: 'btn-danger' },
 				cancel: { label: t('Cancel'), className: 'btn-outline-secondary' }
 			},
+			// Enter must not erase a drive: start on Cancel
+			// (after bootbox's own focus on the confirm button)
+			onShown: function () { var $d = $(this); setTimeout(function () { $d.find('.bootbox-cancel').trigger('focus'); }, 0); },
 			callback: function (yes) {
 				if (!yes) return;
 				busy(t('Preparing the drive...'));

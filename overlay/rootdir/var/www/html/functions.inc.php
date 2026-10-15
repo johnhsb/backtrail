@@ -283,7 +283,9 @@ function prepare_backup_drive($drive, $source) {
 	// lsblk may miss a signature; wipefs reads the drive itself
 	if (data_signatures(shell_exec("wipefs --no-act --noheadings --output TYPE $dev 2>/dev/null"))) return t('This drive is not empty');
 	$cmds = array(
-		"parted --script $dev mklabel gpt mkpart Backtrail 1MiB 100%",
+		// msftdata gives the partition the Microsoft basic data type: Windows
+		// only mounts GPT partitions of that type, not "Linux filesystem"
+		"parted --script $dev mklabel gpt mkpart Backtrail 1MiB 100% set 1 msftdata on",
 		"partprobe $dev",
 		'udevadm settle',
 		'mkfs.exfat -L Backtrail '.escapeshellarg('/dev/'.baremetal_target($drive, '1')),
