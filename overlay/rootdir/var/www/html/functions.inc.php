@@ -295,6 +295,14 @@ function prepare_backup_drive($drive, $source) {
 		exec("$cmd 2>&1", $out, $rc);
 		if ($rc !== 0) return trim(implode(' ', $out)) ?: t('Unable to prepare the drive');
 	}
+	// The drive list is read again below: wait until udev has probed the
+	// new filesystem, or the partition shows without one and is not listed
+	$part = escapeshellarg('/dev/'.baremetal_target($drive, '1'));
+	for ($i = 0; $i < 10; $i++) {
+		exec('udevadm settle');
+		if (trim((string) shell_exec("lsblk --noheadings --output FSTYPE $part 2>/dev/null")) !== '') break;
+		usleep(500000);
+	}
 	get_disks(TRUE);
 	return NULL;
 }

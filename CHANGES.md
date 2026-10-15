@@ -13,8 +13,9 @@ the new name and includes the Redo Rescue 5.0.0 changes listed below. See
     warning naming the drive, gives it one exFAT partition of the
     Microsoft basic data type, so Windows, macOS and Linux can read it. The
     drive being backed up is never offered, wipefs checks the drive again
-    right before it is erased, and the warning starts on Cancel so Enter
-    does not erase anything
+    right before it is erased, the warning starts on Cancel so Enter does
+    not erase anything, and the new partition is listed as soon as it is
+    ready
   * Fix backups to FAT32 drives failing once an image piece reached 4 GiB:
     pieces are now 4000 MiB, under FAT32's file size limit (from Redo
     Rescue; restoring older images is not affected)
