@@ -7,7 +7,7 @@ the new name and includes the Redo Rescue 5.0.0 changes listed below. See
 
 # Backtrail
 
-## Version 5.0.2 (pending)
+## Version 5.0.2 (2026-10-15)
   * Prepare a blank drive for backups from the destination step: drives
     without partitions or data are listed with a button that, after a
     warning naming the drive, gives it one exFAT partition of the

@@ -20,7 +20,7 @@ Each release file has a signed build provenance attestation. With the
 [GitHub CLI](https://cli.github.com/), check that an ISO was built by this
 repository's release workflow:
 
-    gh attestation verify backtrail-5.0.1.iso --repo johnhsb/backtrail
+    gh attestation verify backtrail-5.0.2.iso --repo johnhsb/backtrail
 
 ## Reporting a vulnerability
 
