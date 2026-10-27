@@ -7,6 +7,16 @@ the new name and includes the Redo Rescue 5.0.0 changes listed below. See
 
 # Backtrail
 
+## Version 5.0.3 (2026-10-27)
+  * Security: rebuilt with PHP fixed for PHP2Shell (CVE-2026-109618,
+    CVE-2026-109619), remote code execution flaws in PHP itself: php8.4
+    8.4.27-1~deb13u1 in the 64-bit system (DSA-6574-1) and php8.2
+    8.2.35-1~deb12u1 in the 32-bit system (DLA-4848-1). The app's web
+    server only answers this machine, but 5.0.2 and earlier ship the
+    vulnerable PHP and should be replaced
+  * The release build fails if either live system has a PHP version
+    without these fixes
+
 ## Version 5.0.2 (2026-10-15)
   * Prepare a blank drive for backups from the destination step: drives
     without partitions or data are listed with a button that, after a

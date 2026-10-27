@@ -77,6 +77,17 @@ jobs:
               grep -q "^$P\b" "image/live-$A/filesystem.packages" \
                 || { echo "::error::$P is missing from the $A system"; exit 1; }
             done
+            # PHP with the PHP2Shell fixes (CVE-2026-109618, CVE-2026-109619)
+            L=$(grep -E $'^php[0-9]+\\.[0-9]+-fpm\t' "image/live-$A/filesystem.packages" || true)
+            read -r P V _ <<< "$L"
+            case $P in
+              php8.4-fpm) MIN=8.4.27-1~deb13u1 ;;
+              php8.2-fpm) MIN=8.2.35-1~deb12u1 ;;
+              *) echo "::error::No known PHP2Shell fix for ${P:-php-fpm} in the $A system"; exit 1 ;;
+            esac
+            dpkg --compare-versions "$V" ge "$MIN" \
+              || { echo "::error::$P $V in the $A system lacks the PHP2Shell fixes ($MIN)"; exit 1; }
+            echo "$A: $P $V"
           done
           (cd dist && sha256sum -- * > SHA256SUMS)
           cat dist/SHA256SUMS

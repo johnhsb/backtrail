@@ -102,14 +102,14 @@ check the download with:
 You can also check that the ISO was built by this repository's release
 workflow, with the [GitHub CLI](https://cli.github.com/):
 
-    gh attestation verify backtrail-5.0.2.iso --repo johnhsb/backtrail
+    gh attestation verify backtrail-5.0.3.iso --repo johnhsb/backtrail
 
 Burn the ISO to a CD or write it to a USB stick with a tool that copies the
 image as is, such as [balenaEtcher](https://etcher.balena.io/) or
 [Rufus](https://rufus.ie/) on Windows. On Linux (`/dev/sdX` is the USB
 stick, and everything on it is erased):
 
-    sudo dd if=backtrail-5.0.2.iso of=/dev/sdX bs=4M status=progress conv=fsync
+    sudo dd if=backtrail-5.0.3.iso of=/dev/sdX bs=4M status=progress conv=fsync
 
 
 ## Examples
@@ -148,7 +148,7 @@ To build an ISO image from within Debian Linux:
   2. `cd backtrail`
   3. `sudo ./make`
 
-The result is `backtrail-VERSION.iso`, for example `backtrail-5.0.2.iso`.
+The result is `backtrail-VERSION.iso`, for example `backtrail-5.0.3.iso`.
 
 The build needs a Debian or Ubuntu machine with internet access. `./make`
 first checks the tools it uses (`debootstrap`, `squashfs-tools`, `xorriso`,
